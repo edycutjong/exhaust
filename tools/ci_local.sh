@@ -8,7 +8,8 @@ log=$(mktemp)
 trap 'rm -f "$log"' EXIT
 mkdir -p evidence
 fail=0
-cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 'model name' /proc/cpuinfo 2>/dev/null | cut -d: -f2 || echo unknown)
+cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 "model name" /proc/cpuinfo 2>/dev/null | cut -d: -f2)
+[ -n "$cpu" ] || cpu=unknown
 {
   echo "# CI steps run locally, $(date -u '+%Y-%m-%d %H:%M UTC')"
   echo "commit: $(git rev-parse HEAD 2>/dev/null || echo n/a)"

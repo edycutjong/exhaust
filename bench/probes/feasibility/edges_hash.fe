@@ -1,5 +1,5 @@
-// P1a probe 9: rolling hash over every accepted labeled edge, in BFS order, in u128 (no invariant checks).
-// Copied into a scratch copy of the ingot by bench/p1a_probes.sh; never part of src/.
+// Probe: rolling hash over every accepted labeled edge, in BFS order, in u128 (no invariant checks).
+// Copied into a scratch copy of the ingot by bench/probes.sh; never part of src/.
 use ingot::escrow::{step, encode, decode, action_of, SIZE, ACTIONS, INIT}
 
 const M: u128 = 2305843009213693951

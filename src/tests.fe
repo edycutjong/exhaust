@@ -38,7 +38,7 @@ fn test_counterexample_none() {
     assert!(counterexample(black_box(18 as u32)) == 0)
 }
 
-/// decode(encode(s)) == s on a sample of in-box states, and encode(decode(x)) == x.
+/// encode(decode(x)) == x for every 97th index of the box, and decode(encode(s)) == s for one boundary state.
 #[test]
 fn test_encode_roundtrip() {
     var x: u32 = 0

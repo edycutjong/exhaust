@@ -1,4 +1,5 @@
-// P1a probe 4: the differential's access pattern at scale in one Sonatina test. Scratch copy only.
+// Probe: the access pattern of a planned all-edges contract test (deploy, act, read the raw state) at scale, in one
+// Sonatina test. Copied into a scratch copy of the ingot by bench/probes.sh.
 use std::evm::Evm
 use ingot::escrow_contract::{Escrow, EscrowMsg}
 

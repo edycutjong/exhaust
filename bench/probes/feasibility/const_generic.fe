@@ -1,4 +1,4 @@
-// P1a probe b: an array sized by a const generic parameter, evaluated under static_assert.
+// Probe: an array sized by a const generic parameter, evaluated under static_assert.
 const fn count<const N: usize>() -> usize {
     var v: [bool; N] = [false; N]
     var i: usize = 0
