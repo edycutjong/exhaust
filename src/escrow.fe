@@ -1,0 +1,207 @@
+//! Protocol 1: a unit escrow between a buyer and a seller.
+//!
+//! State = (phase, escrow, seller, buyer): the phase plus how many abstract units sit in escrow, have been
+//! paid to the seller and have been refunded to the buyer. One unit moves per call; no ETH or token moves.
+//!
+//! Action legend (the digits a counterexample prints, earliest action first):
+//!   1 = Deposit · 2 = Lock · 3 = Release · 4 = Refund · 5 = Dispute
+
+/// Largest capacity the fixed encoding can hold. Every capacity `cap <= MAX_CAP` shares one radix.
+pub const MAX_CAP: u32 = 21
+/// Radix of each unit field: a field value is always `< W` in an encodable state.
+pub const W: u32 = MAX_CAP + 1
+/// Size of the encoding box: 4 phases × W³ unit triples (= 42,592).
+pub const SIZE: usize = 42592
+/// Number of actions; `action_of(i)` is total on `0..ACTIONS`.
+pub const ACTIONS: u32 = 5
+/// Encoding of the initial state (Open, 0, 0, 0).
+pub const INIT: u32 = 0
+
+pub enum Phase {
+    Open,
+    Locked,
+    Disputed,
+    Settled,
+}
+
+pub enum Action {
+    Deposit,
+    Lock,
+    Release,
+    Refund,
+    Dispute,
+}
+
+pub struct State { pub phase: Phase, pub escrow: u32, pub seller: u32, pub buyer: u32 }
+
+/// Result of one transition attempt: `ok` is false when the guard rejects it (then `s` is unchanged).
+pub struct Next { pub ok: bool, pub s: State }
+
+impl Copy for Phase {}
+impl Copy for Action {}
+impl Copy for State {}
+impl Copy for Next {}
+
+pub const fn phase_id(_ p: Phase) -> u32 {
+    match p {
+        Phase::Open => 0,
+        Phase::Locked => 1,
+        Phase::Disputed => 2,
+        Phase::Settled => 3,
+    }
+}
+
+/// Inverse of `phase_id` on 0..4. Any other value maps to `Settled`.
+pub const fn phase_of(_ id: u32) -> Phase {
+    if id == 0 {
+        Phase::Open
+    } else if id == 1 {
+        Phase::Locked
+    } else if id == 2 {
+        Phase::Disputed
+    } else {
+        Phase::Settled
+    }
+}
+
+/// Exhaustive over the enum: adding a variant forces a change here.
+pub const fn action_id(_ a: Action) -> u32 {
+    match a {
+        Action::Deposit => 0,
+        Action::Lock => 1,
+        Action::Release => 2,
+        Action::Refund => 3,
+        Action::Dispute => 4,
+    }
+}
+
+/// Total on 0..ACTIONS; `action_id(action_of(i)) == i` for every `i < ACTIONS`.
+pub const fn action_of(_ id: u32) -> Action {
+    if id == 0 {
+        Action::Deposit
+    } else if id == 1 {
+        Action::Lock
+    } else if id == 2 {
+        Action::Release
+    } else if id == 3 {
+        Action::Refund
+    } else {
+        Action::Dispute
+    }
+}
+
+pub const fn initial() -> State {
+    State { phase: Phase::Open, escrow: 0, seller: 0, buyer: 0 }
+}
+
+pub const fn total(_ s: State) -> u32 {
+    s.escrow + s.seller + s.buyer
+}
+
+/// Mixed-radix encoding: a bijection between the box (phase < 4, every unit field < W) and 0..SIZE.
+pub const fn encode(_ s: State) -> u32 {
+    ((phase_id(s.phase) * W + s.escrow) * W + s.seller) * W + s.buyer
+}
+
+pub const fn decode(_ x: u32) -> State {
+    State {
+        phase: phase_of(x / (W * W * W)),
+        escrow: (x / (W * W)) % W,
+        seller: (x / W) % W,
+        buyer: x % W,
+    }
+}
+
+/// True when `encode(s)` is exact (no field aliases into another state's index).
+pub const fn in_bounds(_ s: State) -> bool {
+    s.escrow < W && s.seller < W && s.buyer < W
+}
+
+const fn reject(_ s: State) -> Next {
+    Next { ok: false, s }
+}
+
+const fn accept(_ s: State) -> Next {
+    Next { ok: true, s }
+}
+
+/// THE transition function. The compile-time search, both runtime searches and the contract's `recv`
+/// handlers all call this one function. `cap` is the escrow capacity in units (`cap <= MAX_CAP`).
+pub const fn step(_ s: State, _ a: Action, _ cap: u32) -> Next {
+    let p = phase_id(s.phase)
+    match a {
+        Action::Deposit => {
+            // Open, and the total stays within the capacity.
+            if p == 0 && total(s) < cap {
+                return accept(
+                    State {
+                        phase: Phase::Open,
+                        escrow: s.escrow + 1,
+                        seller: s.seller,
+                        buyer: s.buyer,
+                    },
+                )
+            }
+            reject(s)
+        },
+        Action::Lock => {
+            // Open with something in escrow.
+            if p == 0 && s.escrow > 0 {
+                return accept(
+                    State {
+                        phase: Phase::Locked,
+                        escrow: s.escrow,
+                        seller: s.seller,
+                        buyer: s.buyer,
+                    },
+                )
+            }
+            reject(s)
+        },
+        Action::Release => {
+            // Locked, something in escrow, the buyer was never refunded: one unit to the seller.
+            if p == 1 && s.escrow > 0 && s.buyer == 0 {
+                let e = s.escrow - 1
+                let np = if e == 0 {
+                    Phase::Settled
+                } else {
+                    Phase::Locked
+                }
+                return accept(
+                    State { phase: np, escrow: e, seller: s.seller + 1, buyer: s.buyer },
+                )
+            }
+            reject(s)
+        },
+        Action::Refund => {
+            // Locked or Disputed, something in escrow, the seller was never paid: one unit to the buyer.
+            if (p == 1 || p == 2) && s.escrow > 0 && s.seller == 0 {
+                let e = s.escrow - 1
+                let np = if e == 0 { Phase::Settled } else { phase_of(p) }
+                return accept(
+                    State { phase: np, escrow: e, seller: s.seller, buyer: s.buyer + 1 },
+                )
+            }
+            reject(s)
+        },
+        Action::Dispute => {
+            // Locked and the seller was never paid.
+            if p == 1 && s.seller == 0 {
+                return accept(
+                    State {
+                        phase: Phase::Disputed,
+                        escrow: s.escrow,
+                        seller: s.seller,
+                        buyer: s.buyer,
+                    },
+                )
+            }
+            reject(s)
+        },
+    }
+}
+
+// The encoding box and the action range are tied to the declarations above.
+static_assert(SIZE == (4 * W * W * W) as usize)
+static_assert(action_id(Action::Dispute) + 1 == ACTIONS)
+static_assert(encode(initial()) == INIT)
