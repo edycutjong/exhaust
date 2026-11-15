@@ -1,0 +1,47 @@
+//! The explorer: a breadth-first search over every state reachable from the start state through `step()`,
+//! written as a `const fn` so that `static_assert` runs it inside `fe build`.
+//!
+//! Budget: Fe 26.6.0 evaluates each `static_assert` with its own limit of 1,000,000 evaluator steps. Array
+//! initialisation costs about one step per element, so the two tables below cost ~85k steps before the search
+//! starts. Consts that reference other consts share one budget, so each search is its own `static_assert`.
+
+use ingot::escrow::{step, encode, decode, action_of, SIZE, ACTIONS, INIT}
+
+/// Number of states reachable from the initial state at capacity `cap`.
+pub const fn explore(_ cap: u32) -> usize {
+    explore_from(INIT, cap)
+}
+
+/// Number of states reachable from `start` (an encoded state) at capacity `cap`.
+pub const fn explore_from(_ start: u32, _ cap: u32) -> usize {
+    var visited: [bool; SIZE] = [false; SIZE]
+    // Each index is enqueued only when it is first marked visited, so the queue never holds more than SIZE.
+    var queue: [u32; SIZE] = [0; SIZE]
+    var head: usize = 0
+    var tail: usize = 1
+    queue[0] = start
+    visited[start as usize] = true
+    while head < tail {
+        let x = queue[head]
+        head += 1
+        let cur = decode(x)
+        var a: u32 = 0
+        while a < ACTIONS {
+            let n = step(cur, action_of(a), cap)
+            if n.ok {
+                let y = encode(n.s)
+                if !visited[y as usize] {
+                    visited[y as usize] = true
+                    queue[tail] = y
+                    tail += 1
+                }
+            }
+            a += 1
+        }
+    }
+    tail
+}
+
+// ---- pins: the build fails if the reachable-state count drifts ----
+/// C = 17: the capacity of the day-0 spike (494 states).
+static_assert(explore(17) == 494)
