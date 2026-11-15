@@ -1,0 +1,3 @@
+//! exhaust: the Fe compiler as a bounded model checker.
+//!
+//! Each file in `src/` is a module of this ingot.

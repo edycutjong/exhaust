@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  FE_VERSION: v26.6.0
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Fe (pinned)
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
+          echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+      - run: fe --version
+      - run: fe fmt --check
+      - run: fe check
+      - name: fe build (runs the compile-time exhaustive search)
+        run: fe build
+      - run: fe test
+      - run: fe test --backend native
