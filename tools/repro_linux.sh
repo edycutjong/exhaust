@@ -14,7 +14,7 @@ set -u
 mark() { if [ "$1" -eq 0 ]; then echo "-> PASS"; else echo "-> FAIL (exit $1)"; fi; }
 apt-get update -qq >/dev/null 2>&1 && apt-get install -y -qq curl git ca-certificates >/dev/null 2>&1
 t0=$(date +%s)
-git clone -q "$SRC" exhaust && cd exhaust && echo "commit: $(git rev-parse HEAD)"
+git -c advice.detachedHead=false clone -q "$SRC" exhaust && cd exhaust && echo "commit: $(git rev-parse HEAD)"
 curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path >/dev/null 2>&1
 export PATH=$HOME/.fe/bin:$PATH
 echo "fe: $(fe --version)"; echo "uname: $(uname -sm)"

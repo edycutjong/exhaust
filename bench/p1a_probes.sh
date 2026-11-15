@@ -67,3 +67,16 @@ for i in 1 2 3; do
   echo "run $i: exit $ec, $(secs $s $e) s"
 done
 echo "$out" | grep -E 'error\[|assertion message|left:'
+
+echo; echo "## 10. negative checks of the checker (scratch copies)"
+fresh; python3 - "$tmp/ingot/src/escrow.fe" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+i = s.index('Action::Release =>'); j = s.index('let e = s.escrow - 1', i)
+open(p, 'w').write(s[:j] + 'let e = s.escrow' + s[j + len('let e = s.escrow - 1'):])
+PY
+echo "(i) Release keeps its unit:"; (cd "$tmp/ingot" && fe build 2>&1 | grep -E 'assertion message|left:')
+fresh; sed -i.bak 's/        st.buyer = n.s.buyer/        st.buyer = n.s.seller/' "$tmp/ingot/src/escrow_contract.fe"
+echo "(ii) adapter stores seller into the buyer slot: fe build error count $(cd "$tmp/ingot" && fe build 2>&1 | grep -c 'error\[')"
+(cd "$tmp/ingot" && fe test 2>&1 | grep -E 'FAIL|result')
+echo "(iii) fe test --filter gas:"; fe test --filter gas 2>&1 | grep -E 'PASS|FAIL|result'

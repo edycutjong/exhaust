@@ -6,4 +6,5 @@
   1,000,000-step budget (`evidence/p1a-port-2026-11-15.md`, probe 3).
 - `fe test --backend native` on Linux needs a host C linker (`cc`); without one the native suite fails with
   `host linker \`cc\` failed`.
-- The test `Evm` has no way to set the block timestamp or the caller of `evm.call`.
+- The test `Evm` has no way to set the block timestamp or the caller of `evm.call`: `impl Ctx for Evm`
+  (`ingots/std/src/evm/effects.fe:885` at v26.6.0) only reads them.

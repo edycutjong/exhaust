@@ -1,7 +1,8 @@
 # exhaust
 
 **The Fe compiler is the model checker.** A `const fn` explores every reachable state of a small protocol state machine
-inside `fe build`, at the stated capacity; `static_assert` fails the build when an invariant breaks, the compiler error names
+inside `fe build`, at a stated capacity (the escrow at C = 19 units: all 609 reachable states and every accepted
+transition checked against five named invariants); `static_assert` fails the build when an invariant breaks, the compiler error names
 the invariant and prints the shortest counterexample; and the transition function that was checked, `step()`, is the same one
 the contract's `recv` handlers call.
 
@@ -12,7 +13,7 @@ the contract's `recv` handlers call.
 Requires Fe 26.6.0 (`fe --version` → `fe 26.6.0 (5b3f96a)`).
 
 ```sh
-fe build                     # runs the compile-time exhaustive search
+fe build                     # runs the compile-time search (exhaustive at the stated capacities)
 fe test                      # Sonatina (EVM) backend
 fe test --backend native     # native backend (on Linux this needs a C linker, `cc`)
 ```

@@ -8,8 +8,9 @@ Required by the Fe Builders Challenge 2026 rules. This file is updated as the pr
 - **Day-0 feasibility spike, 2026-11-15**, by the same author, in a private scratch folder outside this repository: a
   single-file escrow model explored by a `const fn` under `static_assert`, plus small probes of the compile-time step budget.
   It ran inside the build window on Fe 26.6.0. Its code was **ported into this ingot module by module, in separate commits**
-  (model + `step()` → explorer + state pin → named invariants → counterexample → contract → tests), rewritten rather than
-  pasted. Its measurements are treated as a baseline only; every number this repository states is re-measured here and
+  (model + `step()` → explorer + state pin → named invariants → counterexample → contract → tests), all landing in one
+  sitting on 2026-11-15. The port restructured it (one `step()` taking the capacity as an argument, one shared invariant
+  function, a transition form of `conserved`) rather than copying the files. Its measurements are treated as a baseline only; every number this repository states is re-measured here and
   recorded under `evidence/`.
 
 ## Reused code and third-party material
@@ -28,4 +29,5 @@ Required by the Fe Builders Challenge 2026 rules. This file is updated as the pr
   (two review rounds). Their accepted suggestions changed the design (for example the transition form of the `conserved`
   invariant); they did not write repository code.
 - The author is responsible for every line and can explain it. **The tests and the compile-time checks are the check**:
-  `fe build` runs the exhaustive search, and `fe test` runs it again at runtime on two backends.
+  `fe build` runs the search, exhaustive at the capacities stated in `evidence/capacities.md`, and `fe test` runs it again
+  at runtime on two backends.
