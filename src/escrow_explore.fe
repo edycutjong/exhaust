@@ -89,9 +89,72 @@ pub const fn explore_from(_ start: u32, _ cap: u32) -> usize {
     tail
 }
 
+/// Code returned when the start state itself breaks an invariant (no action uses the digit 9).
+pub const START_VIOLATES: u256 = 9
+
+/// The same search, recording each state's parent and the action that reached it. Returns the first shortest
+/// counterexample under the declared action order, across all checked invariants, as decimal digits (earliest
+/// action first; legend in `escrow.fe`), or 0 when no reachable state or edge breaks an invariant.
+pub const fn counterexample(_ cap: u32) -> u256 {
+    if state_violation(decode(INIT), cap) != OK {
+        return START_VIOLATES
+    }
+    var visited: [bool; SIZE] = [false; SIZE]
+    var parent: [u32; SIZE] = [0; SIZE]
+    var via: [u8; SIZE] = [0; SIZE]
+    var queue: [u32; SIZE] = [0; SIZE]
+    var head: usize = 0
+    var tail: usize = 1
+    queue[0] = INIT
+    visited[INIT as usize] = true
+    while head < tail {
+        let x = queue[head]
+        head += 1
+        let cur = decode(x)
+        var a: u32 = 0
+        while a < ACTIONS {
+            let act = action_of(a)
+            let n = step(cur, act, cap)
+            if n.ok {
+                if first_violation(cur, act, n.s, cap) != OK {
+                    // BFS order: this edge ends the shortest path to a violation. Walk back from the current state.
+                    var code: u256 = (a + 1) as u256
+                    var mul: u256 = 10
+                    var len: u32 = 1
+                    var p = x
+                    while p != INIT {
+                        code += (via[p as usize] as u256) * mul
+                        mul *= 10
+                        len += 1
+                        p = parent[p as usize]
+                    }
+                    assert!(
+                        len <= 76,
+                        "trace longer than 76 actions: shrink the configuration to print it",
+                    )
+                    return code
+                }
+                let y = encode(n.s)
+                if !visited[y as usize] {
+                    visited[y as usize] = true
+                    parent[y as usize] = x
+                    via[y as usize] = (a + 1).downcast_truncate()
+                    queue[tail] = y
+                    tail += 1
+                }
+            }
+            a += 1
+        }
+    }
+    0
+}
+
 // ---- pins: the build fails if the reachable-state count drifts ----
 /// C = 17: the capacity of the day-0 spike (494 states).
 static_assert(explore(17) == 494)
 /// C = 19: the largest capacity at which the full invariant set fits one assert's budget on Fe 26.6.0
 /// (C = 20 exceeds the step limit; measured, see evidence/).
 static_assert(explore(19) == 609)
+/// C' = 18: the attack printer. Green it is a full search with parent/action writes (four tables), so it fits a
+/// smaller capacity than `explore`; C = 19 exceeds the step limit (measured, see evidence/).
+static_assert(counterexample(18) == 0)
