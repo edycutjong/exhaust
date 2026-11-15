@@ -9,4 +9,4 @@ One row per pin in `src/escrow_explore.fe`. A capacity is the escrow's unit limi
 | C′ (trace) | 18 | `static_assert(counterexample(18) == 0)` | C = 19 exceeds the limit |
 | spike | 17 | `static_assert(explore(17) == 494)`, the day-0 spike's capacity | a regression pin on the encoding, not extra coverage: the escrow's reachable sets nest (only Deposit reads `cap`) |
 
-Source: `p1a-probes-2026-11-15.txt` (section 7) and `p1a-port-2026-11-15.md`.
+Source: `probes-2026-11-15.txt` (section 5) and `p1a-port-2026-11-15.md`.

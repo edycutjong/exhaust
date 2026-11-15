@@ -1,5 +1,5 @@
-# CI steps run locally, 2026-11-15 13:31 UTC
-commit: 73996b132e300e06c904bf2f7c811fc21fc34d2f
+# CI steps run locally, 2026-11-15 13:38 UTC
+commit: 3a6218e4087e760c9f02eea27864c86973900ac9
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 25.5.0 Darwin Kernel Version 25.5.0: Tue Jun  9 22:18:58 PDT 2026; root:xnu-12377.121.10~1/RELEASE_ARM64_T6000 arm64
 cpu: Apple M1 Max
@@ -14,21 +14,21 @@ cpu: Apple M1 Max
 -> PASS
 
 ## fe test
-PASS  [0.0017s] test_contract_matches_step
-PASS  [0.0017s] test_encode_roundtrip
-PASS  [0.0017s] test_action_ids_distinct
-PASS  [0.0037s] test_runtime_search_gas
-PASS  [0.0047s] test_counterexample_none
-PASS  [0.0061s] test_runtime_explore_agrees
+PASS  [0.0033s] test_action_ids_distinct
+PASS  [0.0033s] test_contract_matches_step
+PASS  [0.0033s] test_encode_roundtrip
+PASS  [0.0056s] test_runtime_search_gas
+PASS  [0.0076s] test_runtime_explore_agrees
+PASS  [0.0092s] test_counterexample_none
 
 test result: ok. 6 passed; 0 failed
 -> PASS
 
 ## fe test --backend native
-PASS  [0.0056s] test_counterexample_none
-PASS  [0.0169s] test_runtime_explore_agrees
-PASS  [0.0182s] test_action_ids_distinct
-PASS  [0.0183s] test_encode_roundtrip
+PASS  [0.0084s] test_runtime_explore_agrees
+PASS  [0.0084s] test_counterexample_none
+PASS  [0.0091s] test_encode_roundtrip
+PASS  [0.0190s] test_action_ids_distinct
 
 test result: ok. 4 passed; 0 failed
 -> PASS

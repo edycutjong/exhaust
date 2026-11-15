@@ -1,18 +1,18 @@
 error[3-0036]: assertion failed in const context
-   ┌─ src/escrow_explore.fe:37:5
+   ┌─ src/escrow_explore.fe:38:5
    │  
-37 │ ╭     assert!(
-38 │ │         v != PAID_ONCE,
-39 │ │         "invariant 'paid once' broken: buyer and seller both paid",
-40 │ │     )
+38 │ ╭     assert!(
+39 │ │         v != PAID_ONCE,
+40 │ │         "invariant 'paid once' broken: buyer and seller both paid",
+41 │ │     )
    │ ╰─────^ `assert!` evaluated to `false`
    │  
    = assertion message: invariant 'paid once' broken: buyer and seller both paid
 
 error[8-0081]: static assertion failed
-    ┌─ src/escrow_explore.fe:162:15
+    ┌─ src/escrow_explore.fe:163:15
     │
-162 │ static_assert(counterexample(18) == 0)
+163 │ static_assert(counterexample(18) == 0)
     │               ^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
     │
     = left: `11234`

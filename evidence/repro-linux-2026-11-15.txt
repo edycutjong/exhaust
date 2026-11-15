@@ -1,6 +1,5 @@
-# sh tools/repro_linux.sh on 2026-11-15 13:29 UTC; host: Apple M1 Max (linux/amd64 emulated by Docker 29.2.1)
-
-commit: 73996b132e300e06c904bf2f7c811fc21fc34d2f
+# sh tools/repro_linux.sh on 2026-11-15 13:38 UTC; host: Apple M1 Max (linux/amd64 emulated by Docker 29.2.1)
+commit: 3a6218e4087e760c9f02eea27864c86973900ac9
 fe: fe 26.6.0 (5b3f96a)
 uname: Linux x86_64
 == fe fmt --check
@@ -12,7 +11,7 @@ error count: 0
 test result: ok. 6 passed; 0 failed
 -> PASS
 == fe test --backend native (no C linker installed)
-ERROR [2.9364s] Failed to emit test native: host linker `cc` failed
+ERROR [2.9803s] Failed to emit test native: host linker `cc` failed
 test result: FAILED. 0 passed; 1 failed
 -> FAIL (exit 1)
 == fe test --backend native (after apt-get install gcc libc6-dev)

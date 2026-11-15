@@ -1,18 +1,46 @@
-# P1a probes, 2026-11-15 13:31 UTC
-commit: 73996b1 · fe 26.6.0 (5b3f96a) · Darwin arm64 · Apple M1 Max
+# Feasibility probes, 2026-11-15 13:37 UTC
+commit: 3a6218e · fe 26.6.0 (5b3f96a) · Darwin arm64 · Apple M1 Max
+
+## 1. green build and tests, three runs each (wall time includes compilation)
+fe build run 1: exit 0, 0.75 s
+fe build run 2: exit 0, 0.8 s
+fe build run 3: exit 0, 0.73 s
+fe test run 1: exit 0, 1.69 s
+fe test run 2: exit 0, 1.69 s
+fe test run 3: exit 0, 1.8 s
+test result: ok. 6 passed; 0 failed
+fe test --backend native run 1: exit 0, 1.61 s
+fe test --backend native run 2: exit 0, 1.36 s
+fe test --backend native run 3: exit 0, 1.35 s
+test result: ok. 4 passed; 0 failed
+
+## 2. bug flip: demo/refund-after-release.patch, three runs, then the revert
+fe build run 1: exit 1, 0.31 s
+fe build run 2: exit 1, 0.32 s
+fe build run 3: exit 1, 0.31 s
+error[3-0036]: assertion failed in const context
+   = assertion message: invariant 'paid once' broken: buyer and seller both paid
+error[8-0081]: static assertion failed
+163 │ static_assert(counterexample(18) == 0)
+    = left: `11234`
+after the revert: exit 0, 0.75 s, error count 0
 
 ## 3. array initialisation: a const fn that only builds [false; N]
 N=900000: fits the step limit
 N=1100000: error[3-0026]: const evaluation exceeded the step limit
 
-## 7. capacity limits with every invariant checked (one static_assert each, scratch copy)
+## 4. budget scope: one static_assert per search vs consts that reference other consts
+two more separate static_assert(explore(19) == 609): error count 0
+two consts in one static_assert: error[3-0026]: const evaluation exceeded the step limit
+
+## 5. capacity limits with every invariant checked (one static_assert each)
 explore(19): = left: `609`
 explore(20): error[3-0026]: const evaluation exceeded the step limit
 explore(21): error[3-0026]: const evaluation exceeded the step limit
 counterexample(18): = left: `0`
 counterexample(19): error[3-0026]: const evaluation exceeded the step limit
 
-## 9. labeled-edge hash in u128 (Fe) vs the tuple model (Python)
+## 6. labeled-edge hash in u128 (Fe) vs the tuple model (Python)
 Fe C=2: = left: `1524000005756973351`
 Fe C=19: = left: `1278408031475724804`
 Fe C=21: = left: `1194004490208706542`
@@ -23,37 +51,28 @@ cap states edges attempts edge_hash
 19 609 798 3045 1278408031475724804
 21 736 966 3680 1194004490208706542
 
-## 8. generated oracle edge table (test in a scratch copy, both backends)
-C=19 rows=3045 sonatina: PASS  [0.0091s] test_probe_oracle_edges (wall 0.83 s) · native: PASS  [0.0159s] test_probe_oracle_edges (wall 0.97 s)
-C=21 rows=3680 sonatina: PASS  [0.0074s] test_probe_oracle_edges (wall 0.8 s) · native: PASS  [0.0049s] test_probe_oracle_edges (wall 0.73 s)
+## 7. generated edge table: step() vs every (state, action) attempt, both backends
+C=19 rows=3045 · sonatina: PASS  [0.0064s] test_probe_oracle_edges (exit 0, 0.84 s) · native: PASS  [0.0162s] test_probe_oracle_edges (exit 0, 0.74 s)
+C=21 rows=3680 · sonatina: PASS  [0.0076s] test_probe_oracle_edges (exit 0, 0.85 s) · native: PASS  [0.0155s] test_probe_oracle_edges (exit 0, 0.73 s)
 C=21 with the first row's ok flag flipped: FAIL  [0.0045s] test_probe_oracle_edges
 
-## 4. fe test harness at the differential's scale (1,008 deployments, 50,400 calls)
-PASS  [0.0897s] test_probe_harness_load (fe test wall incl. compile 0.91 s)
+## 8. fe test at scale: 1,008 deployments and 50,400 calls in one Sonatina test
+PASS  [0.0951s] test_probe_harness_load (exit 0, 1.14 s)
 
-## a. native executable that prints
+## 9. native executable that prints
 trace: 11234
 exit status: 42
 
-## b. const generic array size
+## 10. const generic array size
 error count: 0
 
-## 1 + timing. bug flip (demo/refund-after-release.patch) in a scratch copy, three runs
-run 1: exit 1, 0.35 s
-run 2: exit 1, 0.31 s
-run 3: exit 1, 0.31 s
-error[3-0036]: assertion failed in const context
-   = assertion message: invariant 'paid once' broken: buyer and seller both paid
-error[8-0081]: static assertion failed
-    = left: `11234`
-
-## 10. negative checks of the checker (scratch copies)
+## 11. negative checks of the checker
 (i) Release keeps its unit:
    = assertion message: invariant 'conserved' broken: units created or lost by a non-deposit action
     = left: `123`
 (ii) adapter stores seller into the buyer slot: fe build error count 0
-FAIL  [0.0002s] test_contract_matches_step
+FAIL  [0.0003s] test_contract_matches_step
 test result: FAILED. 5 passed; 1 failed
 (iii) fe test --filter gas:
-PASS  [0.0020s] test_runtime_search_gas
+PASS  [0.0021s] test_runtime_search_gas
 test result: ok. 1 passed; 0 failed
