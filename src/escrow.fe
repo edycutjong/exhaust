@@ -205,3 +205,65 @@ pub const fn step(_ s: State, _ a: Action, _ cap: u32) -> Next {
 static_assert(SIZE == (4 * W * W * W) as usize)
 static_assert(action_id(Action::Dispute) + 1 == ACTIONS)
 static_assert(encode(initial()) == INIT)
+
+// ---- invariants (checked in this order; the first that fails is the one the compiler names) ----
+// State invariants are checked on the start state and on every accepted successor; `conserved` is a
+// transition invariant, checked on every accepted edge (s, a, s').
+
+/// No violation.
+pub const OK: u8 = 0
+/// `within capacity`: escrow + seller + buyer <= cap (the cap rule).
+pub const WITHIN_CAPACITY: u8 = 1
+/// `in bounds`: every unit field fits the encoding, so `encode` cannot alias two states.
+pub const IN_BOUNDS: u8 = 2
+/// `paid once`: the seller and the buyer are never both paid.
+pub const PAID_ONCE: u8 = 3
+/// `settled empty`: a Settled escrow holds nothing.
+pub const SETTLED_EMPTY: u8 = 4
+/// `conserved`: only Deposit creates units; every other action moves one or none.
+pub const CONSERVED: u8 = 5
+
+pub const fn within_capacity(_ s: State, _ cap: u32) -> bool {
+    total(s) <= cap
+}
+
+pub const fn paid_once(_ s: State) -> bool {
+    s.seller == 0 || s.buyer == 0
+}
+
+pub const fn settled_empty(_ s: State) -> bool {
+    phase_id(s.phase) != 3 || s.escrow == 0
+}
+
+/// total(s') == total(s) + 1 for Deposit, else total(s') == total(s).
+pub const fn conserved(_ s: State, _ a: Action, _ n: State) -> bool {
+    let minted: u32 = if action_id(a) == 0 { 1 } else { 0 }
+    total(n) == total(s) + minted
+}
+
+/// First state invariant that `s` breaks, or OK.
+pub const fn state_violation(_ s: State, _ cap: u32) -> u8 {
+    if !within_capacity(s, cap) {
+        return WITHIN_CAPACITY
+    }
+    if !in_bounds(s) {
+        return IN_BOUNDS
+    }
+    if !paid_once(s) {
+        return PAID_ONCE
+    }
+    if !settled_empty(s) {
+        return SETTLED_EMPTY
+    }
+    OK
+}
+
+/// The one predicate both searches call: the first invariant broken by the accepted edge (s, a, n), or OK.
+pub const fn first_violation(_ s: State, _ a: Action, _ n: State, _ cap: u32) -> u8 {
+    let v = state_violation(n, cap)
+    if v != OK { return v }
+    if !conserved(s, a, n) {
+        return CONSERVED
+    }
+    OK
+}

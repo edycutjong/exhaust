@@ -5,20 +5,63 @@
 //! initialisation costs about one step per element, so the two tables below cost ~85k steps before the search
 //! starts. Consts that reference other consts share one budget, so each search is its own `static_assert`.
 
-use ingot::escrow::{step, encode, decode, action_of, SIZE, ACTIONS, INIT}
+use ingot::escrow::{
+    step,
+    encode,
+    decode,
+    action_of,
+    state_violation,
+    first_violation,
+    SIZE,
+    ACTIONS,
+    INIT,
+    OK,
+    WITHIN_CAPACITY,
+    IN_BOUNDS,
+    PAID_ONCE,
+    SETTLED_EMPTY,
+    CONSERVED,
+}
+
+/// Turns an invariant id into a compile error that names the invariant (called only when `v != OK`).
+const fn require(_ v: u8) {
+    assert!(
+        v != WITHIN_CAPACITY,
+        "invariant 'within capacity' broken: more units than the capacity",
+    )
+    assert!(
+        v != IN_BOUNDS,
+        "invariant 'in bounds' broken: state outside the encoding",
+    )
+    assert!(
+        v != PAID_ONCE,
+        "invariant 'paid once' broken: buyer and seller both paid",
+    )
+    assert!(
+        v != SETTLED_EMPTY,
+        "invariant 'settled empty' broken: settled with units still in escrow",
+    )
+    assert!(
+        v != CONSERVED,
+        "invariant 'conserved' broken: units created or lost by a non-deposit action",
+    )
+}
 
 /// Number of states reachable from the initial state at capacity `cap`.
 pub const fn explore(_ cap: u32) -> usize {
     explore_from(INIT, cap)
 }
 
-/// Number of states reachable from `start` (an encoded state) at capacity `cap`.
+/// Number of states reachable from `start` (an encoded state) at capacity `cap`. Fails the evaluation, naming
+/// the invariant, if any reachable state or edge breaks one.
 pub const fn explore_from(_ start: u32, _ cap: u32) -> usize {
     var visited: [bool; SIZE] = [false; SIZE]
     // Each index is enqueued only when it is first marked visited, so the queue never holds more than SIZE.
     var queue: [u32; SIZE] = [0; SIZE]
     var head: usize = 0
     var tail: usize = 1
+    let v0 = state_violation(decode(start), cap)
+    if v0 != OK { require(v0) }
     queue[0] = start
     visited[start as usize] = true
     while head < tail {
@@ -27,8 +70,12 @@ pub const fn explore_from(_ start: u32, _ cap: u32) -> usize {
         let cur = decode(x)
         var a: u32 = 0
         while a < ACTIONS {
-            let n = step(cur, action_of(a), cap)
+            let act = action_of(a)
+            let n = step(cur, act, cap)
             if n.ok {
+                // Every invariant is checked before `encode`, so an out-of-box successor fails by name.
+                let v = first_violation(cur, act, n.s, cap)
+                if v != OK { require(v) }
                 let y = encode(n.s)
                 if !visited[y as usize] {
                     visited[y as usize] = true
@@ -45,3 +92,6 @@ pub const fn explore_from(_ start: u32, _ cap: u32) -> usize {
 // ---- pins: the build fails if the reachable-state count drifts ----
 /// C = 17: the capacity of the day-0 spike (494 states).
 static_assert(explore(17) == 494)
+/// C = 19: the largest capacity at which the full invariant set fits one assert's budget on Fe 26.6.0
+/// (C = 20 exceeds the step limit; measured, see evidence/).
+static_assert(explore(19) == 609)
