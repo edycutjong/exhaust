@@ -1,0 +1,165 @@
+//! Tests. `fe test` runs them on Sonatina (EVM); `fe test --backend native` runs the ones without
+//! `#[cfg(target = "evm")]` natively. The runtime searches call the same `explore_from()` the build ran;
+//! `black_box` hides the start state so the search cannot be folded at compile time.
+
+use core::hint::black_box
+use std::evm::{Evm, Call}
+use ingot::escrow::{
+    State,
+    Phase,
+    step,
+    encode,
+    decode,
+    action_of,
+    action_id,
+    initial,
+    phase_id,
+    paid_once,
+    CAP,
+    ACTIONS,
+    INIT,
+    W,
+}
+use ingot::escrow_explore::{explore_from, counterexample}
+use ingot::escrow_contract::{Escrow, EscrowMsg}
+
+// ---- both backends ----
+
+/// The runtime search agrees with the compile-time pins (C = 17 and C = CAP).
+#[test]
+fn test_runtime_explore_agrees() {
+    assert!(explore_from(black_box(INIT), black_box(17 as u32)) == 494)
+    assert!(explore_from(black_box(INIT), black_box(CAP)) == 609)
+}
+
+/// The attack printer finds nothing at runtime either.
+#[test]
+fn test_counterexample_none() {
+    assert!(counterexample(black_box(18 as u32)) == 0)
+}
+
+/// decode(encode(s)) == s on a sample of in-box states, and encode(decode(x)) == x.
+#[test]
+fn test_encode_roundtrip() {
+    var x: u32 = 0
+    while x < 42592 {
+        let s = decode(x)
+        assert!(encode(s) == x)
+        x += 97
+    }
+    let s = State { phase: Phase::Disputed, escrow: W - 1, seller: 0, buyer: 3 }
+    let t = decode(encode(s))
+    assert!(
+        phase_id(t.phase) == 2 && t.escrow == W - 1 && t.seller == 0 && t.buyer == 3,
+    )
+}
+
+/// Every action id in 0..ACTIONS maps to a distinct action and back.
+#[test]
+fn test_action_ids_distinct() {
+    var i: u32 = 0
+    while i < ACTIONS {
+        assert!(action_id(action_of(i)) == i)
+        i += 1
+    }
+}
+
+// ---- EVM only: the deployed contract ----
+
+#[cfg(target = "evm")]
+fn send(evm: mut Evm, _ addr: Address, _ a: u32) -> bool {
+    if a == 0 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Deposit {},
+        )
+    }
+    if a == 1 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Lock {},
+        )
+    }
+    if a == 2 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Release {},
+        )
+    }
+    if a == 3 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Refund {},
+        )
+    }
+    evm.call(
+        addr: addr,
+        gas: 200000,
+        value: Wei::zero(),
+        message: EscrowMsg::Dispute {},
+    )
+}
+
+/// The day-0 spike's 8-call script: after every call the contract's answer and stored state match `step()`.
+#[cfg(target = "evm")]
+#[test]
+fn test_contract_matches_step() uses (evm: mut Evm) {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: 0)
+    // Deposit, Deposit, Release (rejected: not locked), Lock, Release, Refund (rejected: seller paid),
+    // Dispute (rejected: seller paid), Release
+    let script: [u32; 8] = [0, 0, 2, 1, 2, 3, 4, 2]
+    var model = initial()
+    var i: usize = 0
+    while i < 8 {
+        let a = script[i]
+        let ok = send(mut evm, addr, a)
+        let n = step(model, action_of(a), CAP)
+        assert!(ok == n.ok)
+        if n.ok { model = n.s }
+        let onchain: u256 = evm
+            .call(
+                addr: addr,
+                gas: 100000,
+                value: Wei::zero(),
+                message: EscrowMsg::State {},
+            )
+        assert!(onchain == encode(model) as u256)
+        i += 1
+    }
+    // Two units to the seller, settled.
+    assert!(
+        paid_once(model) && model.seller == 2 && phase_id(model.phase) == 3,
+    )
+    let raw: u256 = evm
+        .call(
+            addr: addr,
+            gas: 100000,
+            value: Wei::zero(),
+            message: EscrowMsg::RawState {},
+        )
+    assert!(raw == 3 | (2 << 128))
+}
+
+#[cfg(target = "evm")]
+#[event]
+struct GasUsed { runtime_search_gas: u256, states: u256 }
+
+/// The runtime search really runs: it reports the gas it used.
+#[cfg(target = "evm")]
+#[test]
+fn test_runtime_search_gas() uses (ctx: std::evm::Ctx, log: mut std::evm::Log) {
+    let before = ctx.gas()
+    let n = black_box(explore_from(black_box(INIT), black_box(17 as u32)))
+    let used = before - ctx.gas()
+    log.emit(GasUsed { runtime_search_gas: used, states: n as u256 })
+    assert!(n == 494)
+    assert!(used > 100000)
+}
