@@ -14,7 +14,7 @@ Requires Fe 26.6.0 (`fe --version` → `fe 26.6.0 (5b3f96a)`).
 ```sh
 fe build                     # runs the compile-time exhaustive search
 fe test                      # Sonatina (EVM) backend
-fe test --backend native     # native backend
+fe test --backend native     # native backend (on Linux this needs a C linker, `cc`)
 ```
 
 License: Apache-2.0. See `DECLARATION.md` for pre-existing work, reused code and AI assistance.

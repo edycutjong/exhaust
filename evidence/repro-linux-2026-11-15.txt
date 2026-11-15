@@ -1,0 +1,33 @@
+# Clean-clone reproduction on Linux x86-64 (2026-11-15)
+# docker run --platform linux/amd64 ubuntu:24.04 (emulated on an Apple M1 Max host); clone of commit c3d0768 from a git bundle (the repo is private); script: apt-get install curl git ca-certificates gcc libc6-dev; feup.sh at tag v26.6.0; fe fmt --check; fe build; fe test; fe test --backend native; apply the refund-after-release bug; fe build.
+# A first run without gcc failed only 'fe test --backend native' with: Failed to emit test native: host linker `cc` failed (native tests need a C linker on Linux).
+== fe --version
+fe 26.6.0 (5b3f96a)
+== uname
+Linux e0ceb5b55260 6.12.72-linuxkit #1 SMP Wed Feb 25 13:21:17 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+== fe fmt --check
+ok
+== fe build
+build_seconds=n/a
+== fe test
+PASS  [0.0690s] test_action_ids_distinct
+PASS  [0.0684s] test_encode_roundtrip
+PASS  [0.0729s] test_contract_matches_step
+PASS  [0.0747s] test_counterexample_none
+PASS  [0.0759s] test_runtime_search_gas
+PASS  [0.0779s] test_runtime_explore_agrees
+
+test result: ok. 6 passed; 0 failed
+== fe test --backend native
+PASS  [0.0183s] test_encode_roundtrip
+PASS  [0.0211s] test_runtime_explore_agrees
+PASS  [0.0260s] test_action_ids_distinct
+PASS  [0.0269s] test_counterexample_none
+
+test result: ok. 4 passed; 0 failed
+== bug flip
+(patch not in repo yet; applying inline)
+bug_build_exit=1
+   = assertion message: invariant 'paid once' broken: buyer and seller both paid
+    = left: `11234`
+clone_to_red_seconds=14
