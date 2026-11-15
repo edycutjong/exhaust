@@ -208,6 +208,7 @@ pub const fn step(_ s: State, _ a: Action, _ cap: u32) -> Next {
 static_assert(SIZE == (4 * W * W * W) as usize)
 static_assert(action_id(Action::Dispute) + 1 == ACTIONS)
 static_assert(encode(initial()) == INIT)
+static_assert(CAP <= MAX_CAP)
 
 // ---- invariants (checked in this order; the first that fails is the one the compiler names) ----
 // State invariants are checked on the start state and on every accepted successor; `conserved` is a

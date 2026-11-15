@@ -3,7 +3,7 @@
 //! `black_box` hides the start state so the search cannot be folded at compile time.
 
 use core::hint::black_box
-use std::evm::{Evm, Call}
+use std::evm::Evm
 use ingot::escrow::{
     State,
     Phase,
@@ -129,7 +129,7 @@ fn test_contract_matches_step() uses (evm: mut Evm) {
                 addr: addr,
                 gas: 100000,
                 value: Wei::zero(),
-                message: EscrowMsg::State {},
+                message: EscrowMsg::GetState {},
             )
         assert!(onchain == encode(model) as u256)
         i += 1
@@ -161,5 +161,6 @@ fn test_runtime_search_gas() uses (ctx: std::evm::Ctx, log: mut std::evm::Log) {
     let used = before - ctx.gas()
     log.emit(GasUsed { runtime_search_gas: used, states: n as u256 })
     assert!(n == 494)
-    assert!(used > 100000)
+    // Measured: 16,151,766 gas on Fe 26.6.0. A search folded away at compile time would cost almost nothing.
+    assert!(used > 1000000)
 }

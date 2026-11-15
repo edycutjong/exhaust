@@ -17,7 +17,7 @@ pub msg EscrowMsg {
     Dispute -> bool,
     /// The encoded model state, `encode(load(store))`.
     #[selector = sol("state()")]
-    State -> u256,
+    GetState -> u256,
     /// The raw stored fields, unencoded: phase | escrow << 64 | seller << 128 | buyer << 192.
     #[selector = sol("raw_state()")]
     RawState -> u256,
@@ -51,6 +51,7 @@ fn raw(_ st: EscrowStore) -> u256 {
 pub contract Escrow {
     mut store: EscrowStore,
 
+    // Storage starts zeroed; the writes make the initial state (Open, 0, 0, 0) explicit.
     init()
     uses (mut store)
     {
@@ -76,7 +77,7 @@ pub contract Escrow {
         Dispute -> bool uses (mut store) {
             apply(mut store, Action::Dispute)
         }
-        State -> u256 uses (store) {
+        GetState -> u256 uses (store) {
             encode(load(store)) as u256
         }
         RawState -> u256 uses (store) {
