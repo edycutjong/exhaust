@@ -8,6 +8,9 @@
 
 /// Largest capacity the fixed encoding can hold. Every capacity `cap <= MAX_CAP` shares one radix.
 pub const MAX_CAP: u32 = 21
+/// Capacity of the deployed contract, and the headline capacity `explore` checks at compile time: the contract
+/// runs exactly the model that was searched.
+pub const CAP: u32 = 19
 /// Radix of each unit field: a field value is always `< W` in an encodable state.
 pub const W: u32 = MAX_CAP + 1
 /// Size of the encoding box: 4 phases × W³ unit triples (= 42,592).

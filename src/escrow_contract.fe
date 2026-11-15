@@ -1,0 +1,86 @@
+//! The deployed escrow. Its `recv` handlers are thin adapters: load the stored fields into a `State`, call the
+//! same `step()` the compile-time search explored (at the same capacity `CAP`), and store the result if accepted.
+
+use std::abi::sol
+use ingot::escrow::{State, Action, step, encode, phase_id, phase_of, CAP}
+
+pub msg EscrowMsg {
+    #[selector = sol("deposit()")]
+    Deposit -> bool,
+    #[selector = sol("lock()")]
+    Lock -> bool,
+    #[selector = sol("release()")]
+    Release -> bool,
+    #[selector = sol("refund()")]
+    Refund -> bool,
+    #[selector = sol("dispute()")]
+    Dispute -> bool,
+    /// The encoded model state, `encode(load(store))`.
+    #[selector = sol("state()")]
+    State -> u256,
+    /// The raw stored fields, unencoded: phase | escrow << 64 | seller << 128 | buyer << 192.
+    #[selector = sol("raw_state()")]
+    RawState -> u256,
+}
+
+pub struct EscrowStore { phase: u32, escrow: u32, seller: u32, buyer: u32 }
+
+fn load(_ st: EscrowStore) -> State {
+    State { phase: phase_of(st.phase), escrow: st.escrow, seller: st.seller, buyer: st.buyer }
+}
+
+/// The adapter: one transition through the shared `step()`. Returns whether the guard accepted it.
+fn apply(_ st: mut EscrowStore, _ a: Action) -> bool {
+    let n = step(load(st), a, CAP)
+    if n.ok {
+        st.phase = phase_id(n.s.phase)
+        st.escrow = n.s.escrow
+        st.seller = n.s.seller
+        st.buyer = n.s.buyer
+    }
+    n.ok
+}
+
+fn raw(_ st: EscrowStore) -> u256 {
+    (st.phase as u256)
+        | ((st.escrow as u256) << 64)
+        | ((st.seller as u256) << 128)
+        | ((st.buyer as u256) << 192)
+}
+
+pub contract Escrow {
+    mut store: EscrowStore,
+
+    init()
+    uses (mut store)
+    {
+        store.phase = 0
+        store.escrow = 0
+        store.seller = 0
+        store.buyer = 0
+    }
+
+    recv EscrowMsg {
+        Deposit -> bool uses (mut store) {
+            apply(mut store, Action::Deposit)
+        }
+        Lock -> bool uses (mut store) {
+            apply(mut store, Action::Lock)
+        }
+        Release -> bool uses (mut store) {
+            apply(mut store, Action::Release)
+        }
+        Refund -> bool uses (mut store) {
+            apply(mut store, Action::Refund)
+        }
+        Dispute -> bool uses (mut store) {
+            apply(mut store, Action::Dispute)
+        }
+        State -> u256 uses (store) {
+            encode(load(store)) as u256
+        }
+        RawState -> u256 uses (store) {
+            raw(store)
+        }
+    }
+}

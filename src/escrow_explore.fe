@@ -15,6 +15,7 @@ use ingot::escrow::{
     SIZE,
     ACTIONS,
     INIT,
+    CAP,
     OK,
     WITHIN_CAPACITY,
     IN_BOUNDS,
@@ -152,9 +153,10 @@ pub const fn counterexample(_ cap: u32) -> u256 {
 // ---- pins: the build fails if the reachable-state count drifts ----
 /// C = 17: the capacity of the day-0 spike (494 states).
 static_assert(explore(17) == 494)
-/// C = 19: the largest capacity at which the full invariant set fits one assert's budget on Fe 26.6.0
+/// C = CAP = 19: the contract's capacity, and the largest capacity at which the full invariant set fits one
+/// assert's budget on Fe 26.6.0
 /// (C = 20 exceeds the step limit; measured, see evidence/).
-static_assert(explore(19) == 609)
+static_assert(explore(CAP) == 609)
 /// C' = 18: the attack printer. Green it is a full search with parent/action writes (four tables), so it fits a
 /// smaller capacity than `explore`; C = 19 exceeds the step limit (measured, see evidence/).
 static_assert(counterexample(18) == 0)
