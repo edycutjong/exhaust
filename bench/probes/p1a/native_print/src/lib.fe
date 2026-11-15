@@ -1,0 +1,8 @@
+// P1a probe a: a native executable that prints (fe build --backend native).
+use std::io::Stdout
+
+pub fn main() -> i32 uses (out: mut Stdout) {
+    let trace: u32 = 11234
+    println!("trace: ", trace)
+    42
+}

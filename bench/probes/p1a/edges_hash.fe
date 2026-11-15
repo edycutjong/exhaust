@@ -1,0 +1,36 @@
+// P1a probe 9: rolling hash over every accepted labeled edge, in BFS order, in u128 (no invariant checks).
+// Copied into a scratch copy of the ingot by bench/p1a_probes.sh; never part of src/.
+use ingot::escrow::{step, encode, decode, action_of, SIZE, ACTIONS, INIT}
+
+const M: u128 = 2305843009213693951
+const P: u128 = 1000003
+
+pub const fn edges_hash(_ cap: u32) -> u128 {
+    var visited: [bool; SIZE] = [false; SIZE]
+    var queue: [u32; SIZE] = [0; SIZE]
+    var head: usize = 0
+    var tail: usize = 1
+    var h: u128 = 0
+    visited[INIT as usize] = true
+    while head < tail {
+        let x = queue[head]
+        head += 1
+        let cur = decode(x)
+        var a: u32 = 0
+        while a < ACTIONS {
+            let n = step(cur, action_of(a), cap)
+            if n.ok {
+                let y = encode(n.s)
+                let lab: u128 = ((x as u128) * 5 + (a as u128)) * 42592 + (y as u128)
+                h = (h * P + lab) % M
+                if !visited[y as usize] {
+                    visited[y as usize] = true
+                    queue[tail] = y
+                    tail += 1
+                }
+            }
+            a += 1
+        }
+    }
+    h
+}

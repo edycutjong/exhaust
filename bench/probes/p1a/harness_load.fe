@@ -1,0 +1,77 @@
+// P1a probe 4: the differential's access pattern at scale in one Sonatina test. Scratch copy only.
+use std::evm::Evm
+use ingot::escrow_contract::{Escrow, EscrowMsg}
+
+fn act(evm: mut Evm, _ addr: Address, _ a: u32) -> bool {
+    if a == 0 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Deposit {},
+        )
+    }
+    if a == 1 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Lock {},
+        )
+    }
+    if a == 2 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Release {},
+        )
+    }
+    if a == 3 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Refund {},
+        )
+    }
+    evm.call(
+        addr: addr,
+        gas: 200000,
+        value: Wei::zero(),
+        message: EscrowMsg::Dispute {},
+    )
+}
+
+/// 1,008 deployments × (25 action calls + 25 raw_state() reads) = 50,400 calls; every result is consumed.
+#[test]
+fn test_probe_harness_load() uses (evm: mut Evm) {
+    var d: u256 = 0
+    var calls: u256 = 0
+    var accepted: u256 = 0
+    var rawsum: u256 = 0
+    while d < 1008 {
+        let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: d)
+        var k: u32 = 0
+        while k < 25 {
+            if act(mut evm, addr, k % 5) {
+                accepted += 1
+            }
+            let raw: u256 = evm
+                .call(
+                    addr: addr,
+                    gas: 100000,
+                    value: Wei::zero(),
+                    message: EscrowMsg::RawState {},
+                )
+            rawsum += raw & 255
+            calls += 2
+            k += 1
+        }
+        d += 1
+    }
+    // Per deployment only Deposit, Lock, Release are accepted (the escrow then settles).
+    assert!(calls == 50400)
+    assert!(accepted == 3024)
+    assert!(rawsum > 0)
+}

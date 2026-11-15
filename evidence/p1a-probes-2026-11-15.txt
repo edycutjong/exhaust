@@ -1,0 +1,48 @@
+# P1a probes, 2026-11-15 13:28 UTC
+commit: 99c5398 · fe 26.6.0 (5b3f96a) · Darwin arm64 · Apple M1 Max
+
+## 3. array initialisation: a const fn that only builds [false; N]
+N=900000: fits the step limit
+N=1100000: error[3-0026]: const evaluation exceeded the step limit
+
+## 7. capacity limits with every invariant checked (one static_assert each, scratch copy)
+explore(19): = left: `609`
+explore(20): error[3-0026]: const evaluation exceeded the step limit
+explore(21): error[3-0026]: const evaluation exceeded the step limit
+counterexample(18): = left: `0`
+counterexample(19): error[3-0026]: const evaluation exceeded the step limit
+
+## 9. labeled-edge hash in u128 (Fe) vs the tuple model (Python)
+Fe C=2: = left: `1524000005756973351`
+Fe C=19: = left: `1278408031475724804`
+Fe C=21: = left: `1194004490208706542`
+tuple model:
+cap states edges attempts edge_hash
+2 14 16 70 1524000005756973351
+17 494 646 2470 1210023004570408906
+19 609 798 3045 1278408031475724804
+21 736 966 3680 1194004490208706542
+
+## 8. generated oracle edge table (test in a scratch copy, both backends)
+C=19 rows=3045 sonatina: PASS  [0.0065s] test_probe_oracle_edges (wall 0.74 s) · native: PASS  [0.0157s] test_probe_oracle_edges (wall 0.68 s)
+C=21 rows=3680 sonatina: PASS  [0.0075s] test_probe_oracle_edges (wall 0.76 s) · native: PASS  [0.0044s] test_probe_oracle_edges (wall 0.68 s)
+C=21 with the first row's ok flag flipped: FAIL  [0.0043s] test_probe_oracle_edges
+
+## 4. fe test harness at the differential's scale (1,008 deployments, 50,400 calls)
+PASS  [0.0901s] test_probe_harness_load (fe test wall incl. compile 0.86 s)
+
+## a. native executable that prints
+trace: 11234
+exit status: 42
+
+## b. const generic array size
+error count: 0
+
+## 1 + timing. bug flip (demo/refund-after-release.patch) in a scratch copy, three runs
+run 1: exit 1, 0.28 s
+run 2: exit 1, 0.3 s
+run 3: exit 1, 0.29 s
+error[3-0036]: assertion failed in const context
+   = assertion message: invariant 'paid once' broken: buyer and seller both paid
+error[8-0081]: static assertion failed
+    = left: `11234`

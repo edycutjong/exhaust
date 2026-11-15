@@ -1,0 +1,7 @@
+// P1a probe 3: cost of initialising one array in const evaluation (N elements, nothing else).
+const N: usize = __N__
+const fn alloc() -> bool {
+    let v: [bool; N] = [false; N]
+    v[N - 1] == false
+}
+static_assert(alloc())
