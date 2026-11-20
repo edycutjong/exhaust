@@ -1,0 +1,22 @@
+diff --git a/src/vault.fe b/src/vault.fe
+--- a/src/vault.fe
++++ b/src/vault.fe
+@@ -272,8 +272,8 @@ pub const fn vstep(_ s: VState, _ a: VAction, _ t: u32) -> VNext {
+         VAction::Execute => {
+             // Queued with the quorum and the timelock run out: one unit leaves the vault, back to Idle.
+             match s.phase {
+-                VPhase::Queued => {
+-                    if s.count >= K && s.clock >= t && s.bal > 0 {
++                _ => {
++                    if s.bal > 0 {
+                         return VNext {
+                             ok: true,
+                             s: VState {
+@@ -287,7 +287,6 @@ pub const fn vstep(_ s: VState, _ a: VAction, _ t: u32) -> VNext {
+                         }
+                     }
+                 },
+-                _ => {},
+             }
+         },
+         VAction::Cancel => {

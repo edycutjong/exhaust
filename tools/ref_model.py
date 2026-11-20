@@ -218,6 +218,7 @@ VBUGS = {
     "vault-execute-early": "Execute no longer requires clock >= T",
     "vault-pay-twice": "Execute pays out two units (bal - 2, paid + 2) instead of one",
     "vault-cancel-pays": "Cancel pays the pending unit out (bal - 1, paid + 1) instead of dropping it",
+    "vault-execute-unguarded": "Execute loses its phase, quorum and timelock guards (only bal > 0 remains)",
 }
 
 
@@ -246,6 +247,8 @@ def vstep(s, a, t, bug=None):
     if a == 4:  # Tick
         return (QUEUED, mask, count, clock + 1, bal, paid) if ph == QUEUED and clock < t else None
     if a == 5:  # Execute
+        if bug == "vault-execute-unguarded":
+            return (IDLE, 0, 0, 0, bal - 1, paid + 1) if bal > 0 else None
         if ph != QUEUED or count < K or bal <= 0:
             return None
         if clock < t and bug != "vault-execute-early":

@@ -67,7 +67,7 @@ const fn vrequire(_ v: u8) {
     )
     assert!(
         v != V_ONLY_EXECUTE_PAYS,
-        "invariant 'only execute pays' broken: units left the vault without an execute",
+        "invariant 'only execute pays' broken: balance or paid-out units changed on an action other than execute",
     )
 }
 
@@ -91,10 +91,10 @@ static_assert(SIZE == 46464)
 /// V_COUNT_STATES, V_COUNT_EDGES, or V_HASH_EDGES: h = (h * P + ((enc(s) * 7 + a) * SIZE + enc(s'))) mod M over the
 /// accepted labeled edges (s, a, s') in search order, M and P as for the escrow (MODEL.md), computed in u128.
 pub const fn vsearch(_ b: u32, _ t: u32, _ mode: u8) -> u128 {
+    assert!(mode <= V_HASH_EDGES, "vsearch: unknown mode")
     let init = vinit_index(b)
-    if vstate_violation(vdecode(init), b) != V_OK {
-        vrequire(vstate_violation(vdecode(init), b))
-    }
+    let v0 = vstate_violation(vdecode(init), b)
+    if v0 != V_OK { vrequire(v0) }
     var visited: [bool; SIZE] = [false; SIZE]
     // Each index is enqueued only when it is first marked visited, so the queue never holds more than SIZE.
     var queue: [u32; SIZE] = [0; SIZE]

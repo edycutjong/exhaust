@@ -107,7 +107,7 @@ the model. Mapping `msg.sender` to a signer is adapter code in `src/vault_contra
 
 `count` is a separate field on purpose: it is what the threshold guard (`count ≥ K`, K = 2) reads, and the bug `vault-approve-twice`
 (an approver counted twice) needs a count that can disagree with the mask. In the correct model `count == popcount(mask)` in every
-reachable state at the checked configurations (B ≤ 10, T ≤ 3; invariant `counted once`). The initial state is `(Idle, 0, 0, 0, B, 0)`.
+reachable state at the four checked configurations ((B, T) = (10, 3), (10, 1), (10, 2), (8, 2); invariant `counted once`). The initial state is `(Idle, 0, 0, 0, B, 0)`.
 
 ### Actions (digit = the number a counterexample prints)
 
@@ -147,7 +147,8 @@ reachable in the correct model, and the step itself (an Execute before the timel
 every state invariant and only lands on states the correct model also reaches, so the state count stays 211; the build names
 `only execute pays` and prints `17` (Propose, Cancel). `two distinct approvals` cannot be the first invariant to fail while
 Execute keeps any one of its phase, quorum or timelock guards (`queued means quorum` and `counted once` already hold on every
-Queued state); the oracle finds it named first, with digits `6`, only when all three guards are dropped. Like the escrow's
+Queued state); it is named first, with digits `6`, only when all three guards are dropped (`demo/vault-execute-unguarded.patch`,
+checked by `demo/check-bugs.sh`; the oracle's `--bug vault-execute-unguarded` agrees). Like the escrow's
 `in bounds`, it is defence in depth.
 
 Pins: the state count (211), and two more `static_assert`s running the same checked search (`vsearch`) that count the accepted
@@ -183,8 +184,9 @@ same, `vault_contract_graph` in `evidence/oracle.json`). In the differential all
 Authorization (who may send which message) is tested only from the refusing side: `test_vault_identity_guards` deploys vaults
 where the harness is signer A only, or no signer, and checks that ApproveB / ApproveC from A and Propose from a non-signer are
 refused with nothing stored changed (each would be accepted by `vstep`). Untested: an accepted approval from a second address; a
-refused non-signer Cancel; where the lock period starts (`queued_at`, set when a withdrawal is queued) and the exact
-`>=` boundary of the lock check — every Execute run uses a lock of zero or one that never passes — and signer distinctness: `init` does
+refused non-signer Cancel; where the lock period starts (`queued_at`, set when a withdrawal is queued) and the `lock − 1` side of
+the `>=` lock check — every Execute run uses a lock of zero or one that never passes, so only the equality side is exercised (a `>`
+there fails three tests) — and signer distinctness: `init` does
 not require the three signer addresses to differ, so with two equal addresses one key could supply both approvals. `Propose` and `Cancel`
 need any one signer (the model has no owner), so a single signer can cancel a queued withdrawal. The harness limits are recorded in
 `FE-NOTES.md`.

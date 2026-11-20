@@ -50,8 +50,11 @@ python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early   # d
   not checked. Liveness is not checked, only safety invariants.
 - The escrow model has no caller identity: `msg.sender` authorization is not modelled. Units are abstract counters: no ETH or
   token moves, so value transfer, reentrancy and gas are out of scope.
-- The contract is a model-faithful demonstrator, not a custody contract: there is no access control (any address can call
-  any handler), and a rejected transition returns `false` instead of reverting.
+- The contracts are model-faithful demonstrators, not custody contracts, and a rejected transition returns `false` instead of
+  reverting. The escrow has no access control (any address can call any handler). The vault checks the caller in adapter code
+  outside the compile-time check: ApproveA / B / C only from the stored signer, Propose and Cancel from any one signer, Execute
+  from anyone. So a single signer can cancel any pending withdrawal, also a queued one, and keep the vault from paying out
+  (censorship; liveness is not checked).
 - The differential test covers every transition reachable through the handlers at C = 21; storage states the handlers cannot
   reach (an upgrade, a storage collision) are not covered.
 - `MODEL.md`, the Fe model and the oracle share one author and one reading of the protocol. The oracle is independent in
@@ -62,13 +65,16 @@ python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early   # d
   contract's own graph has 91 states (lock period passed) and 9 (a lock that never passes) against the model's 211, and the vault
   differential replays exactly those; all three signers are one address in the differential. Caller authorization is tested only
   from the refusing side (`test_vault_identity_guards`: signer A's ApproveB / ApproveC and a non-signer's Propose are refused, nothing
-  stored changes); a refused non-signer Cancel, the exact lock boundary (`queued_at`) and signer distinctness are untested, and `init`
-  does not require the three signer addresses to differ.
+  stored changes); an accepted approval from a second address, a refused non-signer Cancel and signer distinctness are untested, and
+  `init` does not require the three signer addresses to differ.
+- The vault's real timelock is adapter code, not the checked model: Execute sets the model's clock to T once
+  `now >= queued_at + lock`, so `timelock respected` holds for the contract only as far as that line is right, and a deployer's
+  `lock` of zero makes it vacuous. Tests use a lock of zero (the equality side of `>=` is exercised: a `>` there fails three tests)
+  or one that never passes; where `queued_at` is set and the `lock − 1` side are untested, and `init` does not bound `lock`.
 - `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits. The vault's
   `two distinct approvals` is defence in depth the same way: it fires first only if Execute loses its phase, quorum and timelock
-  guards together (`MODEL.md`).
-- The escrow's `conserved` bounds the total only: a Release or Refund that moved two units at once would keep every escrow
-  invariant. The vault checks the size of each payout (`pays one unit`) and that nothing but Execute pays (`only execute pays`).
+  guards together (`demo/vault-execute-unguarded.patch`: the build names it and prints `6`).
+- The escrow's `conserved` bounds the total only: it does not catch a Release or Refund that moves two units at once. The vault checks the size of each payout (`pays one unit`) and that nothing but Execute pays (`only execute pays`).
 
 Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute (vault: 1 Propose · 2 ApproveA · 3 ApproveB · 4 ApproveC ·
 5 Tick · 6 Execute · 7 Cancel). A printed `9` means the start state itself breaks an invariant (no action). The model in words: `MODEL.md`. Numbers: `evidence/`.
