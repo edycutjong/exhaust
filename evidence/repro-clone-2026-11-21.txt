@@ -1,0 +1,23 @@
+# Fresh clone from GitHub + the README's three steps, 2026-11-20 21:04 UTC, Darwin arm64, fe: fe 26.6.0 (5b3f96a)
+commit: 6bdfe2b8372047a0fba8ecadbead1331de0b3758
+== fe build && sh demo/run.sh
+fe build: exit 0
+   build OK: static_assert(explore(CAP) == STATES) held, STATES = 736, every invariant held on every reachable state and edge
+   = assertion message: invariant 'paid once' broken: buyer and seller both paid
+   = left: `11234`
+   -> build FAILED (as it must)
+     PASS  [0.0024s] test_attack_patched_replay
+     -> all five calls accepted; the seller AND the buyer were paid
+     PASS  [0.0002s] test_contract_rejects_attack
+     -> the first four calls accepted, the Refund refused, storage unchanged
+sh demo/run.sh exit status (separate run): 0
+== fe test
+test result: ok. 15 passed; 0 failed
+== fe test --backend native
+test result: ok. 6 passed; 0 failed
+== checks
+RESULT: all rows as expected
+RESULT: all rows as expected
+RESULT: oracle agrees with every Fe pin
+git status after all runs: 0 changed files
+elapsed: 28.7 s (Fe already installed on this machine)
