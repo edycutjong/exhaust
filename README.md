@@ -32,6 +32,7 @@ patched contract (it pays twice) and on the real one (the Refund is refused).
 fe build                              # the compile-time search (exhaustive at the stated capacities)
 fe test                               # Sonatina (EVM) backend
 fe test --backend native              # native backend (on Linux this needs a C linker, `cc`: apt-get install gcc libc6-dev)
+sh tools/differential.sh              # the exhaustive-edge differential report (also part of fe test)
 sh demo/check-bugs.sh                 # every bug patch must fail fe build naming its invariant and printing its digits
 sh demo/check-bugs.sh --conformance   # the checker's own negative tests
 python3 tools/ref_model.py --check    # the Python oracle (follows MODEL.md) against every pin

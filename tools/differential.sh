@@ -8,7 +8,9 @@ out=$(mktemp)
 log=$(mktemp)
 trap 'rm -f "$log" "$out"' EXIT
 start=$(python3 -c 'import time; print(time.time())')
-fe test --filter test_differential_all_edges --show-logs > "$log" 2>&1
+rc=0
+fe test --filter test_differential_all_edges --show-logs > "$log" 2>&1 || rc=$?
+if [ "$rc" -ne 0 ]; then cat "$log"; echo "differential FAILED (exit $rc)"; exit "$rc"; fi
 end=$(python3 -c 'import time; print(time.time())')
 {
   echo "# Exhaustive-edge differential (test_differential_all_edges), $(date -u '+%Y-%m-%d %H:%M UTC')"
