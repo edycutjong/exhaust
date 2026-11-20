@@ -1,0 +1,13 @@
+diff --git a/src/escrow_explore.fe b/src/escrow_explore.fe
+index 7d89694..5640945 100644
+--- a/src/escrow_explore.fe
++++ b/src/escrow_explore.fe
+@@ -71,7 +71,7 @@ pub const fn explore_from(_ start: u32, _ cap: u32) -> usize {
+         head += 1
+         let cur = decode(x)
+         var a: u32 = 0
+-        while a < ACTIONS {
++        while a < 4 {
+             let act = action_of(a)
+             let n = step(cur, act, cap)
+             if n.ok {

@@ -1,0 +1,13 @@
+diff --git a/src/escrow_contract.fe b/src/escrow_contract.fe
+index 1aa0e3a..49a6672 100644
+--- a/src/escrow_contract.fe
++++ b/src/escrow_contract.fe
+@@ -36,7 +36,7 @@ fn apply(_ st: mut EscrowStore, _ a: Action) -> bool {
+         st.phase = phase_id(n.s.phase)
+         st.escrow = n.s.escrow
+         st.seller = n.s.seller
+-        st.buyer = n.s.buyer
++        st.buyer = n.s.seller
+     }
+     n.ok
+ }

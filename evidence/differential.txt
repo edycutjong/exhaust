@@ -1,0 +1,18 @@
+# Exhaustive-edge differential (test_differential_all_edges), 2026-11-20 20:36 UTC
+commit: 978acfa862de7e719d2cd6e6623cc3e16ef67a73
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+cpu: Apple M1 Max
+
+PASS  [0.1371s] test_differential_all_edges
+cap: 21
+states: 736
+edges: 966
+attempts: 3680
+deployments: 1008
+action_calls: 25646
+raw_state_reads: 25646
+total_calls: 51292
+shards: 1 (one #[test], no harness limit hit)
+wall_time_s (whole fe test command incl. compile): 2.80
+test result: ok. 1 passed; 0 failed

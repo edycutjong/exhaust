@@ -1,0 +1,12 @@
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 20:38 UTC
+commit: bccfb26ad5ea00c54732e8a2abfa4310e2f4961d
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+
+PASS  K1  demo/mint-release.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'conserved';;left: `123`
+PASS  K1  demo/mint-release.patch  [stripped+conformance/k1_replay.fe]  `fe test --filter test_k1_shared_bug_replay` exit 0 (want 0)  expect: ^PASS .*test_k1_shared_bug_replay
+PASS  K3  demo/cap-off-by-one.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'within capacity'
+PASS  K4  conformance/skip-action.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `341`
+PASS  K5  conformance/adapter-corruption.patch  [full]  `fe build` exit 0 (want 0)  expect: Wrote .*Escrow.bin
+PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_differential_all_edges` exit 1 (want 1)  expect: ^FAIL .*test_differential_all_edges
+PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_runtime_explore_agrees` exit 0 (want 0)  expect: ^PASS .*test_runtime_explore_agrees

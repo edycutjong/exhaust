@@ -1,0 +1,67 @@
+//! Conformance K1, the finite shared-bug control. Copied into a gate-stripped temp copy of the ingot (compile-time
+//! search removed) with demo/mint-release.patch applied, by `demo/check-bugs.sh --conformance` only. The patched
+//! graph is unbounded (the seller's count grows without limit), so no exhaustive differential can run on it; this
+//! replays the printed counterexample 1 2 3 (Deposit, Lock, Release) on `step()` and on the deployed contract,
+//! requires them to agree after every call, and requires `first_violation()` to name `conserved` at the last one.
+use std::evm::Evm
+use ingot::escrow::{step, initial, action_of, phase_id, first_violation, CAP, CONSERVED, OK}
+use ingot::escrow_contract::{Escrow, EscrowMsg}
+
+fn act(evm: mut Evm, _ addr: Address, _ a: u32) -> bool {
+    if a == 0 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Deposit {},
+        )
+    }
+    if a == 1 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Lock {},
+        )
+    }
+    evm.call(
+        addr: addr,
+        gas: 200000,
+        value: Wei::zero(),
+        message: EscrowMsg::Release {},
+    )
+}
+
+#[test]
+fn test_k1_shared_bug_replay() uses (evm: mut Evm) {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: 401)
+    let trace: [u32; 3] = [0, 1, 2]
+    var m = initial()
+    var i: usize = 0
+    while i < 3 {
+        let a = trace[i]
+        let n = step(m, action_of(a), CAP)
+        assert!(n.ok)
+        assert!(act(mut evm, addr, a))
+        let raw: u256 = evm
+            .call(
+                addr: addr,
+                gas: 100000,
+                value: Wei::zero(),
+                message: EscrowMsg::RawState {},
+            )
+        let mask: u256 = (1 << 64) - 1
+        assert!((raw & mask) == phase_id(n.s.phase) as u256)
+        assert!(((raw >> 64) & mask) == n.s.escrow as u256)
+        assert!(((raw >> 128) & mask) == n.s.seller as u256)
+        assert!((raw >> 192) == n.s.buyer as u256)
+        let v = first_violation(m, action_of(a), n.s, CAP)
+        if i < 2 {
+            assert!(v == OK)
+        } else {
+            assert!(v == CONSERVED)
+        }
+        m = n.s
+        i += 1
+    }
+}
