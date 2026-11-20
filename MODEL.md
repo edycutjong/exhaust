@@ -85,3 +85,84 @@ Over every accepted edge (s, a, s′) in search order, with `a` the action id 0.
 
 The 16 accepted edges: 0→1 (1); 1→2 (1), 1→3 (2); 2→4 (2); 3→5 (3), 3→6 (4), 3→7 (5); 4→8 (3), 4→9 (4), 4→10 (5);
 7→6 (4); 8→11 (3); 9→12 (4), 9→13 (5); 10→13 (4); 13→12 (4).
+
+## Protocol 2: 2-of-3 approval + timelock vault (`src/vault.fe`)
+
+A vault holds `B` abstract units. One withdrawal of one unit is pending at a time. A signer proposes it, two of the three
+signers (A, B, C) approve it, and then a timelock of `T` ticks must pass before anyone can execute it. A pending withdrawal can
+be cancelled at any point before it executes. Nothing moves real ETH or tokens. The identity of the approvers is in the
+alphabet: ApproveA, ApproveB and ApproveC are three different actions, so "two distinct approvals" means two distinct signers in
+the model. Mapping `msg.sender` to a signer is adapter code in `src/vault_contract.fe`, outside the compile-time check.
+
+### State
+`(phase, mask, count, clock, bal, paid)`:
+
+| Field | Range | Meaning |
+|---|---|---|
+| `phase` | Idle, Proposed, Queued | nothing pending / waiting for approvals / quorum reached, timelock running |
+| `mask` | 0..7 | which signers approved: bit 0 = A, bit 1 = B, bit 2 = C |
+| `count` | 0..3 | approvals counted: the number the threshold guard reads |
+| `clock` | 0..T | ticks since the withdrawal was queued, saturating at `T` |
+| `bal`, `paid` | 0..B | units in the vault / units paid out; `bal + paid == B` throughout |
+
+`count` is a separate field on purpose: it is what the threshold guard (`count ≥ K`, K = 2) reads, and the bug `vault-approve-twice`
+(an approver counted twice) needs a count that can disagree with the mask. In the correct model `count == popcount(mask)` always
+(invariant `counted once`). The initial state is `(Idle, 0, 0, 0, B, 0)`.
+
+### Actions (digit = the number a counterexample prints)
+
+| Digit | Action | Guard | Effect |
+|---|---|---|---|
+| 1 | Propose | Idle and `bal > 0` | Proposed, `mask = count = clock = 0` |
+| 2 | ApproveA | Proposed or Queued, bit 0 of `mask` not set | set the bit, `count + 1`; from Proposed with `count + 1 ≥ K`: Queued, `clock = 0` |
+| 3 | ApproveB | as ApproveA, bit 1 | as ApproveA |
+| 4 | ApproveC | as ApproveA, bit 2 | as ApproveA |
+| 5 | Tick | Queued and `clock < T` | `clock + 1` |
+| 6 | Execute | Queued, `count ≥ K`, `clock ≥ T`, `bal > 0` | Idle, `mask = count = clock = 0`, `bal − 1`, `paid + 1` |
+| 7 | Cancel | Proposed or Queued | Idle, `mask = count = clock = 0` |
+
+A rejected action leaves the state unchanged and adds no edge.
+
+### Invariants, in check order
+
+| Id | Name | Kind | Holds when |
+|---|---|---|---|
+| 1 | `in bounds` | state | `mask < 8`, `count < 4`, `clock ≤ T_MAX`, `bal` and `paid ≤ B_MAX` (so the encoding is exact) |
+| 2 | `counted once` | state | `count == popcount(mask)` |
+| 3 | `conserved` | state | `bal + paid == B` |
+| 4 | `idle clean` | state | phase Idle ⇒ `mask == 0` and `clock == 0` |
+| 5 | `queued means quorum` | state | phase Queued ⇒ `popcount(mask) ≥ K` |
+| 6 | `two distinct approvals` | transition | action Execute ⇒ `popcount(s.mask) ≥ 2` |
+| 7 | `timelock respected` | transition | action Execute ⇒ `s.clock ≥ T` |
+
+`vault-approve-twice` breaks `counted once` and `queued means quorum` on the same state; `counted once` is first in the check
+order, so it is the one the compiler names. `vault-execute-early` breaks no state invariant: every state it reaches is also
+reachable in the correct model, and the step itself (an Execute before the timelock) is what the transition invariant rejects.
+
+### Encoding
+Mixed radix `(3, 8, 4, T_MAX + 1, B_MAX + 1, B_MAX + 1)` with `B_MAX = 10`, `T_MAX = 3`, for every `B ≤ 10` and `T ≤ 3`:
+`enc(s) = ((((phase · 8 + mask) · 4 + count) · 4 + clock) · 11 + bal) · 11 + paid`; the box holds `3 · 8 · 4 · 4 · 11 · 11 = 46,464`
+indices. The initial state is not index 0 (`bal = B`): it is `B · 11`.
+
+### Search order
+As the escrow: breadth first, actions tried in digit order 1..7.
+
+### Sizes (oracle, `tools/ref_model.py`)
+States `(B + 1) + 4B + 4(T + 1)B`: Idle `B + 1` (every `bal`/`paid` split), Proposed `4B` (the four masks with fewer than two
+signers × `bal` 1..B), Queued `4(T + 1)B` (the four masks with at least two signers × clock 0..T × `bal` 1..B).
+
+| B | T | states | accepted edges | attempts (states × 7) | longest shortest path |
+|---:|---:|---:|---:|---:|---:|
+| 8 | 2 | 137 | 376 | 959 | 48 |
+| 10 | 1 | 131 | 360 | 917 | 50 |
+| 10 | 2 | 171 | 470 | 1,197 | 60 |
+| 10 | 3 | 211 | 580 | 1,477 | 70 |
+
+### The deployed vault is a smaller graph
+The contract has six handlers, no `Tick`: `Execute` reads the block time and, once the lock period has passed since the
+withdrawal was queued, runs `vstep` on the stored state with `clock = T`; otherwise with the stored clock (always 0). So it can
+only walk states with `clock = 0`. The `fe test` harness can neither advance the block time nor change the caller, so the
+differential (`test_vault_differential`) replays the contract graph: 91 states and 250 accepted edges with a lock period of zero
+(the lock has always passed), 9 states and 21 edges with a lock period that never passes (B = 10, T = 3; the oracle counts the
+same, `vault_contract_graph` in `evidence/oracle.json`). Authorization (who may send which message) is untested: all three signers
+are the one harness address.
