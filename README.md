@@ -4,14 +4,18 @@
 inside `fe build`, at a stated capacity: the escrow at C = 21 units, all 736 reachable states and every accepted transition
 checked against five named invariants. When an invariant breaks, `static_assert` fails the build: the compiler error names
 the invariant, and a second diagnostic prints a shortest counterexample as action digits (searched at C′ = 19, two units below
-the main check). The transition function that was checked, `step()`, is the same one the contract's `recv` handlers call, and
+the main check: C′ = 20 fits at 98.4% of the budget but leaves no room to edit `step()`, see `evidence/capacities.md`). The transition function that was checked, `step()`, is the same one the contract's `recv` handlers call, and
 an exhaustive-edge differential test replays every reachable transition attempt through the deployed contract.
 
 This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification.
 
+**The ceiling.** Fe 26.6.0 gives each `static_assert` evaluation 1,000,000 evaluator steps and a recursion limit of 64, with
+no CLI or config override. The C = 21 search uses 940,335 of them (≈ 1,160 steps per state); consts that reference other
+consts share one budget, so a bigger model is split into independent asserts, never chained (`evidence/budget.md`).
+
 > Work in progress (Fe Builders Challenge 2026). The full README, evidence and limitations land before submission.
 
-## Try it (Linux x86-64 or macOS Apple Silicon; git + curl; python3 not needed for this)
+## Try it (macOS Apple Silicon or Linux x86-64; git + curl; python3 not needed for this)
 
 1. `git clone https://github.com/edycutjong/exhaust && cd exhaust`
 2. `curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path`
@@ -30,8 +34,22 @@ fe test                               # Sonatina (EVM) backend
 fe test --backend native              # native backend (on Linux this needs a C linker, `cc`)
 sh demo/check-bugs.sh                 # every bug patch must fail fe build naming its invariant and printing its digits
 sh demo/check-bugs.sh --conformance   # the checker's own negative tests
-python3 tools/ref_model.py --check    # the independent oracle (written from MODEL.md) against every pin
+python3 tools/ref_model.py --check    # the Python oracle (follows MODEL.md) against every pin
 ```
+
+## Limitations: what this does not prove
+
+- Only the stated capacities are explored (C = 21 for the state count, C′ = 19 for the printed trace); behaviour above them is
+  not checked. Liveness is not checked, only safety invariants.
+- The escrow model has no caller identity: `msg.sender` authorization is not modelled. Units are abstract counters: no ETH or
+  token moves, so value transfer, reentrancy and gas are out of scope.
+- The differential test covers every transition reachable through the handlers at C = 21; storage states the handlers cannot
+  reach (an upgrade, a storage collision) are not covered.
+- `MODEL.md`, the Fe model and the oracle share one author and one reading of the protocol; the oracle is independent by
+  language and encoding, so a misreading shared by all three is not caught.
+- `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits.
+- Linux x86-64 was last reproduced on the P1a code (`evidence/repro-linux-2026-11-15.txt`); the current code is verified on
+  macOS Apple Silicon.
 
 Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute. The model in words: `MODEL.md`. Numbers: `evidence/`.
 
