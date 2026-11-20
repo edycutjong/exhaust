@@ -5342,6 +5342,93 @@
      "new": false
     }
    ]
+  },
+  {
+   "bug": "vault-pay-twice",
+   "invariant": "pays one unit",
+   "digits": "1235556",
+   "states": [
+    {
+     "phase": "Idle",
+     "mask": 0,
+     "count": 0,
+     "clock": 0,
+     "bal": 10,
+     "paid": 0,
+     "id": 0,
+     "new": false
+    },
+    {
+     "phase": "Proposed",
+     "mask": 0,
+     "count": 0,
+     "clock": 0,
+     "bal": 10,
+     "paid": 0,
+     "id": 1,
+     "new": false
+    },
+    {
+     "phase": "Proposed",
+     "mask": 1,
+     "count": 1,
+     "clock": 0,
+     "bal": 10,
+     "paid": 0,
+     "id": 2,
+     "new": false
+    },
+    {
+     "phase": "Queued",
+     "mask": 3,
+     "count": 2,
+     "clock": 0,
+     "bal": 10,
+     "paid": 0,
+     "id": 5,
+     "new": false
+    },
+    {
+     "phase": "Queued",
+     "mask": 3,
+     "count": 2,
+     "clock": 1,
+     "bal": 10,
+     "paid": 0,
+     "id": 9,
+     "new": false
+    },
+    {
+     "phase": "Queued",
+     "mask": 3,
+     "count": 2,
+     "clock": 2,
+     "bal": 10,
+     "paid": 0,
+     "id": 13,
+     "new": false
+    },
+    {
+     "phase": "Queued",
+     "mask": 3,
+     "count": 2,
+     "clock": 3,
+     "bal": 10,
+     "paid": 0,
+     "id": 17,
+     "new": false
+    },
+    {
+     "phase": "Idle",
+     "mask": 0,
+     "count": 0,
+     "clock": 0,
+     "bal": 8,
+     "paid": 2,
+     "id": 42,
+     "new": false
+    }
+   ]
   }
  ],
  "attack": {

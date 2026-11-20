@@ -1,6 +1,6 @@
 # Step budget per compile-time search (measured by bench/budget_probe.py)
 
-2026-11-20 21:32 UTC · `fe 26.6.0 (5b3f96a)` · `Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64 arm`
+2026-11-20 21:53 UTC · `fe 26.6.0 (5b3f96a)` · `Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64 arm`
 
 Fe 26.6.0 gives each `static_assert` evaluation a budget of **1,000,000 steps** and a recursion limit of **64**, with
 no CLI or config override (`crates/hir/src/analysis/semantic/ctfe/machine.rs` lines 66-73 at tag v26.6.0). Consts that
@@ -21,11 +21,11 @@ burn headroom lost when the search runs in the same assert, converted to steps (
 | `explore_seeds(LOCKED_BASE + 8 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)` | 238 | 362,821 | 36.3% | 1,162 |  |
 | `explore_seeds(LOCKED_BASE + 15 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)` | 385 | 534,870 | 53.5% | 1,165 |  |
 | `vexplore(0, 0)` | 1 | 94,512 | 9.4% | — | B = 0: no unit to propose, one state; two 46,464-element tables initialised |
-| `vexplore(8, 2)` | 137 | 389,617 | 39.0% | 2,154 | the baseline configuration of the spec |
-| `vexplore(VB, VT)` | 211 | 549,269 | 54.9% | 2,155 | the vault's headline assert |
-| `vcounterexample(VB, VT)` | 211 | 652,061 | 65.2% | 2,642 | green: full search; four tables, so its per-state column is overstated |
-| `vexplore(10, 1)` | 131 | 377,519 | 37.8% | 2,160 | T = 1 shard |
-| `vexplore(10, 2)` | 171 | 463,405 | 46.3% | 2,157 | T = 2 shard |
+| `vexplore(8, 2)` | 137 | 391,503 | 39.1% | 2,168 | the baseline configuration of the spec |
+| `vexplore(VB, VT)` | 211 | 551,638 | 55.2% | 2,166 | the vault's headline assert |
+| `vcounterexample(VB, VT)` | 211 | 654,407 | 65.4% | 2,654 | green: full search; four tables, so its per-state column is overstated |
+| `vexplore(10, 1)` | 131 | 379,888 | 38.0% | 2,178 | T = 1 shard |
+| `vexplore(10, 2)` | 171 | 465,751 | 46.6% | 2,171 | T = 2 shard |
 
 Over the limit (measured with `fe build` on the same code, see `evidence/capacities.md`): `counterexample(21)`;
 capacities above 21 do not fit the encoding (`MAX_CAP = 21`).

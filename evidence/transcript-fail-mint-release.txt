@@ -1,5 +1,5 @@
 # fail: mint-release (names 'conserved', prints 123)
-# 2026-11-20 21:39 UTC · commit f34c34e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# 2026-11-20 21:54 UTC · commit d9280c3 · fe 26.6.0 (5b3f96a) · Darwin arm64
 # $ patch -p1 < demo/mint-release.patch && fe --color never build
 
 error[3-0036]: assertion failed in const context

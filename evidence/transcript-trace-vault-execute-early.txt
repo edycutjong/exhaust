@@ -1,0 +1,13 @@
+# native trace of vault-execute-early, by action name
+# 2026-11-20 21:54 UTC · commit d9280c3 · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ sh tools/trace.sh demo/vault-execute-early.patch
+
+escrow, capacity 19: no counterexample (every reachable state and edge keeps every invariant)
+vault, B = 10, T = 3: shortest counterexample, 4 actions (digits 1236)
+  start     (Idle, mask 0, count 0, clock 0, bal 10, paid 0)
+  1  Propose   (Proposed, mask 0, count 0, clock 0, bal 10, paid 0)
+  2  ApproveA  (Proposed, mask 1, count 1, clock 0, bal 10, paid 0)
+  3  ApproveB  (Queued, mask 3, count 2, clock 0, bal 10, paid 0)
+  4  Execute   (Idle, mask 0, count 0, clock 0, bal 9, paid 1)
+  ^ this edge breaks invariant ''
+exit status: 1

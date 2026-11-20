@@ -418,6 +418,13 @@
    "t": 3,
    "invariant": "timelock respected",
    "digits": "1236"
+  },
+  {
+   "bug": "vault-pay-twice",
+   "b": 10,
+   "t": 3,
+   "invariant": "pays one unit",
+   "digits": "1235556"
   }
  ],
  "vault_contract_graph": {

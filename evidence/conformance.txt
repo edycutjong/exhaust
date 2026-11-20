@@ -1,5 +1,5 @@
-# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 21:40 UTC
-commit: 21bffbf6bdaa5b30a0dd520f602a1dc0a02a2111
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 21:54 UTC
+commit: d9280c3f2b539057796d1e827a79b6bc28e964f9
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 

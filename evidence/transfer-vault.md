@@ -31,7 +31,7 @@ digits when first run (`evidence/check-bugs.txt`).
 Things that did not work the first time, in the order they came up:
 
 1. **Table size.** The first configuration, B = 16 and T = 3 (box 110,976), fit one `static_assert` (95.1% of the budget) but the
-   attack printer `vcounterexample` did not (four tables). The box was cut to B ≤ 10, T ≤ 3 (46,464): the headline assert now uses 54.9% of the budget and the attack printer 65.2% (`evidence/budget.md`). This is the pattern's one real cost: **the model size is set by the 1,000,000-step budget, and every extra field multiplies the box.**
+   attack printer `vcounterexample` did not (four tables). The box was cut to B ≤ 10, T ≤ 3 (46,464): the headline assert now uses 55.2% of the budget and the attack printer 65.4% (`evidence/budget.md`). This is the pattern's one real cost: **the model size is set by the 1,000,000-step budget, and every extra field multiplies the box.**
 2. **`Duration::from_secs` does not exist** in 26.6.0; the starter repo's tests use `std::evm::days(n)` and `Duration::zero()`.
 3. **`usize` → `u32` with `as` is rejected**; `.downcast_truncate()` is the lossless-looking spelling used elsewhere.
 4. **`Timestamp` is not a `u256`**: no `.seconds`, no cast. Block time stays a `Timestamp`, compared as `now >= queued_at + lock`.

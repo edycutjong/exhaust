@@ -6,8 +6,8 @@
   "limit": 1000000,
   "burn_iterations_that_fit": 43476,
   "steps_per_burn_iteration": 23.0012,
-  "probe_wall_time_s": 161.7,
-  "date_utc": "2026-11-20 21:32"
+  "probe_wall_time_s": 159.2,
+  "date_utc": "2026-11-20 21:53"
  },
  "rows": [
   {
@@ -125,50 +125,50 @@
    "expr": "vexplore(8, 2)",
    "pin": 137,
    "states": 137,
-   "steps": 389617,
-   "share_of_limit": 0.3896,
+   "steps": 391503,
+   "share_of_limit": 0.3915,
    "note": "the baseline configuration of the spec",
-   "steps_per_state_after_setup": 2154
+   "steps_per_state_after_setup": 2168
   },
   {
    "search": "vexplore(VB, VT), B = 10, T = 3",
    "expr": "vexplore(VB, VT)",
    "pin": 211,
    "states": 211,
-   "steps": 549269,
-   "share_of_limit": 0.5493,
+   "steps": 551638,
+   "share_of_limit": 0.5516,
    "note": "the vault's headline assert",
-   "steps_per_state_after_setup": 2155
+   "steps_per_state_after_setup": 2166
   },
   {
    "search": "vcounterexample(VB, VT)",
    "expr": "vcounterexample(VB, VT)",
    "pin": 0,
    "states": 211,
-   "steps": 652061,
-   "share_of_limit": 0.6521,
+   "steps": 654407,
+   "share_of_limit": 0.6544,
    "note": "green: full search; four tables, so its per-state column is overstated",
-   "steps_per_state_after_setup": 2642
+   "steps_per_state_after_setup": 2654
   },
   {
    "search": "vexplore(10, 1)",
    "expr": "vexplore(10, 1)",
    "pin": 131,
    "states": 131,
-   "steps": 377519,
-   "share_of_limit": 0.3775,
+   "steps": 379888,
+   "share_of_limit": 0.3799,
    "note": "T = 1 shard",
-   "steps_per_state_after_setup": 2160
+   "steps_per_state_after_setup": 2178
   },
   {
    "search": "vexplore(10, 2)",
    "expr": "vexplore(10, 2)",
    "pin": 171,
    "states": 171,
-   "steps": 463405,
-   "share_of_limit": 0.4634,
+   "steps": 465751,
+   "share_of_limit": 0.4658,
    "note": "T = 2 shard",
-   "steps_per_state_after_setup": 2157
+   "steps_per_state_after_setup": 2171
   }
  ]
 }

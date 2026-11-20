@@ -1,4 +1,4 @@
-# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 21:39 UTC, Darwin arm64
+# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 21:54 UTC, Darwin arm64
 # oracle: tools/ref_model.py, python 3.11.1
 cap  states  edges  attempts  diameter  edge_hash
   2      14     16        70         5  1524000005756973351
@@ -26,6 +26,7 @@ bug settle-early           cap 19: 'settled empty' 1123
   10  3     211    580      1477        70
 bug vault-approve-twice    B=10 T=3: 'counted once' 122
 bug vault-execute-early    B=10 T=3: 'timelock respected' 1236
+bug vault-pay-twice        B=10 T=3: 'pays one unit' 1235556
 vault contract graph B=10 T=3 lock ready: 91 states, 250 edges, 546 attempts
 vault contract graph B=10 T=3 lock locked: 9 states, 21 edges, 54 attempts
 differential workload at cap 21: 1008 deployments, 25646 action calls, 25646 raw_state() reads, 51292 calls

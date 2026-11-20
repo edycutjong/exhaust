@@ -1,5 +1,5 @@
 # native trace of refund-after-release, by action name
-# 2026-11-20 21:39 UTC · commit f34c34e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# 2026-11-20 21:54 UTC · commit d9280c3 · fe 26.6.0 (5b3f96a) · Darwin arm64
 # $ sh tools/trace.sh demo/refund-after-release.patch
 
 escrow, capacity 19: shortest counterexample, 5 actions (digits 11234)

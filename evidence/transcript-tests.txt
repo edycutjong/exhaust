@@ -1,0 +1,46 @@
+# tests: fe test (Sonatina / EVM) and fe test --backend native
+# 2026-11-20 21:54 UTC · commit d9280c3 · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ fe --color never test; fe --color never test --backend native
+
+PASS  [0.0001s] test_action_ids_distinct
+PASS  [0.0001s] test_contract_rejects_attack
+PASS  [0.0002s] test_contract_matches_step
+PASS  [0.0001s] test_handler_deposit
+PASS  [0.0001s] test_handler_dispute
+PASS  [0.0001s] test_handler_refund
+PASS  [0.0001s] test_handler_lock
+PASS  [0.0003s] test_handler_release
+PASS  [0.0027s] test_counterexample_none
+PASS  [0.0029s] test_runtime_search_gas
+PASS  [0.0000s] test_vault_action_ids_distinct
+PASS  [0.0002s] test_vault_contract_matches_vstep
+PASS  [0.0025s] test_vault_counterexample_none
+PASS  [0.0001s] test_vault_handler_approve
+PASS  [0.0001s] test_vault_handler_cancel
+PASS  [0.0064s] test_runtime_explore_agrees
+PASS  [0.0001s] test_vault_handler_execute
+PASS  [0.0001s] test_vault_handler_propose
+PASS  [0.0075s] test_oracle_edges
+PASS  [0.0001s] test_vault_timelock_holds
+PASS  [0.0030s] test_vault_runtime_search_gas
+PASS  [0.0107s] test_encode_roundtrip
+PASS  [0.0107s] test_shards_partition
+PASS  [0.0084s] test_vault_runtime_agrees
+PASS  [0.0539s] test_vault_differential
+PASS  [0.0534s] test_vault_encode_roundtrip
+PASS  [0.1654s] test_differential_all_edges
+test result: ok. 27 passed; 0 failed
+exit status (sonatina): 0
+
+PASS  [0.3025s] test_action_ids_distinct
+PASS  [0.3025s] test_encode_roundtrip
+PASS  [0.3033s] test_counterexample_none
+PASS  [0.3040s] test_vault_runtime_agrees
+PASS  [0.3040s] test_oracle_edges
+PASS  [0.3041s] test_shards_partition
+PASS  [0.3041s] test_vault_counterexample_none
+PASS  [0.0053s] test_vault_action_ids_distinct
+PASS  [0.0077s] test_vault_encode_roundtrip
+PASS  [0.3161s] test_runtime_explore_agrees
+test result: ok. 10 passed; 0 failed
+exit status (native): 0
