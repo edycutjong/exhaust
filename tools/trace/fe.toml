@@ -1,0 +1,6 @@
+[ingot]
+name = "exhaust_trace"
+version = "0.1.0"
+
+[dependencies]
+exhaust = { path = "../.." }

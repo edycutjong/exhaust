@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+"""Turn the digits a failing `fe build` prints (`left: \`11234\``) into action names and the state after each action.
+
+  python3 tools/decode-trace 11234                                  escrow (default), the unpatched model
+  python3 tools/decode-trace 11234 --bug refund-after-release       replay under that demo bug's step function
+  python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early
+
+Standard library only; the step functions are tools/ref_model.py's (the Python oracle), not the Fe ones. For a trace
+computed by the Fe explorer itself, see tools/trace.sh (native executable). Legends: 1 Deposit 2 Lock 3 Release
+4 Refund 5 Dispute (escrow); 1 Propose 2 ApproveA 3 ApproveB 4 ApproveC 5 Tick 6 Execute 7 Cancel (vault).
+"""
+import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import ref_model as m
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("digits")
+    ap.add_argument("--protocol", choices=["escrow", "vault"], default="escrow")
+    ap.add_argument("--bug", choices=sorted(m.BUGS) + sorted(m.VBUGS))
+    ap.add_argument("--cap", type=int, default=19, help="escrow capacity (default 19)")
+    ap.add_argument("--b", type=int, default=10)
+    ap.add_argument("--t", type=int, default=3)
+    a = ap.parse_args()
+    if not a.digits.isdigit() or "0" in a.digits:
+        ap.error("digits must be 1-9 only (a `left: 0` means no counterexample)")
+    if a.protocol == "escrow":
+        names, state, fmt = m.ACTIONS, (m.OPEN, 0, 0, 0), m.fmt
+        step = lambda s, x: m.step(s, x, a.cap, a.bug if a.bug in m.BUGS else None)
+        viol = lambda s, x, n: m.INVARIANTS[m.violation(s, x, n, a.cap) - 1] if m.violation(s, x, n, a.cap) else None
+    else:
+        names, state = m.VACTIONS, (m.IDLE, 0, 0, 0, a.b, 0)
+        fmt = lambda s: f"({m.VPHASES[s[0]]}, mask {s[1]}, count {s[2]}, clock {s[3]}, bal {s[4]}, paid {s[5]})"
+        step = lambda s, x: m.vstep(s, x, a.t, a.bug if a.bug in m.VBUGS else None)
+        viol = lambda s, x, n: m.VINVARIANTS[m.vviolation(s, x, n, a.b, a.t) - 1] if m.vviolation(s, x, n, a.b, a.t) else None
+    print(f"start     {fmt(state)}")
+    for i, ch in enumerate(a.digits):
+        x = int(ch) - 1
+        if x >= len(names):
+            sys.exit(f"digit {ch} is not an action of the {a.protocol}")
+        n = step(state, x)
+        if n is None:
+            print(f"  {i + 1}  {names[x]:9s} REJECTED by the guard in {fmt(state)}")
+            return 1
+        print(f"  {i + 1}  {names[x]:9s} {fmt(n)}")
+        v = viol(state, x, n)
+        if v:
+            print(f"  ^ this edge breaks invariant '{v}'")
+        state = n
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

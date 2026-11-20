@@ -1,0 +1,260 @@
+//! Native trace printer: runs the explorers of the `exhaust` ingot as a native executable and prints the shortest
+//! counterexample by action name with the state after each step. It is the same `counterexample()` the build
+//! runs at compile time, here evaluated at runtime (no step budget, so the escrow can run at its full capacity).
+//! Exit code: 0 when neither model has a counterexample, 1 otherwise.
+//!
+//! Build and run (macOS arm64 or Linux x86-64 with a C linker):
+//!   cd tools/trace && fe build --backend native --out-dir /tmp/exhaust-trace && /tmp/exhaust-trace/exhaust_trace
+
+use std::io::Stdout
+use core::hint::black_box
+use exhaust::escrow::{State, Phase, Action, step, action_of, initial, first_violation, CAP}
+use exhaust::escrow_explore::counterexample
+use exhaust::vault::{VState, VPhase, VAction, vstep, vaction_of, vinitial, vfirst_violation, VB, VT}
+use exhaust::vault_explore::vcounterexample
+
+fn print_escrow_action(_ a: Action) uses (out: mut Stdout) {
+    match a {
+        Action::Deposit => {
+            print!("Deposit  ")
+        },
+        Action::Lock => {
+            print!("Lock     ")
+        },
+        Action::Release => {
+            print!("Release  ")
+        },
+        Action::Refund => {
+            print!("Refund   ")
+        },
+        Action::Dispute => {
+            print!("Dispute  ")
+        },
+    }
+}
+
+fn print_escrow_state(_ s: State) uses (out: mut Stdout) {
+    match s.phase {
+        Phase::Open => {
+            print!("(Open, ")
+        },
+        Phase::Locked => {
+            print!("(Locked, ")
+        },
+        Phase::Disputed => {
+            print!("(Disputed, ")
+        },
+        Phase::Settled => {
+            print!("(Settled, ")
+        },
+    }
+    println!(s.escrow, ", ", s.seller, ", ", s.buyer, ")")
+}
+
+fn print_escrow_invariant(_ v: u8) uses (out: mut Stdout) {
+    if v == 1 {
+        print!("within capacity")
+    }
+    if v == 2 {
+        print!("in bounds")
+    }
+    if v == 3 {
+        print!("paid once")
+    }
+    if v == 4 {
+        print!("settled empty")
+    }
+    if v == 5 {
+        print!("conserved")
+    }
+}
+
+fn print_vault_invariant(_ v: u8) uses (out: mut Stdout) {
+    if v == 1 {
+        print!("in bounds")
+    }
+    if v == 2 {
+        print!("counted once")
+    }
+    if v == 3 {
+        print!("conserved")
+    }
+    if v == 4 {
+        print!("idle clean")
+    }
+    if v == 5 {
+        print!("queued means quorum")
+    }
+    if v == 6 {
+        print!("two distinct approvals")
+    }
+    if v == 7 {
+        print!("timelock respected")
+    }
+}
+
+fn print_vault_action(_ a: VAction) uses (out: mut Stdout) {
+    match a {
+        VAction::Propose => {
+            print!("Propose   ")
+        },
+        VAction::ApproveA => {
+            print!("ApproveA  ")
+        },
+        VAction::ApproveB => {
+            print!("ApproveB  ")
+        },
+        VAction::ApproveC => {
+            print!("ApproveC  ")
+        },
+        VAction::Tick => {
+            print!("Tick      ")
+        },
+        VAction::Execute => {
+            print!("Execute   ")
+        },
+        VAction::Cancel => {
+            print!("Cancel    ")
+        },
+    }
+}
+
+fn print_vault_state(_ s: VState) uses (out: mut Stdout) {
+    match s.phase {
+        VPhase::Idle => {
+            print!("(Idle, ")
+        },
+        VPhase::Proposed => {
+            print!("(Proposed, ")
+        },
+        VPhase::Queued => {
+            print!("(Queued, ")
+        },
+    }
+    println!(
+        "mask ",
+        s.mask,
+        ", count ",
+        s.count,
+        ", clock ",
+        s.clock,
+        ", bal ",
+        s.bal,
+        ", paid ",
+        s.paid,
+        ")",
+    )
+}
+
+/// The digits of `code`, earliest action first, into `out_digits`; returns how many.
+fn digits_of(_ code: u256, _ out_digits: mut [u32; 80]) -> usize {
+    var tmp: [u32; 80] = [0; 80]
+    var n: usize = 0
+    var c = code
+    while c > 0 {
+        tmp[n] = (c % 10).downcast_truncate()
+        c = c / 10
+        n += 1
+    }
+    var i: usize = 0
+    while i < n {
+        out_digits[i] = tmp[n - 1 - i]
+        i += 1
+    }
+    n
+}
+
+fn escrow_trace(_ cap: u32) -> bool uses (out: mut Stdout) {
+    let code = counterexample(black_box(cap))
+    if code == 0 {
+        println!(
+            "escrow, capacity ",
+            cap,
+            ": no counterexample (every reachable state and edge keeps every invariant)",
+        )
+        return false
+    }
+    var d: [u32; 80] = [0; 80]
+    let n = digits_of(code, mut d)
+    println!(
+        "escrow, capacity ",
+        cap,
+        ": shortest counterexample, ",
+        n,
+        " actions (digits ",
+        code,
+        ")",
+    )
+    var s = initial()
+    print!("  start     ")
+    print_escrow_state(s)
+    var i: usize = 0
+    while i < n {
+        let act = action_of(d[i] - 1)
+        let nx = step(s, act, cap)
+        print!("  ", i + 1, "  ")
+        print_escrow_action(act)
+        print_escrow_state(nx.s)
+        if first_violation(s, act, nx.s, cap) != 0 {
+            print!("  ^ this edge breaks invariant '")
+            print_escrow_invariant(first_violation(s, act, nx.s, cap))
+            println!("'")
+        }
+        s = nx.s
+        i += 1
+    }
+    true
+}
+
+fn vault_trace(_ b: u32, _ t: u32) -> bool uses (out: mut Stdout) {
+    let code = vcounterexample(black_box(b), black_box(t))
+    if code == 0 {
+        println!(
+            "vault, B = ",
+            b,
+            ", T = ",
+            t,
+            ": no counterexample (every reachable state and edge keeps every invariant)",
+        )
+        return false
+    }
+    var d: [u32; 80] = [0; 80]
+    let n = digits_of(code, mut d)
+    println!(
+        "vault, B = ",
+        b,
+        ", T = ",
+        t,
+        ": shortest counterexample, ",
+        n,
+        " actions (digits ",
+        code,
+        ")",
+    )
+    var s = vinitial(b)
+    print!("  start     ")
+    print_vault_state(s)
+    var i: usize = 0
+    while i < n {
+        let act = vaction_of(d[i] - 1)
+        let nx = vstep(s, act, t)
+        print!("  ", i + 1, "  ")
+        print_vault_action(act)
+        print_vault_state(nx.s)
+        if vfirst_violation(s, act, nx.s, b, t) != 0 {
+            print!("  ^ this edge breaks invariant '")
+            print_vault_invariant(vfirst_violation(s, act, nx.s, b, t))
+            println!("'")
+        }
+        s = nx.s
+        i += 1
+    }
+    true
+}
+
+pub fn main() -> i32 uses (out: mut Stdout) {
+    let e = escrow_trace(19)
+    let v = vault_trace(VB, VT)
+    if e || v { return 1 }
+    0
+}
