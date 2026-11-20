@@ -16,7 +16,7 @@ cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 "model name" /p
   echo "fe: $(fe --version)"
   echo "uname: $(uname -a)"
   echo "cpu: $cpu"
-  for step in "fe fmt --check" "fe check" "fe build" "fe test" "fe test --backend native"; do
+  for step in "fe fmt --check" "fe check" "fe build" "fe test" "fe test --backend native" "sh demo/run.sh" "sh demo/check-bugs.sh" "sh demo/check-bugs.sh --conformance" "python3 -I tools/ref_model.py --check"; do
     echo
     echo "## $step"
     $step > "$log" 2>&1

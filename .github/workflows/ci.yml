@@ -26,3 +26,11 @@ jobs:
         run: fe build
       - run: fe test
       - run: fe test --backend native
+      - name: Demo (build green, bug patch red with invariant + digits, replays)
+        run: sh demo/run.sh
+      - name: Bug zoo (every patch must fail fe build naming its invariant and printing its digits)
+        run: sh demo/check-bugs.sh
+      - name: Conformance (the checker's own negative tests)
+        run: sh demo/check-bugs.sh --conformance
+      - name: Independent oracle agrees with every pin
+        run: python3 tools/ref_model.py --check
