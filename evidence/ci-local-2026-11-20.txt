@@ -1,0 +1,140 @@
+# CI steps run locally, 2026-11-20 20:44 UTC
+commit: e1530cee8bc17a4b2e4b0d967b7fed4abef7ae0f
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+cpu: Apple M1 Max
+
+## fe fmt --check
+-> PASS
+
+## fe check
+-> PASS
+
+## fe build
+-> PASS
+
+## fe test
+PASS  [0.0002s] test_contract_rejects_attack
+PASS  [0.0002s] test_handler_dispute
+PASS  [0.0002s] test_action_ids_distinct
+PASS  [0.0002s] test_handler_deposit
+PASS  [0.0002s] test_contract_matches_step
+PASS  [0.0002s] test_encode_roundtrip
+PASS  [0.0001s] test_handler_lock
+PASS  [0.0001s] test_handler_release
+PASS  [0.0001s] test_handler_refund
+PASS  [0.0035s] test_runtime_search_gas
+PASS  [0.0041s] test_counterexample_none
+PASS  [0.0072s] test_runtime_explore_agrees
+PASS  [0.0084s] test_shards_partition
+PASS  [0.1379s] test_differential_all_edges
+
+test result: ok. 14 passed; 0 failed
+-> PASS
+
+## fe test --backend native
+PASS  [0.1185s] test_runtime_explore_agrees
+PASS  [0.1199s] test_action_ids_distinct
+PASS  [0.1200s] test_encode_roundtrip
+PASS  [0.1202s] test_counterexample_none
+PASS  [0.1203s] test_shards_partition
+
+test result: ok. 5 passed; 0 failed
+-> PASS
+
+## sh demo/run.sh
+== 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)
+   build OK: static_assert(explore(CAP) == 736) held, every invariant held on every reachable state and edge
+
+== 2. the bug: one line in the Refund guard (demo/refund-after-release.patch)
+   - if s.escrow > 0 && s.seller == 0 {
+   + if s.escrow > 0 {
+
+== 3. fe build again
+   error[3-0036]: assertion failed in const context
+   = assertion message: invariant 'paid once' broken: buyer and seller both paid
+   error[8-0081]: static assertion failed
+   = left: `11234`
+   -> build FAILED (as it must)
+
+== 4. the counterexample 11234, decoded (1 Deposit . 2 Lock . 3 Release . 4 Refund . 5 Dispute)
+   Deposit Deposit Lock Release Refund 
+   patched contract (search removed), fe test --filter test_attack_patched_replay:
+     PASS  [0.0002s] test_attack_patched_replay
+     -> all five calls accepted; the seller AND the buyer were paid
+   real contract, fe test --filter attack:
+     PASS  [0.0002s] test_contract_rejects_attack
+     -> the first four calls accepted, the Refund refused, storage unchanged
+-> PASS
+
+## sh demo/check-bugs.sh
+# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-20 20:44 UTC
+commit: e1530cee8bc17a4b2e4b0d967b7fed4abef7ae0f
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+
+PASS  baseline: unpatched fe build exit 0
+
+patch | fe build exit | invariant named | digits printed | per-handler suite (test_handler_*) | spike 8-call script (test_contract_matches_step)
+PASS  demo/refund-after-release.patch | exit 1 | 'paid once': yes | 11234: yes | missed | caught
+      = assertion message: invariant 'paid once' broken: buyer and seller both paid
+      = left: `11234`
+PASS  demo/settle-early.patch | exit 1 | 'settled empty': yes | 1123: yes | caught (1 of 5 fail) | caught
+      = assertion message: invariant 'settled empty' broken: settled with units still in escrow
+      = left: `1123`
+PASS  demo/cap-off-by-one.patch | exit 1 | 'within capacity': yes | 111111111111111111111: yes | missed | missed
+      = assertion message: invariant 'within capacity' broken: more units than the capacity
+      = left: `111111111111111111111`
+PASS  demo/mint-release.patch | exit 1 | 'conserved': yes | 123: yes | caught (1 of 5 fail) | caught
+      = assertion message: invariant 'conserved' broken: units created or lost by a non-deposit action
+      = left: `123`
+RESULT: all rows as expected
+-> PASS
+
+## sh demo/check-bugs.sh --conformance
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 20:44 UTC
+commit: e1530cee8bc17a4b2e4b0d967b7fed4abef7ae0f
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+
+PASS  K1  demo/mint-release.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'conserved';;left: `123`
+PASS  K1  demo/mint-release.patch  [stripped+conformance/k1_replay.fe]  `fe test --filter test_k1_shared_bug_replay` exit 0 (want 0)  expect: ^PASS .*test_k1_shared_bug_replay
+PASS  K3  demo/cap-off-by-one.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'within capacity'
+PASS  K4  conformance/skip-action.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `341`
+PASS  K5  conformance/adapter-corruption.patch  [full]  `fe build` exit 0 (want 0)  expect: Wrote .*Escrow.bin
+PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_differential_all_edges` exit 1 (want 1)  expect: ^FAIL .*test_differential_all_edges
+PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_runtime_explore_agrees` exit 0 (want 0)  expect: ^PASS .*test_runtime_explore_agrees
+RESULT: all rows as expected
+-> PASS
+
+## python3 -I tools/ref_model.py --check
+# oracle: tools/ref_model.py, python 3.11.1
+cap  states  edges  attempts  diameter  edge_hash
+  2      14     16        70         5  1524000005756973351
+  4      39     48       195         9  2090054049007746902
+ 10     186    240       930        21  1263784320315727760
+ 17     494    646      2470        35  1210023004570408906
+ 18     550    720      2750        37  1694267728619545757
+ 19     609    798      3045        39  1278408031475724804
+ 20     671    880      3355        41  527064345745122688
+ 21     736    966      3680        43  1194004490208706542
+bug cap-off-by-one         cap 18: 'within capacity' 1111111111111111111
+bug cap-off-by-one         cap 19: 'within capacity' 11111111111111111111
+bug mint-release           cap 18: 'conserved' 123
+bug mint-release           cap 19: 'conserved' 123
+bug refund-after-release   cap 18: 'paid once' 11234
+bug refund-after-release   cap 19: 'paid once' 11234
+bug settle-early           cap 18: 'settled empty' 1123
+bug settle-early           cap 19: 'settled empty' 1123
+differential workload at cap 21: 1008 deployments, 25646 action calls, 25646 raw_state() reads, 51292 calls
+shards at cap 21: k=1..7 91, k=8..14 238, k=15..21 385, Open 22; disjoint True, union == reachable set True
+check explore(17) == 494: oracle 494 -> AGREE
+check explore(21) == 736: oracle 736 -> AGREE
+check counterexample(20) == 0: oracle 0 -> AGREE
+check shard(1) == 91: oracle 91 -> AGREE
+check shard(8) == 238: oracle 238 -> AGREE
+check shard(15) == 385: oracle 385 -> AGREE
+RESULT: oracle agrees with every Fe pin
+-> PASS
+
+RESULT: all steps passed
