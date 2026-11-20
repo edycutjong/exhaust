@@ -172,15 +172,62 @@ pub const fn counterexample(_ cap: u32) -> u256 {
     0
 }
 
+/// Modulus and multiplier of the labeled-edge hash (MODEL.md): M = 2^61 - 1, P = 1,000,003.
+pub const HASH_M: u128 = 2305843009213693951
+pub const HASH_P: u128 = 1000003
+
+/// The same breadth-first search without invariant checks (`explore` already checks them), folding every accepted
+/// labeled edge (s, a, s') in search order. `hash == false`: returns the number of accepted edges. `hash == true`:
+/// returns h, where h = (h * P + ((enc(s) * 5 + a) * SIZE + enc(s'))) mod M, computed in u128 so no step overflows.
+/// A wrong successor that keeps the state set and the edge count (two successors swapped) still changes h.
+pub const fn fingerprint(_ cap: u32, _ hash: bool) -> u128 {
+    var visited: [bool; SIZE] = [false; SIZE]
+    var queue: [u32; SIZE] = [0; SIZE]
+    var head: usize = 0
+    var tail: usize = 1
+    var acc: u128 = 0
+    queue[0] = INIT
+    visited[INIT as usize] = true
+    while head < tail {
+        let x = queue[head]
+        head += 1
+        let cur = decode(x)
+        var a: u32 = 0
+        while a < ACTIONS {
+            let n = step(cur, action_of(a), cap)
+            if n.ok {
+                let y = encode(n.s)
+                if hash {
+                    let label: u128 = ((x as u128) * 5 + (a as u128)) * 42592 + (y as u128)
+                    acc = (acc * HASH_P + label) % HASH_M
+                } else {
+                    acc += 1
+                }
+                if !visited[y as usize] {
+                    visited[y as usize] = true
+                    queue[tail] = y
+                    tail += 1
+                }
+            }
+            a += 1
+        }
+    }
+    acc
+}
+
 // ---- pins: the build fails if the reachable-state count drifts ----
 /// C = 17: the capacity of the first pin, carried over from the day-0 spike (494 states).
 static_assert(explore(17) == 494)
 /// C = CAP = 21: the contract's capacity and the largest capacity the encoding holds (MAX_CAP). Every invariant is
 /// checked on every reachable state and accepted edge; this fits one assert's budget on Fe 26.6.0 (evidence/budget.md).
 static_assert(explore(CAP) == 736)
-/// C' = 20: the attack printer. Green it is a full search with parent/action writes (four tables), so it fits a
-/// smaller capacity than `explore`; C = 21 exceeds the step limit (measured, see evidence/budget.md).
-static_assert(counterexample(20) == 0)
+/// C' = 19: the attack printer. Green it is a full search with parent/action writes (four tables), so it costs more
+/// per state than `explore`. C = 20 fits with 1.6% of the budget to spare and C = 21 exceeds it (evidence/budget.md);
+/// 19 leaves room for edits to step() (conformance K2 adds two branches and still fits).
+static_assert(counterexample(19) == 0)
+/// C_hash = 21: the number of accepted edges, and the labeled-edge hash (values from tools/ref_model.py).
+static_assert(fingerprint(CAP, false) == 966)
+static_assert(fingerprint(CAP, true) == 1194004490208706542)
 
 // ---- shards: the same reachable set split into disjoint parts, each in its own static_assert (own budget) ----
 // After Lock the total never changes (only Deposit adds a unit, and only while Open), so the states reachable from
