@@ -17,11 +17,11 @@ legend() {
 }
 for d in ok bug replay; do mkdir "$work/$d" && cp -R "$root/fe.toml" "$root/src" "$work/$d/"; done
 
-pin=$(grep -o 'explore(CAP) == [0-9]*' "$root/src/escrow_explore.fe" | grep -o '[0-9]*$')
+pin=$(grep -o 'pub const STATES: usize = [0-9]*' "$root/src/escrow_explore.fe" | grep -o '[0-9]*$')
 cap=$(grep -o 'pub const CAP: u32 = [0-9]*' "$root/src/escrow.fe" | grep -o '[0-9]*$')
 echo "== 1. fe build (the escrow, every reachable state at capacity $cap checked at compile time)"
 if (cd "$work/ok" && fe build > out.txt 2>&1); then
-  echo "   build OK: static_assert(explore(CAP) == $pin) held, every invariant held on every reachable state and edge"
+  echo "   build OK: static_assert(explore(CAP) == STATES) held, STATES = $pin, every invariant held on every reachable state and edge"
 else
   echo "   unexpected: the unpatched build failed"; cat "$work/ok/out.txt"; exit 1
 fi

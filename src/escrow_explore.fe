@@ -180,7 +180,10 @@ pub const HASH_P: u128 = 1000003
 /// labeled edge (s, a, s') in search order. `hash == false`: returns the number of accepted edges. `hash == true`:
 /// returns h, where h = (h * P + ((enc(s) * 5 + a) * SIZE + enc(s'))) mod M, computed in u128 so no step overflows.
 /// A wrong successor that keeps the state set and the edge count (two successors swapped) still changes h.
-pub const fn fingerprint(_ cap: u32, _ hash: bool) -> u128 {
+/// The search stops and returns DEFERRED as soon as it reaches more than `max_states` states: such a model already
+/// fails `explore` (by an invariant or by the state pin), and without the stop a larger buggy graph would only add a
+/// step-limit error to the build output.
+pub const fn fingerprint(_ cap: u32, _ hash: bool, _ max_states: usize) -> u128 {
     var visited: [bool; SIZE] = [false; SIZE]
     var queue: [u32; SIZE] = [0; SIZE]
     var head: usize = 0
@@ -198,12 +201,16 @@ pub const fn fingerprint(_ cap: u32, _ hash: bool) -> u128 {
             if n.ok {
                 let y = encode(n.s)
                 if hash {
-                    let label: u128 = ((x as u128) * 5 + (a as u128)) * 42592 + (y as u128)
+                    let label: u128 = ((x as u128) * (ACTIONS as u128) + (a as u128)) * SIZE_U128
+                        + (y as u128)
                     acc = (acc * HASH_P + label) % HASH_M
                 } else {
                     acc += 1
                 }
                 if !visited[y as usize] {
+                    if tail == max_states {
+                        return DEFERRED
+                    }
                     visited[y as usize] = true
                     queue[tail] = y
                     tail += 1
@@ -215,19 +222,37 @@ pub const fn fingerprint(_ cap: u32, _ hash: bool) -> u128 {
     acc
 }
 
+/// SIZE as a u128 (a usize-to-u128 cast is rejected as not provably lossless); the assert ties the two.
+const SIZE_U128: u128 = 42592
+static_assert(SIZE == 42592)
+
+/// Returned by `fingerprint` for a model with more states than its bound (no real count or hash is this large).
+pub const DEFERRED: u128 = 0xffffffffffffffffffffffffffffffff
+
+/// The value an edge pin compares: the fingerprint, or the pinned value itself when the search deferred to `explore`.
+pub const fn or_deferred(_ got: u128, _ pin: u128) -> u128 {
+    if got == DEFERRED { pin } else { got }
+}
+
 // ---- pins: the build fails if the reachable-state count drifts ----
+/// Reachable states at C = CAP (also the bound of the edge-pin searches below).
+pub const STATES: usize = 736
+/// Accepted edges at C = CAP, and their labeled-edge hash (MODEL.md); both values come from tools/ref_model.py.
+pub const EDGES: u128 = 966
+pub const EDGE_HASH: u128 = 1194004490208706542
 /// C = 17: the capacity of the first pin, carried over from the day-0 spike (494 states).
 static_assert(explore(17) == 494)
 /// C = CAP = 21: the contract's capacity and the largest capacity the encoding holds (MAX_CAP). Every invariant is
 /// checked on every reachable state and accepted edge; this fits one assert's budget on Fe 26.6.0 (evidence/budget.md).
-static_assert(explore(CAP) == 736)
+static_assert(explore(CAP) == STATES)
 /// C' = 19: the attack printer. Green it is a full search with parent/action writes (four tables), so it costs more
 /// per state than `explore`. C = 20 fits with 1.6% of the budget to spare and C = 21 exceeds it (evidence/budget.md);
 /// 19 leaves room for edits to step() (conformance K2 adds two branches and still fits).
 static_assert(counterexample(19) == 0)
-/// C_hash = 21: the number of accepted edges, and the labeled-edge hash (values from tools/ref_model.py).
-static_assert(fingerprint(CAP, false) == 966)
-static_assert(fingerprint(CAP, true) == 1194004490208706542)
+/// C_hash = 21: the number of accepted edges and the labeled-edge hash. Both searches
+/// stop past STATES states and then defer to the `explore(CAP)` pin above, which already fails for such a model.
+static_assert(or_deferred(fingerprint(CAP, false, STATES), EDGES) == EDGES)
+static_assert(or_deferred(fingerprint(CAP, true, STATES), EDGE_HASH) == EDGE_HASH)
 
 // ---- shards: the same reachable set split into disjoint parts, each in its own static_assert (own budget) ----
 // After Lock the total never changes (only Deposit adds a unit, and only while Open), so the states reachable from
