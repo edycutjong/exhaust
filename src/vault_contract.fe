@@ -1,0 +1,156 @@
+//! The deployed vault. Its `recv` handlers are thin adapters around the same `vstep()` the compile-time search
+//! explored (with the same timelock `VT`): load the stored fields into a `VState`, call `vstep`, store the result if
+//! accepted. Two things live outside the checked model and are the adapter's job:
+//!   * identity: ApproveA / ApproveB / ApproveC are separate messages that only the stored signer A / B / C can send;
+//!     Propose and Cancel need any signer. The model has the three signers as three distinct actions; it has no `msg.sender`.
+//!   * time: the model's `Tick` has no handler. `Execute` reads the block time and maps it onto the model's clock:
+//!     `clock = VT` once the lock period has passed since the withdrawal was queued, else the stored clock (0).
+
+use std::abi::sol
+use std::evm::Ctx
+use ingot::vault::{VState, VAction, vstep, vphase_id, vphase_of, VB, VT}
+
+pub msg VaultMsg {
+    #[selector = sol("propose()")]
+    Propose -> bool,
+    #[selector = sol("approveA()")]
+    ApproveA -> bool,
+    #[selector = sol("approveB()")]
+    ApproveB -> bool,
+    #[selector = sol("approveC()")]
+    ApproveC -> bool,
+    #[selector = sol("execute()")]
+    Execute -> bool,
+    #[selector = sol("cancel()")]
+    Cancel -> bool,
+    /// The raw stored fields, unencoded, 32 bits each: phase | mask << 32 | count << 64 | clock << 96 | bal << 128 | paid << 160.
+    #[selector = sol("raw_state()")]
+    RawState -> u256,
+}
+
+pub struct VaultStore {
+    phase: u32,
+    mask: u32,
+    count: u32,
+    clock: u32,
+    bal: u32,
+    paid: u32,
+    queued_at: Timestamp,
+    lock: Duration,
+    sa: Address,
+    sb: Address,
+    sc: Address,
+}
+
+fn load(_ st: VaultStore) -> VState {
+    VState {
+        phase: vphase_of(st.phase),
+        mask: st.mask,
+        count: st.count,
+        clock: st.clock,
+        bal: st.bal,
+        paid: st.paid,
+    }
+}
+
+/// The adapter: one transition through the shared `vstep()`. `ready` says whether the lock period has passed since
+/// the withdrawal was queued; only `Execute` reads it (it sets the model's clock to the timelock). Returns whether
+/// the guard accepted the transition.
+fn apply(_ st: mut VaultStore, _ a: VAction, _ ready: bool, _ now: Timestamp) -> bool {
+    var cur = load(st)
+    match a {
+        VAction::Execute => {
+            if ready { cur.clock = VT }
+        },
+        _ => {},
+    }
+    let n = vstep(cur, a, VT)
+    if n.ok {
+        // Entering Queued starts the lock period.
+        if vphase_id(n.s.phase) == 2 && st.phase != 2 {
+            st.queued_at = now
+        }
+        st.phase = vphase_id(n.s.phase)
+        st.mask = n.s.mask
+        st.count = n.s.count
+        st.clock = n.s.clock
+        st.bal = n.s.bal
+        st.paid = n.s.paid
+    }
+    n.ok
+}
+
+fn is_signer(_ st: VaultStore, _ who: Address) -> bool {
+    who == st.sa || who == st.sb || who == st.sc
+}
+
+fn raw(_ st: VaultStore) -> u256 {
+    (st.phase as u256)
+        | ((st.mask as u256) << 32)
+        | ((st.count as u256) << 64)
+        | ((st.clock as u256) << 96)
+        | ((st.bal as u256) << 128)
+        | ((st.paid as u256) << 160)
+}
+
+pub contract Vault {
+    mut store: VaultStore,
+
+    /// The three signers and the lock period. The vault starts Idle holding `VB` units.
+    init(signer_a: Address, signer_b: Address, signer_c: Address, lock: Duration)
+    uses (ctx: Ctx, mut store)
+    {
+        store.phase = 0
+        store.mask = 0
+        store.count = 0
+        store.clock = 0
+        store.bal = VB
+        store.paid = 0
+        store.queued_at = ctx.timestamp()
+        store.lock = lock
+        store.sa = signer_a
+        store.sb = signer_b
+        store.sc = signer_c
+    }
+
+    recv VaultMsg {
+        Propose -> bool uses (ctx: Ctx, mut store) {
+            if !is_signer(store, ctx.caller()) {
+                return false
+            }
+            apply(mut store, VAction::Propose, false, ctx.timestamp())
+        }
+        ApproveA -> bool uses (ctx: Ctx, mut store) {
+            if ctx.caller() != store.sa {
+                return false
+            }
+            apply(mut store, VAction::ApproveA, false, ctx.timestamp())
+        }
+        ApproveB -> bool uses (ctx: Ctx, mut store) {
+            if ctx.caller() != store.sb {
+                return false
+            }
+            apply(mut store, VAction::ApproveB, false, ctx.timestamp())
+        }
+        ApproveC -> bool uses (ctx: Ctx, mut store) {
+            if ctx.caller() != store.sc {
+                return false
+            }
+            apply(mut store, VAction::ApproveC, false, ctx.timestamp())
+        }
+        Execute -> bool uses (ctx: Ctx, mut store) {
+            let now = ctx.timestamp()
+            let ready = now >= store.queued_at + store.lock
+            apply(mut store, VAction::Execute, ready, now)
+        }
+        Cancel -> bool uses (ctx: Ctx, mut store) {
+            if !is_signer(store, ctx.caller()) {
+                return false
+            }
+            apply(mut store, VAction::Cancel, false, ctx.timestamp())
+        }
+        RawState -> u256 uses (store) {
+            raw(store)
+        }
+    }
+}

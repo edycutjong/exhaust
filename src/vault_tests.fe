@@ -1,0 +1,453 @@
+//! Tests for the vault. `fe test` runs them on Sonatina (EVM); `fe test --backend native` runs the ones without
+//! `#[cfg(target = "evm")]` natively. Same pattern as `tests.fe`: the runtime searches call the same `vexplore()` the
+//! build ran, and `black_box` hides the configuration so the search cannot be folded at compile time.
+
+use core::hint::black_box
+use std::evm::{Evm, days}
+use std::abi::sol
+use std::evm::Ctx
+use ingot::vault::{
+    VState,
+    VAction,
+    VNext,
+    vstep,
+    vencode,
+    vdecode,
+    vaction_of,
+    vaction_id,
+    vphase_id,
+    vinitial,
+    vinit_index,
+    ACTIONS,
+    SIZE,
+    VB,
+    VT,
+    RB,
+    RT,
+}
+use ingot::vault_explore::{vexplore, vcounterexample}
+use ingot::vault_contract::{Vault, VaultMsg}
+
+// ---- both backends ----
+
+/// The runtime search agrees with the compile-time pins: the headline (B = 10, T = 3), the other timelocks and the
+/// baseline of the spec (B = 8, T = 2).
+#[test]
+fn test_vault_runtime_agrees() {
+    assert!(vexplore(black_box(VB), black_box(VT)) == 211)
+    assert!(vexplore(black_box(VB), black_box(1 as u32)) == 131)
+    assert!(vexplore(black_box(VB), black_box(2 as u32)) == 171)
+    assert!(vexplore(black_box(8 as u32), black_box(2 as u32)) == 137)
+}
+
+/// The attack printer finds nothing at runtime either.
+#[test]
+fn test_vault_counterexample_none() {
+    assert!(vcounterexample(black_box(VB), black_box(VT)) == 0)
+}
+
+/// vencode(vdecode(x)) == x for every index of the box.
+#[test]
+fn test_vault_encode_roundtrip() {
+    var x: u32 = 0
+    while x < black_box(SIZE.downcast_truncate()) {
+        assert!(vencode(vdecode(x)) == x)
+        x += 1
+    }
+    // The initial state of a vault of B units encodes to the index the explorer starts from.
+    assert!(vencode(vinitial(black_box(VB))) == vinit_index(VB))
+}
+
+/// Every action id in 0..ACTIONS maps to a distinct action and back.
+#[test]
+fn test_vault_action_ids_distinct() {
+    var i: u32 = 0
+    while i < ACTIONS {
+        assert!(vaction_id(vaction_of(i)) == i)
+        i += 1
+    }
+}
+
+// ---- EVM only: the deployed contract ----
+
+/// A helper contract that only reports who called it: the test harness's address, as the contracts it calls see it.
+#[cfg(target = "evm")]
+pub msg WhoMsg {
+    #[selector = sol("who()")]
+    Who -> Address,
+}
+
+#[cfg(target = "evm")]
+pub contract Who {
+    init() {}
+
+    recv WhoMsg {
+        Who -> Address uses (ctx: Ctx) {
+            ctx.caller()
+        }
+    }
+}
+
+/// Deploys a vault whose three signers are all the test harness (the harness cannot change its caller), with the
+/// given lock period. Returns the vault's address.
+#[cfg(target = "evm")]
+fn deploy(evm: mut Evm, _ salt: u256, _ lock: Duration) -> Address {
+    let probe = evm.create2<Who>(value: Wei::zero(), args: (), salt: salt)
+    let me: Address = evm
+        .call(
+            addr: probe,
+            gas: 100000,
+            value: Wei::zero(),
+            message: WhoMsg::Who {},
+        )
+    evm.create2<Vault>(
+        value: Wei::zero(),
+        args: (me, me, me, lock),
+        salt: salt + 1000000,
+    )
+}
+
+/// One message to the contract, by action id (0 Propose, 1 ApproveA, 2 ApproveB, 3 ApproveC, 5 Execute, 6 Cancel).
+/// Tick (4) has no handler.
+#[cfg(target = "evm")]
+fn vsend(evm: mut Evm, _ addr: Address, _ a: u32) -> bool {
+    if a == 0 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: VaultMsg::Propose {},
+        )
+    }
+    if a == 1 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: VaultMsg::ApproveA {},
+        )
+    }
+    if a == 2 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: VaultMsg::ApproveB {},
+        )
+    }
+    if a == 3 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: VaultMsg::ApproveC {},
+        )
+    }
+    if a == 5 {
+        return evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: VaultMsg::Execute {},
+        )
+    }
+    evm.call(
+        addr: addr,
+        gas: 200000,
+        value: Wei::zero(),
+        message: VaultMsg::Cancel {},
+    )
+}
+
+#[cfg(target = "evm")]
+fn vraw(evm: mut Evm, _ addr: Address) -> u256 {
+    evm.call(
+        addr: addr,
+        gas: 100000,
+        value: Wei::zero(),
+        message: VaultMsg::RawState {},
+    )
+}
+
+/// Asserts that a raw_state() word holds a valid state (every 32-bit lane in bounds) equal to `m`, lane by lane.
+#[cfg(target = "evm")]
+fn check_vraw(_ raw: u256, _ m: VState) {
+    let mask: u256 = (1 << 32) - 1
+    assert!(raw >> 192 == 0)
+    assert!(raw & mask == vphase_id(m.phase) as u256)
+    assert!((raw >> 32) & mask == m.mask as u256)
+    assert!((raw >> 64) & mask == m.count as u256)
+    assert!((raw >> 96) & mask == m.clock as u256)
+    assert!((raw >> 128) & mask == m.bal as u256)
+    assert!((raw >> 160) & mask == m.paid as u256)
+}
+
+/// The contract graph's transition: what the deployed vault does for action `a`. The adapter has no Tick, and for
+/// Execute it sets the model's clock to the timelock once the lock period has passed (`ready`): everything else is
+/// `vstep` on the stored state.
+#[cfg(target = "evm")]
+fn cstep(_ s: VState, _ a: u32, _ ready: bool) -> VNext {
+    var cur = s
+    if a == 5 && ready {
+        cur.clock = VT
+    }
+    vstep(cur, vaction_of(a), VT)
+}
+
+/// The scripted run, lock period zero: after every call the contract's answer and stored state match `vstep()`.
+/// Propose, ApproveA, ApproveA (rejected: counted once), ApproveB (queues), Execute (the lock has passed), Propose,
+/// Cancel, Execute (rejected: Idle).
+#[cfg(target = "evm")]
+#[test]
+fn test_vault_contract_matches_vstep() uses (evm: mut Evm) {
+    let addr = deploy(mut evm, 0, Duration::zero())
+    let script: [u32; 8] = [0, 1, 1, 2, 5, 0, 6, 5]
+    var model = vinitial(VB)
+    var i: usize = 0
+    while i < 8 {
+        let a = script[i]
+        let ok = vsend(mut evm, addr, a)
+        let n = cstep(model, a, true)
+        assert!(ok == n.ok)
+        if n.ok { model = n.s }
+        check_vraw(vraw(mut evm, addr), model)
+        i += 1
+    }
+    // One unit paid out, the vault idle and clean.
+    assert!(
+        model.paid == 1 && model.bal == VB - 1 && vphase_id(model.phase) == 0,
+    )
+}
+
+/// With a lock period that never passes (the test clock does not move), a queued withdrawal cannot execute:
+/// `timelock respected` on the real contract.
+#[cfg(target = "evm")]
+#[test]
+fn test_vault_timelock_holds() uses (evm: mut Evm) {
+    let addr = deploy(mut evm, 10, days(7))
+    assert!(vsend(mut evm, addr, 0))
+    assert!(vsend(mut evm, addr, 1))
+    assert!(vsend(mut evm, addr, 2))
+    // Queued with two distinct approvals, but the lock has not passed.
+    assert!(!vsend(mut evm, addr, 5))
+    check_vraw(
+        vraw(mut evm, addr),
+        VState { phase: vstate_queued(), mask: 3, count: 2, clock: 0, bal: VB, paid: 0 },
+    )
+}
+
+#[cfg(target = "evm")]
+fn vstate_queued() -> ingot::vault::VPhase {
+    ingot::vault::VPhase::Queued
+}
+
+// ---- EVM only: per-handler suite (happy path + the guard that refuses) ----
+
+/// Propose: accepted when Idle with something in the vault; refused when already proposed.
+#[cfg(target = "evm")]
+#[test]
+fn test_vault_handler_propose() uses (evm: mut Evm) {
+    let addr = deploy(mut evm, 20, Duration::zero())
+    assert!(vsend(mut evm, addr, 0))
+    assert!(!vsend(mut evm, addr, 0))
+}
+
+/// Approve: refused when Idle; accepted once per signer; the second approval queues; a repeat is refused.
+#[cfg(target = "evm")]
+#[test]
+fn test_vault_handler_approve() uses (evm: mut Evm) {
+    let addr = deploy(mut evm, 30, Duration::zero())
+    assert!(!vsend(mut evm, addr, 1))
+    assert!(vsend(mut evm, addr, 0))
+    assert!(vsend(mut evm, addr, 1))
+    assert!(!vsend(mut evm, addr, 1))
+    assert!(vsend(mut evm, addr, 2))
+    assert!(vsend(mut evm, addr, 3))
+    assert!(!vsend(mut evm, addr, 3))
+}
+
+/// Execute: refused until two signers approved; then pays one unit out and returns to Idle.
+#[cfg(target = "evm")]
+#[test]
+fn test_vault_handler_execute() uses (evm: mut Evm) {
+    let addr = deploy(mut evm, 40, Duration::zero())
+    assert!(!vsend(mut evm, addr, 5))
+    assert!(vsend(mut evm, addr, 0))
+    assert!(vsend(mut evm, addr, 1))
+    assert!(!vsend(mut evm, addr, 5))
+    assert!(vsend(mut evm, addr, 2))
+    assert!(vsend(mut evm, addr, 5))
+    check_vraw(
+        vraw(mut evm, addr),
+        VState {
+            phase: ingot::vault::VPhase::Idle,
+            mask: 0,
+            count: 0,
+            clock: 0,
+            bal: VB - 1,
+            paid: 1,
+        },
+    )
+}
+
+/// Cancel: refused when Idle; drops a pending withdrawal without paying.
+#[cfg(target = "evm")]
+#[test]
+fn test_vault_handler_cancel() uses (evm: mut Evm) {
+    let addr = deploy(mut evm, 50, Duration::zero())
+    assert!(!vsend(mut evm, addr, 6))
+    assert!(vsend(mut evm, addr, 0))
+    assert!(vsend(mut evm, addr, 1))
+    assert!(vsend(mut evm, addr, 6))
+    check_vraw(vraw(mut evm, addr), vinitial(VB))
+}
+
+// ---- EVM only: the differential over the edges the harness can drive ----
+
+/// Deploys a fresh vault (lock period zero when `ready`, else one that never passes) and drives it along `path`
+/// (action digits, last action at index 0), checking the contract's answer and raw state against the contract graph
+/// after every call. Returns the address.
+#[cfg(target = "evm")]
+fn vreplay(evm: mut Evm, _ salt: u256, _ ready: bool, _ path: [u8; 64], _ len: usize) -> Address {
+    var lock = days(7)
+    if ready {
+        lock = Duration::zero()
+    }
+    let addr = deploy(mut evm, salt, lock)
+    var m = vinitial(VB)
+    var i = len
+    while i > 0 {
+        i -= 1
+        let a = (path[i] - 1) as u32
+        let n = cstep(m, a, ready)
+        assert!(n.ok)
+        assert!(vsend(mut evm, addr, a))
+        check_vraw(vraw(mut evm, addr), n.s)
+        m = n.s
+    }
+    addr
+}
+
+#[cfg(target = "evm")]
+#[event]
+struct VaultDifferentialRun {
+    ready: u256,
+    states: u256,
+    edges: u256,
+    attempts: u256,
+    deployments: u256,
+    calls: u256,
+}
+
+/// One lock-period setting. Every transition attempt the deployed vault can walk, replayed through the contract: for
+/// each reachable state s (BFS order over the six handlers), a fresh deployment is driven to s along its BFS path,
+/// every rejected action is tried first (the contract must refuse it and leave every stored field unchanged), then the
+/// first accepted action; each further accepted action at s gets its own fresh deployment. Returns (states, edges,
+/// deployments, calls).
+#[cfg(target = "evm")]
+fn vdifferential(evm: mut Evm, _ ready: bool, _ salt0: u256) -> (u256, u256, u256, u256) {
+    var visited: [bool; SIZE] = [false; SIZE]
+    var parent: [u32; SIZE] = [0; SIZE]
+    var via: [u8; SIZE] = [0; SIZE]
+    var queue: [u32; SIZE] = [0; SIZE]
+    var path: [u8; 64] = [0; 64]
+    let init = vinit_index(VB)
+    let acts: [u32; 6] = [0, 1, 2, 3, 5, 6]
+    var head: usize = 0
+    var tail: usize = 1
+    queue[0] = init
+    visited[init as usize] = true
+    var edges: u256 = 0
+    var deployments: u256 = 0
+    var calls: u256 = 0
+    while head < tail {
+        let x = queue[head]
+        head += 1
+        let cur = vdecode(x)
+        var len: usize = 0
+        var p = x
+        while p != init {
+            path[len] = via[p as usize]
+            len += 1
+            p = parent[p as usize]
+        }
+        let first = vreplay(mut evm, salt0 + deployments, ready, path, len)
+        deployments += 1
+        calls += len as u256
+        // Rejected actions first: refused, nothing stored changes.
+        var k: usize = 0
+        while k < 6 {
+            let a = acts[k]
+            let n = cstep(cur, a, ready)
+            if !n.ok {
+                assert!(!vsend(mut evm, first, a))
+                check_vraw(vraw(mut evm, first), cur)
+                calls += 1
+            }
+            k += 1
+        }
+        // Accepted actions: the first on this deployment, each further one on a fresh deployment.
+        var used = false
+        k = 0
+        while k < 6 {
+            let a = acts[k]
+            let n = cstep(cur, a, ready)
+            if n.ok {
+                var addr = first
+                if used {
+                    addr = vreplay(mut evm, salt0 + deployments, ready, path, len)
+                    deployments += 1
+                    calls += len as u256
+                }
+                used = true
+                assert!(vsend(mut evm, addr, a))
+                check_vraw(vraw(mut evm, addr), n.s)
+                calls += 1
+                edges += 1
+                let y = vencode(n.s)
+                if !visited[y as usize] {
+                    visited[y as usize] = true
+                    parent[y as usize] = x
+                    via[y as usize] = (a + 1).downcast_truncate()
+                    queue[tail] = y
+                    tail += 1
+                }
+            }
+            k += 1
+        }
+    }
+    (tail as u256, edges, deployments, calls)
+}
+
+/// The vault differential, both lock settings. Reachable states and accepted edges are pinned from the oracle
+/// (tools/ref_model.py, `vault_contract_graph`), not from this test's own output. The model has 211 states at
+/// B = 10, T = 3; the contract graph has fewer because the harness can neither tick the clock nor change the
+/// caller: it walks 91 states with the lock passed (clock 0 or, for Execute, T) and 9 with a lock that never passes.
+#[cfg(target = "evm")]
+#[test]
+fn test_vault_differential() uses (evm: mut Evm, log: mut std::evm::Log) {
+    let (s1, e1, d1, c1) = vdifferential(mut evm, true, 100000)
+    log.emit(
+        VaultDifferentialRun {
+            ready: 1,
+            states: s1,
+            edges: e1,
+            attempts: 6 * s1,
+            deployments: d1,
+            calls: c1,
+        },
+    )
+    assert!(s1 == 91 && e1 == 250)
+    let (s2, e2, d2, c2) = vdifferential(mut evm, false, 200000)
+    log.emit(
+        VaultDifferentialRun {
+            ready: 0,
+            states: s2,
+            edges: e2,
+            attempts: 6 * s2,
+            deployments: d2,
+            calls: c2,
+        },
+    )
+    assert!(s2 == 9 && e2 == 21)
+}
