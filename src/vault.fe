@@ -1,0 +1,394 @@
+//! Protocol 2: a 2-of-3 approval + timelock vault.
+//!
+//! One pending withdrawal of 1 unit at a time. Three signers (A, B, C) approve it; once two distinct signers have
+//! approved, the withdrawal is queued and a timelock of `t` ticks must pass before anyone can execute it. The
+//! owner can cancel a pending withdrawal at any point before it executes.
+//!
+//! State = (phase, mask, count, clock, bal, paid):
+//!   mask  = which signers approved (bit 0 = A, bit 1 = B, bit 2 = C)
+//!   count = approvals counted: the number the threshold guard reads (equal to popcount(mask) in a correct model)
+//!   clock = ticks since the withdrawal was queued, saturating at `t`
+//!   bal / paid = units still in the vault / units already paid out; bal + paid == B for the whole run
+//! Identity is in the alphabet: ApproveA / ApproveB / ApproveC are different actions, so "two distinct approvals"
+//! means two distinct signers in the model.
+//!
+//! Action legend (the digits a counterexample prints, earliest action first):
+//!   1 = Propose · 2 = ApproveA · 3 = ApproveB · 4 = ApproveC · 5 = Tick · 6 = Execute · 7 = Cancel
+
+/// Approvals needed to queue a withdrawal (2 of 3).
+pub const K: u32 = 2
+/// Largest vault balance and largest timelock the fixed encoding can hold. Every `b <= MAX_B`, `t <= MAX_T` shares
+/// one radix.
+pub const MAX_B: u32 = 10
+pub const MAX_T: u32 = 3
+/// Radix of the balance / paid fields and of the clock field.
+pub const RB: u32 = MAX_B + 1
+pub const RT: u32 = MAX_T + 1
+/// Size of the encoding box: 3 phases × 8 masks × 4 counts × RT clocks × RB × RB (= 46,464).
+pub const SIZE: usize = 46464
+/// Number of actions; `vaction_of(i)` is total on `0..ACTIONS`.
+pub const ACTIONS: u32 = 7
+/// The headline configuration: balance and timelock of the deployed contract's model, and the one `vexplore` checks
+/// at compile time.
+pub const VB: u32 = 10
+pub const VT: u32 = 3
+
+pub enum VPhase {
+    Idle,
+    Proposed,
+    Queued,
+}
+
+pub enum VAction {
+    Propose,
+    ApproveA,
+    ApproveB,
+    ApproveC,
+    Tick,
+    Execute,
+    Cancel,
+}
+
+pub struct VState {
+    pub phase: VPhase,
+    pub mask: u32,
+    pub count: u32,
+    pub clock: u32,
+    pub bal: u32,
+    pub paid: u32,
+}
+
+/// Result of one transition attempt: `ok` is false when the guard rejects it (then `s` is unchanged).
+pub struct VNext { pub ok: bool, pub s: VState }
+
+impl Copy for VPhase {}
+impl Copy for VAction {}
+impl Copy for VState {}
+impl Copy for VNext {}
+
+pub const fn vphase_id(_ p: VPhase) -> u32 {
+    match p {
+        VPhase::Idle => 0,
+        VPhase::Proposed => 1,
+        VPhase::Queued => 2,
+    }
+}
+
+/// Inverse of `vphase_id` on 0..3. Any other value maps to `Queued`.
+pub const fn vphase_of(_ id: u32) -> VPhase {
+    if id == 0 {
+        VPhase::Idle
+    } else if id == 1 {
+        VPhase::Proposed
+    } else {
+        VPhase::Queued
+    }
+}
+
+/// Exhaustive over the enum: adding a variant forces a change here.
+pub const fn vaction_id(_ a: VAction) -> u32 {
+    match a {
+        VAction::Propose => 0,
+        VAction::ApproveA => 1,
+        VAction::ApproveB => 2,
+        VAction::ApproveC => 3,
+        VAction::Tick => 4,
+        VAction::Execute => 5,
+        VAction::Cancel => 6,
+    }
+}
+
+/// Total on 0..ACTIONS; `vaction_id(vaction_of(i)) == i` for every `i < ACTIONS`.
+pub const fn vaction_of(_ id: u32) -> VAction {
+    if id == 0 {
+        VAction::Propose
+    } else if id == 1 {
+        VAction::ApproveA
+    } else if id == 2 {
+        VAction::ApproveB
+    } else if id == 3 {
+        VAction::ApproveC
+    } else if id == 4 {
+        VAction::Tick
+    } else if id == 5 {
+        VAction::Execute
+    } else {
+        VAction::Cancel
+    }
+}
+
+/// The initial state of a vault holding `b` units: Idle, nothing pending, nothing paid.
+pub const fn vinitial(_ b: u32) -> VState {
+    VState { phase: VPhase::Idle, mask: 0, count: 0, clock: 0, bal: b, paid: 0 }
+}
+
+/// Mixed-radix encoding: a bijection between the box (phase < 3, mask < 8, count < 4, clock < RT, bal and paid < RB)
+/// and 0..SIZE.
+pub const fn vencode(_ s: VState) -> u32 {
+    ((((vphase_id(s.phase) * 8 + s.mask) * 4 + s.count) * RT + s.clock) * RB + s.bal) * RB + s.paid
+}
+
+pub const fn vdecode(_ x: u32) -> VState {
+    VState {
+        phase: vphase_of(x / (8 * 4 * RT * RB * RB)),
+        mask: (x / (4 * RT * RB * RB)) % 8,
+        count: (x / (RT * RB * RB)) % 4,
+        clock: (x / (RB * RB)) % RT,
+        bal: (x / RB) % RB,
+        paid: x % RB,
+    }
+}
+
+/// Encoding of the initial state for a vault holding `b` units (its `bal` is `b`, so it is not index 0).
+pub const fn vinit_index(_ b: u32) -> u32 {
+    b * RB
+}
+
+/// THE transition function of the vault. The compile-time search, both runtime searches and the contract's `recv`
+/// handlers all call this one function. `t` is the timelock in ticks (`t <= MAX_T`). Written without helper calls:
+/// every call costs evaluator steps, and the search runs this 7 times per state.
+pub const fn vstep(_ s: VState, _ a: VAction, _ t: u32) -> VNext {
+    match a {
+        VAction::Propose => {
+            // Idle with something in the vault: start a withdrawal with no approvals.
+            match s.phase {
+                VPhase::Idle => {
+                    if s.bal > 0 {
+                        return VNext {
+                            ok: true,
+                            s: VState {
+                                phase: VPhase::Proposed,
+                                mask: 0,
+                                count: 0,
+                                clock: 0,
+                                bal: s.bal,
+                                paid: s.paid,
+                            },
+                        }
+                    }
+                },
+                _ => {},
+            }
+        },
+        VAction::ApproveA => {
+            // Proposed or Queued, and signer A has not approved yet.
+            match s.phase {
+                VPhase::Idle => {},
+                _ => {
+                    if s.mask & 1 == 0 {
+                        let c = s.count + 1
+                        let queue = match s.phase {
+                            VPhase::Proposed => c >= K,
+                            _ => false,
+                        }
+                        return VNext {
+                            ok: true,
+                            s: VState {
+                                phase: if queue { VPhase::Queued } else { s.phase },
+                                mask: s.mask | 1,
+                                count: c,
+                                clock: if queue { 0 } else { s.clock },
+                                bal: s.bal,
+                                paid: s.paid,
+                            },
+                        }
+                    }
+                },
+            }
+        },
+        VAction::ApproveB => {
+            // Proposed or Queued, and signer B has not approved yet.
+            match s.phase {
+                VPhase::Idle => {},
+                _ => {
+                    if s.mask & 2 == 0 {
+                        let c = s.count + 1
+                        let queue = match s.phase {
+                            VPhase::Proposed => c >= K,
+                            _ => false,
+                        }
+                        return VNext {
+                            ok: true,
+                            s: VState {
+                                phase: if queue { VPhase::Queued } else { s.phase },
+                                mask: s.mask | 2,
+                                count: c,
+                                clock: if queue { 0 } else { s.clock },
+                                bal: s.bal,
+                                paid: s.paid,
+                            },
+                        }
+                    }
+                },
+            }
+        },
+        VAction::ApproveC => {
+            // Proposed or Queued, and signer C has not approved yet.
+            match s.phase {
+                VPhase::Idle => {},
+                _ => {
+                    if s.mask & 4 == 0 {
+                        let c = s.count + 1
+                        let queue = match s.phase {
+                            VPhase::Proposed => c >= K,
+                            _ => false,
+                        }
+                        return VNext {
+                            ok: true,
+                            s: VState {
+                                phase: if queue { VPhase::Queued } else { s.phase },
+                                mask: s.mask | 4,
+                                count: c,
+                                clock: if queue { 0 } else { s.clock },
+                                bal: s.bal,
+                                paid: s.paid,
+                            },
+                        }
+                    }
+                },
+            }
+        },
+        VAction::Tick => {
+            // Queued and the timelock has not run out: one tick passes.
+            match s.phase {
+                VPhase::Queued => {
+                    if s.clock < t {
+                        return VNext {
+                            ok: true,
+                            s: VState {
+                                phase: VPhase::Queued,
+                                mask: s.mask,
+                                count: s.count,
+                                clock: s.clock + 1,
+                                bal: s.bal,
+                                paid: s.paid,
+                            },
+                        }
+                    }
+                },
+                _ => {},
+            }
+        },
+        VAction::Execute => {
+            // Queued with the quorum and the timelock run out: one unit leaves the vault, back to Idle.
+            match s.phase {
+                VPhase::Queued => {
+                    if s.count >= K && s.clock >= t && s.bal > 0 {
+                        return VNext {
+                            ok: true,
+                            s: VState {
+                                phase: VPhase::Idle,
+                                mask: 0,
+                                count: 0,
+                                clock: 0,
+                                bal: s.bal - 1,
+                                paid: s.paid + 1,
+                            },
+                        }
+                    }
+                },
+                _ => {},
+            }
+        },
+        VAction::Cancel => {
+            // Proposed or Queued: drop the withdrawal, back to Idle with nothing pending.
+            match s.phase {
+                VPhase::Idle => {},
+                _ => {
+                    return VNext {
+                        ok: true,
+                        s: VState {
+                            phase: VPhase::Idle,
+                            mask: 0,
+                            count: 0,
+                            clock: 0,
+                            bal: s.bal,
+                            paid: s.paid,
+                        },
+                    }
+                },
+            }
+        },
+    }
+    VNext { ok: false, s }
+}
+
+// The encoding box and the action range are tied to the declarations above.
+static_assert(SIZE == (3 * 8 * 4 * RT * RB * RB) as usize)
+static_assert(vaction_id(VAction::Cancel) + 1 == ACTIONS)
+static_assert(VB <= MAX_B)
+static_assert(VT <= MAX_T)
+
+// ---- invariants (checked in this order; the first that fails is the one the compiler names) ----
+// State invariants are checked on the start state and on every accepted successor; the last two are transition
+// invariants, checked on every accepted edge (s, a, s').
+
+/// No violation.
+pub const V_OK: u8 = 0
+/// `in bounds`: every field fits the encoding, so `vencode` cannot alias two states.
+pub const V_IN_BOUNDS: u8 = 1
+/// `counted once`: the approval count equals the number of distinct signers in the mask.
+pub const V_COUNTED_ONCE: u8 = 2
+/// `conserved`: the units in the vault plus the units paid out are the units the vault started with.
+pub const V_CONSERVED: u8 = 3
+/// `idle clean`: an Idle vault has no approvals and no running clock.
+pub const V_IDLE_CLEAN: u8 = 4
+/// `queued means quorum`: a Queued withdrawal has at least K distinct approvals.
+pub const V_QUEUED_QUORUM: u8 = 5
+/// `two distinct approvals`: Execute only runs with at least two distinct signers in the mask (transition).
+pub const V_TWO_DISTINCT: u8 = 6
+/// `timelock respected`: Execute only runs once the clock has reached the timelock (transition).
+pub const V_TIMELOCK: u8 = 7
+
+/// First state invariant that `n` breaks (vault of `b` units), or V_OK. Written out in place (no helper calls).
+pub const fn vstate_violation(_ n: VState, _ b: u32) -> u8 {
+    // in bounds: mask < 8, count < 4, clock < RT, bal and paid < RB
+    if n.mask >= 8 || n.count >= 4 || n.clock >= RT || n.bal >= RB || n.paid >= RB {
+        return V_IN_BOUNDS
+    }
+    // counted once: count == popcount(mask)
+    let pop = (n.mask & 1) + ((n.mask >> 1) & 1) + ((n.mask >> 2) & 1)
+    if n.count != pop {
+        return V_COUNTED_ONCE
+    }
+    // conserved: bal + paid == b
+    if n.bal + n.paid != b {
+        return V_CONSERVED
+    }
+    match n.phase {
+        VPhase::Idle => {
+            // idle clean
+            if n.mask != 0 || n.clock != 0 {
+                return V_IDLE_CLEAN
+            }
+        },
+        VPhase::Queued => {
+            // queued means quorum
+            if pop < K {
+                return V_QUEUED_QUORUM
+            }
+        },
+        _ => {},
+    }
+    V_OK
+}
+
+/// The one predicate both searches call: the first invariant broken by the accepted edge (s, a, n), or V_OK.
+pub const fn vfirst_violation(_ s: VState, _ a: VAction, _ n: VState, _ b: u32, _ t: u32) -> u8 {
+    let v = vstate_violation(n, b)
+    if v != V_OK { return v }
+    match a {
+        VAction::Execute => {
+            // two distinct approvals, then timelock respected
+            let pop = (s.mask & 1) + ((s.mask >> 1) & 1) + ((s.mask >> 2) & 1)
+            if pop < 2 {
+                return V_TWO_DISTINCT
+            }
+            if s.clock < t {
+                return V_TIMELOCK
+            }
+        },
+        _ => {},
+    }
+    V_OK
+}
