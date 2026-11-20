@@ -14,7 +14,6 @@ use ingot::escrow::{
     action_id,
     initial,
     phase_id,
-    paid_once,
     CAP,
     ACTIONS,
     INIT,
@@ -29,13 +28,13 @@ use ingot::escrow_contract::{Escrow, EscrowMsg}
 #[test]
 fn test_runtime_explore_agrees() {
     assert!(explore_from(black_box(INIT), black_box(17 as u32)) == 494)
-    assert!(explore_from(black_box(INIT), black_box(CAP)) == 609)
+    assert!(explore_from(black_box(INIT), black_box(CAP)) == 736)
 }
 
 /// The attack printer finds nothing at runtime either.
 #[test]
 fn test_counterexample_none() {
-    assert!(counterexample(black_box(18 as u32)) == 0)
+    assert!(counterexample(black_box(20 as u32)) == 0)
 }
 
 /// encode(decode(x)) == x for every 97th index of the box, and decode(encode(s)) == s for one boundary state.
@@ -136,7 +135,7 @@ fn test_contract_matches_step() uses (evm: mut Evm) {
     }
     // Two units to the seller, settled.
     assert!(
-        paid_once(model) && model.seller == 2 && phase_id(model.phase) == 3,
+        model.buyer == 0 && model.seller == 2 && phase_id(model.phase) == 3,
     )
     let raw: u256 = evm
         .call(

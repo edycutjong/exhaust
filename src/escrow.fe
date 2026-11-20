@@ -10,7 +10,7 @@
 pub const MAX_CAP: u32 = 21
 /// Capacity of the deployed contract, and the headline capacity `explore` checks at compile time: the contract
 /// runs exactly the model that was searched.
-pub const CAP: u32 = 19
+pub const CAP: u32 = 21
 /// Radix of each unit field: a field value is always `< W` in an encodable state.
 pub const W: u32 = MAX_CAP + 1
 /// Size of the encoding box: 4 phases × W³ unit triples (= 42,592).
@@ -97,10 +97,6 @@ pub const fn initial() -> State {
     State { phase: Phase::Open, escrow: 0, seller: 0, buyer: 0 }
 }
 
-pub const fn total(_ s: State) -> u32 {
-    s.escrow + s.seller + s.buyer
-}
-
 /// Mixed-radix encoding: a bijection between the box (phase < 4, every unit field < W) and 0..SIZE.
 pub const fn encode(_ s: State) -> u32 {
     ((phase_id(s.phase) * W + s.escrow) * W + s.seller) * W + s.buyer
@@ -120,88 +116,106 @@ pub const fn in_bounds(_ s: State) -> bool {
     s.escrow < W && s.seller < W && s.buyer < W
 }
 
-const fn reject(_ s: State) -> Next {
-    Next { ok: false, s }
-}
-
-const fn accept(_ s: State) -> Next {
-    Next { ok: true, s }
-}
-
 /// THE transition function. The compile-time search, both runtime searches and the contract's `recv`
 /// handlers all call this one function. `cap` is the escrow capacity in units (`cap <= MAX_CAP`).
+/// Written without helper calls: every call costs evaluator steps, and the search runs this 5 times per state.
 pub const fn step(_ s: State, _ a: Action, _ cap: u32) -> Next {
-    let p = phase_id(s.phase)
     match a {
         Action::Deposit => {
             // Open, and the total stays within the capacity.
-            if p == 0 && total(s) < cap {
-                return accept(
-                    State {
-                        phase: Phase::Open,
-                        escrow: s.escrow + 1,
-                        seller: s.seller,
-                        buyer: s.buyer,
-                    },
-                )
+            match s.phase {
+                Phase::Open => {
+                    if s.escrow + s.seller + s.buyer < cap {
+                        return Next {
+                            ok: true,
+                            s: State {
+                                phase: Phase::Open,
+                                escrow: s.escrow + 1,
+                                seller: s.seller,
+                                buyer: s.buyer,
+                            },
+                        }
+                    }
+                },
+                _ => {},
             }
-            reject(s)
         },
         Action::Lock => {
             // Open with something in escrow.
-            if p == 0 && s.escrow > 0 {
-                return accept(
-                    State {
-                        phase: Phase::Locked,
-                        escrow: s.escrow,
-                        seller: s.seller,
-                        buyer: s.buyer,
-                    },
-                )
+            match s.phase {
+                Phase::Open => {
+                    if s.escrow > 0 {
+                        return Next {
+                            ok: true,
+                            s: State {
+                                phase: Phase::Locked,
+                                escrow: s.escrow,
+                                seller: s.seller,
+                                buyer: s.buyer,
+                            },
+                        }
+                    }
+                },
+                _ => {},
             }
-            reject(s)
         },
         Action::Release => {
             // Locked, something in escrow, the buyer was never refunded: one unit to the seller.
-            if p == 1 && s.escrow > 0 && s.buyer == 0 {
-                let e = s.escrow - 1
-                let np = if e == 0 {
-                    Phase::Settled
-                } else {
-                    Phase::Locked
-                }
-                return accept(
-                    State { phase: np, escrow: e, seller: s.seller + 1, buyer: s.buyer },
-                )
+            match s.phase {
+                Phase::Locked => {
+                    if s.escrow > 0 && s.buyer == 0 {
+                        let e = s.escrow - 1
+                        let np = if e == 0 {
+                            Phase::Settled
+                        } else {
+                            Phase::Locked
+                        }
+                        return Next {
+                            ok: true,
+                            s: State { phase: np, escrow: e, seller: s.seller + 1, buyer: s.buyer },
+                        }
+                    }
+                },
+                _ => {},
             }
-            reject(s)
         },
         Action::Refund => {
             // Locked or Disputed, something in escrow, the seller was never paid: one unit to the buyer.
-            if (p == 1 || p == 2) && s.escrow > 0 && s.seller == 0 {
-                let e = s.escrow - 1
-                let np = if e == 0 { Phase::Settled } else { phase_of(p) }
-                return accept(
-                    State { phase: np, escrow: e, seller: s.seller, buyer: s.buyer + 1 },
-                )
+            match s.phase {
+                Phase::Locked | Phase::Disputed => {
+                    if s.escrow > 0 && s.seller == 0 {
+                        let e = s.escrow - 1
+                        let np = if e == 0 { Phase::Settled } else { s.phase }
+                        return Next {
+                            ok: true,
+                            s: State { phase: np, escrow: e, seller: s.seller, buyer: s.buyer + 1 },
+                        }
+                    }
+                },
+                _ => {},
             }
-            reject(s)
         },
         Action::Dispute => {
             // Locked and the seller was never paid.
-            if p == 1 && s.seller == 0 {
-                return accept(
-                    State {
-                        phase: Phase::Disputed,
-                        escrow: s.escrow,
-                        seller: s.seller,
-                        buyer: s.buyer,
-                    },
-                )
+            match s.phase {
+                Phase::Locked => {
+                    if s.seller == 0 {
+                        return Next {
+                            ok: true,
+                            s: State {
+                                phase: Phase::Disputed,
+                                escrow: s.escrow,
+                                seller: s.seller,
+                                buyer: s.buyer,
+                            },
+                        }
+                    }
+                },
+                _ => {},
             }
-            reject(s)
         },
     }
+    Next { ok: false, s }
 }
 
 // The encoding box and the action range are tied to the declarations above.
@@ -227,37 +241,29 @@ pub const SETTLED_EMPTY: u8 = 4
 /// `conserved`: only Deposit creates units; every other action moves one or none.
 pub const CONSERVED: u8 = 5
 
-pub const fn within_capacity(_ s: State, _ cap: u32) -> bool {
-    total(s) <= cap
-}
-
-pub const fn paid_once(_ s: State) -> bool {
-    s.seller == 0 || s.buyer == 0
-}
-
-pub const fn settled_empty(_ s: State) -> bool {
-    phase_id(s.phase) != 3 || s.escrow == 0
-}
-
-/// total(s') == total(s) + 1 for Deposit, else total(s') == total(s).
-pub const fn conserved(_ s: State, _ a: Action, _ n: State) -> bool {
-    let minted: u32 = if action_id(a) == 0 { 1 } else { 0 }
-    total(n) == total(s) + minted
-}
-
-/// First state invariant that `s` breaks, or OK.
-pub const fn state_violation(_ s: State, _ cap: u32) -> u8 {
-    if !within_capacity(s, cap) {
+/// First state invariant that `n` breaks, or OK. Each condition is written out in place (no helper calls): this
+/// runs on every accepted edge, and every call costs evaluator steps.
+pub const fn state_violation(_ n: State, _ cap: u32) -> u8 {
+    // within capacity: escrow + seller + buyer <= cap
+    if n.escrow + n.seller + n.buyer > cap {
         return WITHIN_CAPACITY
     }
-    if !in_bounds(s) {
+    // in bounds: every unit field < W
+    if n.escrow >= W || n.seller >= W || n.buyer >= W {
         return IN_BOUNDS
     }
-    if !paid_once(s) {
+    // paid once: seller == 0 or buyer == 0
+    if n.seller != 0 && n.buyer != 0 {
         return PAID_ONCE
     }
-    if !settled_empty(s) {
-        return SETTLED_EMPTY
+    // settled empty: not Settled, or escrow == 0
+    match n.phase {
+        Phase::Settled => {
+            if n.escrow != 0 {
+                return SETTLED_EMPTY
+            }
+        },
+        _ => {},
     }
     OK
 }
@@ -266,8 +272,20 @@ pub const fn state_violation(_ s: State, _ cap: u32) -> u8 {
 pub const fn first_violation(_ s: State, _ a: Action, _ n: State, _ cap: u32) -> u8 {
     let v = state_violation(n, cap)
     if v != OK { return v }
-    if !conserved(s, a, n) {
-        return CONSERVED
+    // conserved: total(n) == total(s) + 1 for Deposit, else total(n) == total(s)
+    let before = s.escrow + s.seller + s.buyer
+    let after = n.escrow + n.seller + n.buyer
+    match a {
+        Action::Deposit => {
+            if after != before + 1 {
+                return CONSERVED
+            }
+        },
+        _ => {
+            if after != before {
+                return CONSERVED
+            }
+        },
     }
     OK
 }

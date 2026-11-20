@@ -155,9 +155,9 @@ pub const fn counterexample(_ cap: u32) -> u256 {
 // ---- pins: the build fails if the reachable-state count drifts ----
 /// C = 17: the capacity of the first pin, carried over from the day-0 spike (494 states).
 static_assert(explore(17) == 494)
-/// C = CAP = 19: the contract's capacity, and the largest capacity at which the full invariant set fits one
-/// assert's budget on Fe 26.6.0 (C = 20 exceeds the step limit; measured, see evidence/).
-static_assert(explore(CAP) == 609)
-/// C' = 18: the attack printer. Green it is a full search with parent/action writes (four tables), so it fits a
-/// smaller capacity than `explore`; C = 19 exceeds the step limit (measured, see evidence/).
-static_assert(counterexample(18) == 0)
+/// C = CAP = 21: the contract's capacity and the largest capacity the encoding holds (MAX_CAP). Every invariant is
+/// checked on every reachable state and accepted edge; this fits one assert's budget on Fe 26.6.0 (evidence/budget.md).
+static_assert(explore(CAP) == 736)
+/// C' = 20: the attack printer. Green it is a full search with parent/action writes (four tables), so it fits a
+/// smaller capacity than `explore`; C = 21 exceeds the step limit (measured, see evidence/budget.md).
+static_assert(counterexample(20) == 0)
