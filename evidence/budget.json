@@ -1,0 +1,84 @@
+{
+ "meta": {
+  "fe": "fe 26.6.0 (5b3f96a)",
+  "uname": "Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64 arm",
+  "python": "3.11.1",
+  "limit": 1000000,
+  "burn_iterations_that_fit": 43476,
+  "steps_per_burn_iteration": 23.0012,
+  "probe_wall_time_s": 38.4,
+  "date_utc": "2026-11-20 20:43"
+ },
+ "rows": [
+  {
+   "search": "explore(0): array setup only",
+   "expr": "explore(0)",
+   "pin": 1,
+   "states": 1,
+   "steps": 86323,
+   "share_of_limit": 0.0863,
+   "note": "1 state, no successors: two 42,592-element tables initialised",
+   "steps_per_state_after_setup": null
+  },
+  {
+   "search": "explore(17)",
+   "expr": "explore(17)",
+   "pin": 494,
+   "states": 494,
+   "steps": 658271,
+   "share_of_limit": 0.6583,
+   "note": "spike capacity",
+   "steps_per_state_after_setup": 1158
+  },
+  {
+   "search": "explore(CAP), C_model = 21",
+   "expr": "explore(CAP)",
+   "pin": 736,
+   "states": 736,
+   "steps": 940335,
+   "share_of_limit": 0.9403,
+   "note": "the headline assert",
+   "steps_per_state_after_setup": 1160
+  },
+  {
+   "search": "counterexample(20), C' = 20",
+   "expr": "counterexample(20)",
+   "pin": 0,
+   "states": 671,
+   "steps": 983899,
+   "share_of_limit": 0.9839,
+   "note": "green: full search; it sets up 4 tables, not 2, so its per-state column is overstated by \u2248 86k / 671",
+   "steps_per_state_after_setup": 1338
+  },
+  {
+   "search": "shard A, k = 1..7",
+   "expr": "explore_seeds(LOCKED_BASE + LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)",
+   "pin": 91,
+   "states": 91,
+   "steps": 190749,
+   "share_of_limit": 0.1907,
+   "note": "",
+   "steps_per_state_after_setup": 1148
+  },
+  {
+   "search": "shard B, k = 8..14",
+   "expr": "explore_seeds(LOCKED_BASE + 8 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)",
+   "pin": 238,
+   "states": 238,
+   "steps": 362821,
+   "share_of_limit": 0.3628,
+   "note": "",
+   "steps_per_state_after_setup": 1162
+  },
+  {
+   "search": "shard C, k = 15..21",
+   "expr": "explore_seeds(LOCKED_BASE + 15 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)",
+   "pin": 385,
+   "states": 385,
+   "steps": 534870,
+   "share_of_limit": 0.5349,
+   "note": "",
+   "steps_per_state_after_setup": 1165
+  }
+ ]
+}
