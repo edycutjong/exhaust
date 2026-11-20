@@ -112,12 +112,14 @@ def search(cap, bug=None):
             v = violation(s, a, n, cap)
             if v:
                 digits = [a + 1]
+                chain = [n, s]
                 p = s
                 while parent[p] is not None:
                     prev, act = parent[p]
                     digits.append(act + 1)
+                    chain.append(prev)
                     p = prev
-                return {"violation": v, "digits": "".join(str(d) for d in reversed(digits))}
+                return {"violation": v, "digits": "".join(str(d) for d in reversed(digits)), "path": list(reversed(chain))}
             edges.append((s, a, n))
             h = (h * HASH_P + ((enc(s) * 5 + a) * SIZE + enc(n))) % HASH_M
             if n not in depth:
@@ -136,6 +138,7 @@ def search(cap, bug=None):
         "diameter": max(depth.values()),
         "edge_hash": h,
         "layers": layers,
+        "depth": depth,
         "order": order,
         "edge_list": edges,
         "parent": parent,
@@ -294,12 +297,14 @@ def vsearch(b, t, bug=None):
             v = vviolation(s, a, n, b, t)
             if v:
                 digits = [a + 1]
+                chain = [n, s]
                 p = s
                 while parent[p] is not None:
                     prev, act = parent[p]
                     digits.append(act + 1)
+                    chain.append(prev)
                     p = prev
-                return {"violation": v, "digits": "".join(str(d) for d in reversed(digits))}
+                return {"violation": v, "digits": "".join(str(d) for d in reversed(digits)), "path": list(reversed(chain))}
             edges.append((s, a, n))
             if n not in depth:
                 depth[n] = depth[s] + 1
@@ -307,7 +312,7 @@ def vsearch(b, t, bug=None):
                 order.append(n)
                 q.append(n)
     return {"b": b, "t": t, "states": len(order), "edges": len(edges), "attempts": 7 * len(order),
-            "diameter": max(depth.values()), "order": order, "edge_list": edges, "parent": parent}
+            "diameter": max(depth.values()), "depth": depth, "order": order, "edge_list": edges, "parent": parent}
 
 
 CONTRACT_ACTIONS = [0, 1, 2, 3, 5, 6]  # the vault contract has no Tick handler
@@ -446,9 +451,16 @@ def main():
             "model": "vault", "b": args.b, "t": args.t, "k": K, "source": "tools/ref_model.py (Python oracle following MODEL.md)",
             "legend": {str(i + 1): name for i, name in enumerate(VACTIONS)},
             "nodes": [{"id": i, "phase": VPHASES[st[0]], "mask": st[1], "count": st[2], "clock": st[3], "bal": st[4],
-                       "paid": st[5], "enc": venc(st)} for i, st in enumerate(r["order"])],
+                       "paid": st[5], "enc": venc(st), "depth": r["depth"][st]} for i, st in enumerate(r["order"])],
             "edges": [{"from": idx[st], "to": idx[n], "digit": a + 1} for st, a, n in r["edge_list"]],
         }
+        node = lambda st: {"phase": VPHASES[st[0]], "mask": st[1], "count": st[2], "clock": st[3], "bal": st[4], "paid": st[5]}
+        g["attacks"] = []
+        for name in sorted(VBUGS):
+            ar = vsearch(args.b, args.t, name)
+            g["attacks"].append({"bug": name, "invariant": VINVARIANTS[ar["violation"] - 1], "digits": ar["digits"],
+                                 "states": [dict(node(st), id=idx.get(st), new=st not in idx) for st in ar["path"]]})
+        g["attack"] = g["attacks"][0]
         Path(args.graph).write_text(json.dumps(g, indent=1) + "\n")
         print(f"wrote {args.graph}: {len(g['nodes'])} nodes, {len(g['edges'])} edges")
         return 0
@@ -460,10 +472,17 @@ def main():
         g = {
             "model": "escrow", "cap": cap, "source": "tools/ref_model.py (Python oracle following MODEL.md)",
             "legend": {str(i + 1): name for i, name in enumerate(ACTIONS)},
-            "nodes": [{"id": i, "phase": PHASES[s[0]], "escrow": s[1], "seller": s[2], "buyer": s[3], "enc": enc(s)}
-                      for i, s in enumerate(r["order"])],
+            "nodes": [{"id": i, "phase": PHASES[s[0]], "escrow": s[1], "seller": s[2], "buyer": s[3], "enc": enc(s),
+                       "depth": r["depth"][s]} for i, s in enumerate(r["order"])],
             "edges": [{"from": idx[s], "to": idx[n], "digit": a + 1} for s, a, n in r["edge_list"]],
         }
+        node = lambda st: {"phase": PHASES[st[0]], "escrow": st[1], "seller": st[2], "buyer": st[3]}
+        g["attacks"] = []
+        for name in ("refund-after-release", "settle-early", "mint-release", "cap-off-by-one"):
+            ar = search(cap, name)
+            g["attacks"].append({"bug": name, "invariant": INVARIANTS[ar["violation"] - 1], "digits": ar["digits"],
+                                 "states": [dict(node(st), id=idx.get(st), new=st not in idx) for st in ar["path"]]})
+        g["attack"] = g["attacks"][0]
         Path(args.graph).write_text(json.dumps(g, indent=1) + "\n")
         print(f"wrote {args.graph}: {len(g['nodes'])} nodes, {len(g['edges'])} edges")
         return 0
