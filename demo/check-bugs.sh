@@ -1,24 +1,26 @@
 #!/bin/sh
 # X7: every demo bug must fail `fe build`, naming its invariant and printing its counterexample digits.
-#   sh demo/check-bugs.sh                 bug zoo (demo/bugs.tsv) -> evidence/check-bugs.txt
-#   sh demo/check-bugs.sh --conformance   the checker's own negative tests (conformance/expected.tsv) -> evidence/conformance.txt
+#   sh demo/check-bugs.sh                 bug zoo (demo/bugs.tsv)
+#   sh demo/check-bugs.sh --conformance   the checker's own negative tests (conformance/expected.tsv)
 # Every patch is applied to a fresh temp copy; the working tree is never modified. Exit 1 if any row disagrees.
+# With EVIDENCE=1 the transcript is also saved to evidence/check-bugs.txt or evidence/conformance.txt.
 set -u
 cd "$(dirname "$0")/.."
 root=$(pwd)
 mode=${1:-zoo}
-tmps=""
-trap 'for d in $tmps; do rm -rf "$d"; done' EXIT
+# Every temp copy, transcript and the failure flag live under one work root, removed on exit.
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+flag="$work/failed"
 
 # copy <patch> <full|nohash|stripped[+file]>: prints the path of a fresh patched copy of the ingot.
 copy() {
-  d=$(mktemp -d)
-  tmps="$tmps $d"
+  d=$(mktemp -d "$work/copy.XXXXXX")
   cp -R "$root/fe.toml" "$root/src" "$d"/
   case "$2" in
     nohash)
       # Without the labeled-edge hash pin, so the build can reach the runtime oracle-table test.
-      sed -i.bak '/fingerprint(CAP, true)/d' "$d/src/escrow_explore.fe" && rm "$d/src/escrow_explore.fe.bak"
+      sed -i.bak '/fingerprint(CAP, true,/d' "$d/src/escrow_explore.fe" && rm "$d/src/escrow_explore.fe.bak"
       ;;
     stripped*)
       # Gate-stripped: drop the compile-time pins (everything from the "---- pins" marker on) so a patched
@@ -43,7 +45,7 @@ header() {
 
 fail=0
 if [ "$mode" = "--conformance" ]; then
-  out=evidence/conformance.txt
+  out="$work/transcript.txt"; keep=evidence/conformance.txt
   {
     header "Conformance: the checker's own negative tests (conformance/expected.tsv)"
     grep -v '^#' conformance/expected.tsv | while IFS="	" read -r id patch where cmd want expect; do
@@ -59,17 +61,17 @@ if [ "$mode" = "--conformance" ]; then
         grep -Eq -- "$pat" "$log" || ok=0
         [ "$pat" = "$rest" ] && rest="" || rest=${rest#*;;}
       done
-      if [ "$ok" -eq 1 ]; then r=PASS; else r=FAIL; echo 1 > "$root/.check-bugs-fail"; fi
+      if [ "$ok" -eq 1 ]; then r=PASS; else r=FAIL; echo 1 > "$flag"; fi
       echo "$r  $id  $patch  [$where]  \`$cmd\` exit $got (want $want)  expect: $expect"
     done
   } > "$out" 2>&1
 else
-  out=evidence/check-bugs.txt
+  out="$work/transcript.txt"; keep=evidence/check-bugs.txt
   {
     header "Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv)"
     d=$(copy "" full)
     (cd "$d" && fe build > out.txt 2>&1) && echo "PASS  baseline: unpatched fe build exit 0" \
-      || { echo "FAIL  baseline: unpatched fe build failed"; echo 1 > "$root/.check-bugs-fail"; }
+      || { echo "FAIL  baseline: unpatched fe build failed"; echo 1 > "$flag"; }
     echo
     echo "patch | fe build exit | invariant named | digits printed | per-handler suite (test_handler_*) | spike 8-call script (test_contract_matches_step)"
     grep -v '^#' demo/bugs.tsv | while IFS="	" read -r patch inv digits; do
@@ -85,12 +87,13 @@ else
       hcat=missed; [ "$h" -ne 0 ] && hcat="caught ($(grep -c '^FAIL' "$s/h.txt") of 5 fail)"
       ccat=missed; [ "$c" -ne 0 ] && ccat=caught
       r=PASS
-      if [ "$st" -eq 0 ] || [ "$named" = no ] || [ "$shown" = no ]; then r=FAIL; echo 1 > "$root/.check-bugs-fail"; fi
+      if [ "$st" -eq 0 ] || [ "$named" = no ] || [ "$shown" = no ]; then r=FAIL; echo 1 > "$flag"; fi
       echo "$r  $patch | exit $st | '$inv': $named | $digits: $shown | $hcat | $ccat"
       grep -E "assertion message|left:" "$d/out.txt" | sed 's/^ */      /'
     done
   } > "$out" 2>&1
 fi
 cat "$out"
-if [ -f "$root/.check-bugs-fail" ]; then rm -f "$root/.check-bugs-fail"; echo "RESULT: FAIL"; exit 1; fi
+[ "${EVIDENCE:-0}" = 1 ] && cp "$out" "$keep"
+if [ -f "$flag" ]; then echo "RESULT: FAIL"; exit 1; fi
 echo "RESULT: all rows as expected"

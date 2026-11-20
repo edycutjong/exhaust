@@ -1,11 +1,12 @@
 #!/bin/sh
-# Runs the exhaustive-edge differential on Sonatina and writes evidence/differential.txt from the test's own event log.
+# Runs the exhaustive-edge differential on Sonatina and reports it from the test's own event log
+# (saved to evidence/differential.txt with EVIDENCE=1).
 # Usage: sh tools/differential.sh     (needs fe; python3 only to decode the event's six words)
 set -eu
 cd "$(dirname "$0")/.."
-out=evidence/differential.txt
+out=$(mktemp)
 log=$(mktemp)
-trap 'rm -f "$log"' EXIT
+trap 'rm -f "$log" "$out"' EXIT
 start=$(python3 -c 'import time; print(time.time())')
 fe test --filter test_differential_all_edges --show-logs > "$log" 2>&1
 end=$(python3 -c 'import time; print(time.time())')
@@ -32,3 +33,4 @@ PY
   grep -E '^test result' "$log"
 } > "$out"
 cat "$out"
+if [ "${EVIDENCE:-0}" = 1 ]; then cp "$out" evidence/differential.txt; fi
