@@ -168,8 +168,11 @@ withdrawal was queued, runs `vstep` on the stored state with `clock = T`; otherw
 only walk states with `clock = 0`. The `fe test` harness can neither advance the block time nor change the caller, so the
 differential (`test_vault_differential`) replays the contract graph: 91 states and 250 accepted edges with a lock period of zero
 (the lock has always passed), 9 states and 21 edges with a lock period that never passes (B = 10, T = 3; the oracle counts the
-same, `vault_contract_graph` in `evidence/oracle.json`). Authorization (who may send which message) is untested: all three signers
-are the one harness address. Also untested: where the lock period starts (`queued_at`, set when a withdrawal is queued) and the exact
+same, `vault_contract_graph` in `evidence/oracle.json`). In the differential all three signers are the one harness address.
+Authorization (who may send which message) is tested only from the refusing side: `test_vault_identity_guards` deploys vaults
+where the harness is signer A only, or no signer, and checks that ApproveB / ApproveC from A and Propose from a non-signer are
+refused with nothing stored changed (each would be accepted by `vstep`). Untested: an accepted approval from a second address; a
+refused non-signer Cancel; where the lock period starts (`queued_at`, set when a withdrawal is queued) and the exact
 `>=` boundary of the lock check — every Execute run uses a lock of zero or one that never passes — and signer distinctness: `init` does
 not require the three signer addresses to differ, so with two equal addresses one key could supply both approvals. `Propose` and `Cancel`
 need any one signer (the model has no owner), so a single signer can cancel a queued withdrawal. The harness limits are recorded in

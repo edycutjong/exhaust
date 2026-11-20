@@ -58,8 +58,10 @@ python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early   # d
 - The vault (second protocol, `MODEL.md`) is explored at B = 10 with T = 3, plus T = 1, T = 2 and a B = 8, T = 2 baseline as separate
   models. Its contract has no `Tick` handler and the `fe test` harness can neither move the block time nor change the caller, so the
   contract's own graph has 91 states (lock period passed) and 9 (a lock that never passes) against the model's 211, and the vault
-  differential replays exactly those; all three signers are one address in the tests. Caller authorization, the exact lock boundary (`queued_at`) and signer distinctness are untested, and `init` does not
-  require the three signer addresses to differ.
+  differential replays exactly those; all three signers are one address in the differential. Caller authorization is tested only
+  from the refusing side (`test_vault_identity_guards`: signer A's ApproveB / ApproveC and a non-signer's Propose are refused, nothing
+  stored changes); a refused non-signer Cancel, the exact lock boundary (`queued_at`) and signer distinctness are untested, and `init`
+  does not require the three signer addresses to differ.
 - `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits.
 
 Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute. The model in words: `MODEL.md`. Numbers: `evidence/`.

@@ -302,6 +302,55 @@ fn test_vault_handler_cancel() uses (evm: mut Evm) {
     check_vraw(vraw(mut evm, addr), vinitial(VB))
 }
 
+/// Identity, the adapter's job (the model has no caller): with the harness as signer A only, ApproveB and ApproveC
+/// from it are refused although `vstep` accepts both, and nothing stored changes; ApproveA is accepted. With the
+/// harness as no signer at all, Propose is refused although `vstep` accepts it. (Cancel uses the same signer check as
+/// Propose; a refused non-signer Cancel needs a Proposed vault, which this one-caller harness cannot reach.)
+#[cfg(target = "evm")]
+#[test]
+fn test_vault_identity_guards() uses (evm: mut Evm) {
+    let probe = evm.create2<Who>(value: Wei::zero(), args: (), salt: 60)
+    let me: Address = evm
+        .call(
+            addr: probe,
+            gas: 100000,
+            value: Wei::zero(),
+            message: WhoMsg::Who {},
+        )
+    let other = evm.create2<Who>(value: Wei::zero(), args: (), salt: 61)
+    let proposed = vstep(vinitial(VB), VAction::Propose, VT).s
+    assert!(
+        vstep(proposed, VAction::ApproveB, VT).ok && vstep(proposed, VAction::ApproveC, VT).ok,
+    )
+    // The harness is signer A; B and C are two other addresses.
+    let addr = evm
+        .create2<Vault>(
+            value: Wei::zero(),
+            args: (me, other, probe, Duration::zero()),
+            salt: 1000060,
+        )
+    assert!(vsend(mut evm, addr, 0))
+    check_vraw(vraw(mut evm, addr), proposed)
+    assert!(!vsend(mut evm, addr, 2))
+    assert!(!vsend(mut evm, addr, 3))
+    check_vraw(vraw(mut evm, addr), proposed)
+    assert!(vsend(mut evm, addr, 1))
+    check_vraw(
+        vraw(mut evm, addr),
+        vstep(proposed, VAction::ApproveA, VT).s,
+    )
+    // The harness is none of the three signers.
+    assert!(vstep(vinitial(VB), VAction::Propose, VT).ok)
+    let foreign = evm
+        .create2<Vault>(
+            value: Wei::zero(),
+            args: (other, probe, other, Duration::zero()),
+            salt: 1000061,
+        )
+    assert!(!vsend(mut evm, foreign, 0))
+    check_vraw(vraw(mut evm, foreign), vinitial(VB))
+}
+
 // ---- EVM only: the differential over the edges the harness can drive ----
 
 /// Deploys a fresh vault (lock period zero when `ready`, else one that never passes) and drives it along `path`
