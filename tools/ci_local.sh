@@ -19,10 +19,13 @@ cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 "model name" /p
   for step in "fe fmt --check" "fe check" "fe build" "fe test" "fe test --backend native" "sh demo/run.sh" "sh demo/check-bugs.sh" "sh demo/check-bugs.sh --conformance" "python3 -I tools/ref_model.py --check"; do
     echo
     echo "## $step"
+    t0=$(python3 -c 'import time; print(time.time())')
     $step > "$log" 2>&1
     status=$?
+    t1=$(python3 -c 'import time; print(time.time())')
     grep -v '^Wrote ' "$log"
-    if [ "$status" -eq 0 ]; then echo "-> PASS"; else echo "-> FAIL (exit $status)"; fail=1; fi
+    secs=$(python3 -c "print(f'{$t1 - $t0:.2f}')")
+    if [ "$status" -eq 0 ]; then echo "-> PASS (${secs} s wall)"; else echo "-> FAIL (exit $status, ${secs} s wall)"; fail=1; fi
   done
   echo
   if [ "$fail" -eq 0 ]; then echo "RESULT: all steps passed"; else echo "RESULT: at least one step failed"; fi

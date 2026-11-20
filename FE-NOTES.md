@@ -8,3 +8,10 @@
   `host linker \`cc\` failed`.
 - The test `Evm` has no way to set the block timestamp or the caller of `evm.call`: `impl Ctx for Evm`
   (`ingots/std/src/evm/effects.fe:885` at v26.6.0) only reads them.
+- Every function call costs evaluator steps in const evaluation. Writing `step()` and the invariant predicate without helper
+  calls (inline field arithmetic, `match` on the phase) cut the explorer to ≈ 1,160 steps per state and moved the largest
+  capacity that fits one assert from 19 to 21 (`evidence/budget.md`, `evidence/p1b-core-2026-11-21.md`).
+- There is no step counter to read; `bench/budget_probe.py` measures a search's cost indirectly, by bisecting a burn loop in
+  the same `static_assert` (a bare `while i < n { i += 1 }` iteration costs ≈ 23 steps).
+- A failed `static_assert` stops `fe test` from running at all, so tests of a deliberately broken model run in a
+  "gate-stripped" temp copy with the pins removed (`demo/run.sh`, `demo/check-bugs.sh`).
