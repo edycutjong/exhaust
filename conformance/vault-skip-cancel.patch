@@ -1,0 +1,12 @@
+diff --git a/src/vault_explore.fe b/src/vault_explore.fe
+--- a/src/vault_explore.fe
++++ b/src/vault_explore.fe
+@@ -109,7 +109,7 @@ pub const fn vsearch(_ b: u32, _ t: u32, _ mode: u8) -> u128 {
+         head += 1
+         let cur = vdecode(x)
+         var a: u32 = 0
+-        while a < ACTIONS {
++        while a < 6 {
+             let act = vaction_of(a)
+             let n = vstep(cur, act, t)
+             if n.ok {

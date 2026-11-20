@@ -1,0 +1,14 @@
+diff --git a/src/vault.fe b/src/vault.fe
+--- a/src/vault.fe
++++ b/src/vault.fe
+@@ -302,8 +302,8 @@ pub const fn vstep(_ s: VState, _ a: VAction, _ t: u32) -> VNext {
+                             mask: 0,
+                             count: 0,
+                             clock: 0,
+-                            bal: s.bal,
+-                            paid: s.paid,
++                            bal: s.bal - 1,
++                            paid: s.paid + 1,
+                         },
+                     }
+                 },

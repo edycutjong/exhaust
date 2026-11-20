@@ -10,3 +10,4 @@ K5	conformance/adapter-corruption.patch	full	fe build	0	Wrote .*Escrow.bin
 K5	conformance/adapter-corruption.patch	full	fe test --filter test_differential_all_edges	1	^FAIL .*test_differential_all_edges
 K5	conformance/adapter-corruption.patch	full	fe test --filter test_runtime_explore_agrees	0	^PASS .*test_runtime_explore_agrees
 K6	conformance/bad-init.patch	full	fe build	1	invariant 'settled empty';;left: `9`
+K7	conformance/vault-skip-cancel.patch	full	fe build	1	left: `380`;;!invariant '

@@ -6,3 +6,4 @@ demo/mint-release.patch	conserved	123
 demo/vault-approve-twice.patch	counted once	122	vault
 demo/vault-execute-early.patch	timelock respected	1236	vault
 demo/vault-pay-twice.patch	pays one unit	1235556	vault
+demo/vault-cancel-pays.patch	only execute pays	17	vault
