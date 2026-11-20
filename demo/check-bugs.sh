@@ -10,12 +10,16 @@ mode=${1:-zoo}
 tmps=""
 trap 'for d in $tmps; do rm -rf "$d"; done' EXIT
 
-# copy <patch> <full|stripped[+file]>: prints the path of a fresh patched copy of the ingot.
+# copy <patch> <full|nohash|stripped[+file]>: prints the path of a fresh patched copy of the ingot.
 copy() {
   d=$(mktemp -d)
   tmps="$tmps $d"
   cp -R "$root/fe.toml" "$root/src" "$d"/
   case "$2" in
+    nohash)
+      # Without the labeled-edge hash pin, so the build can reach the runtime oracle-table test.
+      sed -i.bak '/fingerprint(CAP, true)/d' "$d/src/escrow_explore.fe" && rm "$d/src/escrow_explore.fe.bak"
+      ;;
     stripped*)
       # Gate-stripped: drop the compile-time pins (everything from the "---- pins" marker on) so a patched
       # contract can still be built and run.

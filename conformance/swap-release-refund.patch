@@ -1,0 +1,24 @@
+diff --git a/src/escrow.fe b/src/escrow.fe
+index d36fc43..5ada271 100644
+--- a/src/escrow.fe
++++ b/src/escrow.fe
+@@ -163,6 +163,9 @@ pub const fn step(_ s: State, _ a: Action, _ cap: u32) -> Next {
+             // Locked, something in escrow, the buyer was never refunded: one unit to the seller.
+             match s.phase {
+                 Phase::Locked => {
++                    if s.escrow == 3 && s.seller == 0 && s.buyer == 0 {
++                        return Next { ok: true, s: State { phase: Phase::Locked, escrow: 2, seller: 0, buyer: 1 } }
++                    }
+                     if s.escrow > 0 && s.buyer == 0 {
+                         let e = s.escrow - 1
+                         let np = if e == 0 {
+@@ -183,6 +186,9 @@ pub const fn step(_ s: State, _ a: Action, _ cap: u32) -> Next {
+             // Locked or Disputed, something in escrow, the seller was never paid: one unit to the buyer.
+             match s.phase {
+                 Phase::Locked | Phase::Disputed => {
++                    if s.escrow == 3 && s.seller == 0 && s.buyer == 0 && phase_id(s.phase) == 1 {
++                        return Next { ok: true, s: State { phase: Phase::Locked, escrow: 2, seller: 1, buyer: 0 } }
++                    }
+                     if s.escrow > 0 && s.seller == 0 {
+                         let e = s.escrow - 1
+                         let np = if e == 0 { Phase::Settled } else { s.phase }

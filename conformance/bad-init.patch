@@ -1,0 +1,22 @@
+diff --git a/src/escrow.fe b/src/escrow.fe
+index d36fc43..c2d0513 100644
+--- a/src/escrow.fe
++++ b/src/escrow.fe
+@@ -18,7 +18,7 @@ pub const SIZE: usize = 42592
+ /// Number of actions; `action_of(i)` is total on `0..ACTIONS`.
+ pub const ACTIONS: u32 = 5
+ /// Encoding of the initial state (Open, 0, 0, 0).
+-pub const INIT: u32 = 0
++pub const INIT: u32 = 32428
+ 
+ pub enum Phase {
+     Open,
+@@ -94,7 +94,7 @@ pub const fn action_of(_ id: u32) -> Action {
+ }
+ 
+ pub const fn initial() -> State {
+-    State { phase: Phase::Open, escrow: 0, seller: 0, buyer: 0 }
++    State { phase: Phase::Settled, escrow: 1, seller: 0, buyer: 0 }
+ }
+ 
+ /// Mixed-radix encoding: a bijection between the box (phase < 4, every unit field < W) and 0..SIZE.

@@ -1,8 +1,12 @@
-# id	patch	copy (full | stripped[+file])	command	expected exit	expected lines (extended regexes, ";;"-separated, all must match)
+# id	patch	copy (full | nohash | stripped[+file])	command	expected exit	expected lines (extended regexes, ";;"-separated, all must match)
 K1	demo/mint-release.patch	full	fe build	1	invariant 'conserved';;left: `123`
 K1	demo/mint-release.patch	stripped+conformance/k1_replay.fe	fe test --filter test_k1_shared_bug_replay	0	^PASS .*test_k1_shared_bug_replay
+K2	conformance/swap-release-refund.patch	full	fe build	1	left: `877585624444148941`
+K2	conformance/swap-release-refund.patch	nohash	fe test --filter test_oracle_edges	1	^FAIL .*test_oracle_edges
+K2	conformance/swap-release-refund.patch	nohash	fe test --backend native --filter test_oracle_edges	1	^FAIL .*test_oracle_edges
 K3	demo/cap-off-by-one.patch	full	fe build	1	invariant 'within capacity'
 K4	conformance/skip-action.patch	full	fe build	1	left: `341`
 K5	conformance/adapter-corruption.patch	full	fe build	0	Wrote .*Escrow.bin
 K5	conformance/adapter-corruption.patch	full	fe test --filter test_differential_all_edges	1	^FAIL .*test_differential_all_edges
 K5	conformance/adapter-corruption.patch	full	fe test --filter test_runtime_explore_agrees	0	^PASS .*test_runtime_explore_agrees
+K6	conformance/bad-init.patch	full	fe build	1	invariant 'settled empty';;left: `9`
