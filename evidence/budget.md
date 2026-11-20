@@ -24,8 +24,8 @@ burn headroom lost when the search runs in the same assert, converted to steps (
 | `vexplore(8, 2)` | 137 | 391,503 | 39.1% | 2,168 | the baseline configuration (B = 8, T = 2) |
 | `vexplore(VB, VT)` | 211 | 551,638 | 55.2% | 2,166 | the vault's headline assert |
 | `vcounterexample(VB, VT)` | 211 | 654,407 | 65.4% | 2,654 | green: full search; four tables, so its per-state column is overstated |
-| `vexplore(10, 1)` | 131 | 379,888 | 38.0% | 2,178 | T = 1 shard |
-| `vexplore(10, 2)` | 171 | 465,751 | 46.6% | 2,171 | T = 2 shard |
+| `vexplore(10, 1)` | 131 | 379,888 | 38.0% | 2,178 | separate model (T = 1), not a part of the headline |
+| `vexplore(10, 2)` | 171 | 465,751 | 46.6% | 2,171 | separate model (T = 2), not a part of the headline |
 
 Over the limit (measured with `fe build` on the same code, see `evidence/capacities.md`): `counterexample(21)`;
 capacities above 21 do not fit the encoding (`MAX_CAP = 21`).

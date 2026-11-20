@@ -280,7 +280,7 @@
     "states": 131,
     "steps": 379888,
     "share_of_limit": 0.3799,
-    "note": "T = 1 shard",
+    "note": "separate model (T = 1), not a part of the headline",
     "steps_per_state_after_setup": 2178
    },
    {
@@ -290,7 +290,7 @@
     "states": 171,
     "steps": 465751,
     "share_of_limit": 0.4658,
-    "note": "T = 2 shard",
+    "note": "separate model (T = 2), not a part of the headline",
     "steps_per_state_after_setup": 2171
    }
   ]

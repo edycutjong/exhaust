@@ -36,8 +36,8 @@ SEARCHES = [
     ("vexplore(8, 2): baseline", "vexplore(8, 2)", 137, 137, "the baseline configuration (B = 8, T = 2)"),
     ("vexplore(VB, VT), B = 10, T = 3", "vexplore(VB, VT)", 211, 211, "the vault's headline assert"),
     ("vcounterexample(VB, VT)", "vcounterexample(VB, VT)", 0, 211, "green: full search; four tables, so its per-state column is overstated"),
-    ("vexplore(10, 1)", "vexplore(10, 1)", 131, 131, "T = 1 shard"),
-    ("vexplore(10, 2)", "vexplore(10, 2)", 171, 171, "T = 2 shard"),
+    ("vexplore(10, 1)", "vexplore(10, 1)", 131, 131, "separate model (T = 1), not a part of the headline"),
+    ("vexplore(10, 2)", "vexplore(10, 2)", 171, 171, "separate model (T = 2), not a part of the headline"),
 ]
 
 HEADER = """use ingot::escrow::CAP
