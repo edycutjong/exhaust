@@ -76,7 +76,7 @@ def cpu():
 
 
 def run_test(filter_, backend=None):
-    cmd = ["fe", "test", "--filter", filter_, "--show-logs"] + (["--backend", backend] if backend else [])
+    cmd = ["fe", "test", "--filter", filter_] + (["--backend", backend] if backend else ["--show-logs"])  # native: no logs
     rc, out, dt = sh(cmd, ROOT)
     return rc, out, round(dt, 3)
 
@@ -179,7 +179,9 @@ def main():
          f"{meta['date_utc']} UTC · `{fe}` · commit `{meta['commit']}` · `{meta['uname']}` · {meta['cpu']} · python {meta['python']}", "",
          "Counts are exact (Python oracle `tools/ref_model.py`); a `pass` row means the Fe compile-time search returned the same count.",
          f"Wall times are the median of {RUNS} `fe check` runs of the whole ingot, which includes compiling everything else:",
-         f"the gate-stripped ingot with no probe takes **{out['baseline_fe_check_s']} s** on its own. Times vary by machine; counts do not.", "",
+         f"the gate-stripped ingot with no probe takes **{out['baseline_fe_check_s']} s** on its own. Times vary by machine; counts do not.",
+         "At these sizes the search itself costs less than the run-to-run noise on top of that baseline (the evaluator runs a 736-state",
+         "search in well under a second); the step budget in section 2 is the cost that decides what fits, not the wall time.", "",
          "## 1. Escrow capacity sweep (`explore(C)`, one static_assert each; the attack printer `counterexample(C)` is one run)", "",
          "| C | states | edges | attempts | diameter | `explore(C)` | fe check median (s) | `counterexample(C)` |", "|---:|---:|---:|---:|---:|---|---:|---|"]
     for r in sweep:
@@ -190,9 +192,10 @@ def main():
           "Measured by `bench/budget_probe.py` (loop bisection, see `evidence/budget.md`): the per-assert limit is 1,000,000 evaluator steps.", "",
           "| search | states | steps | share of 1M | steps per state |", "|---|---:|---:|---:|---:|"]
     for r in out["step_budget"]["rows"]:
-        L.append(f"| `{r['expr']}` | {r['states']} | {'over limit' if r['steps'] is None else f'{r['steps']:,}'} | "
-                 f"{'—' if r['share_of_limit'] is None else f'{100 * r['share_of_limit']:.1f}%'} | "
-                 f"{'—' if r['steps_per_state_after_setup'] is None else f'{r['steps_per_state_after_setup']:,}'} |")
+        steps = "over limit" if r["steps"] is None else format(r["steps"], ",")
+        share = "—" if r["share_of_limit"] is None else "%.1f%%" % (100 * r["share_of_limit"])
+        per = "—" if r["steps_per_state_after_setup"] is None else format(r["steps_per_state_after_setup"], ",")
+        L.append("| `%s` | %s | %s | %s | %s |" % (r["expr"], r["states"], steps, share, per))
     L += ["", "## 3. Shard scaling (performance only: seeds k = 1..21 of the locked amount split over n independent static_asserts)", "",
           "| shards | states per shard | largest shard | status | fe check median (s) |", "|---:|---|---:|---|---:|"]
     for r in shards:
