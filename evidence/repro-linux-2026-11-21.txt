@@ -1,5 +1,5 @@
-# sh tools/repro_linux.sh (ubuntu:24.04, --platform linux/amd64, Docker on Darwin arm64), 2026-11-20 21:04 UTC
-commit: a01722ee801e743650f92046335f3a19865065bd
+# sh tools/repro_linux.sh (ubuntu:24.04, --platform linux/amd64, Docker on Darwin arm64), 2026-11-20 22:51 UTC
+commit: 470bca8a21ce3e40e99cf4e1e0d248539cabe701
 fe: fe 26.6.0 (5b3f96a)
 uname: Linux x86_64
 == fe fmt --check
@@ -8,25 +8,24 @@ uname: Linux x86_64
 error count: 0
 -> PASS
 == fe test
-test result: ok. 15 passed; 0 failed
+test result: ok. 28 passed; 0 failed
 -> PASS
 == fe test --backend native (no C linker installed)
-ERROR [3.6116s] Failed to emit test native: host linker `cc` failed
+ERROR [5.9305s] Failed to emit test native: host linker `cc` failed
 test result: FAILED. 0 passed; 1 failed
 -> FAIL (exit 1)
 == fe test --backend native (after apt-get install gcc libc6-dev)
-test result: ok. 6 passed; 0 failed
+test result: ok. 10 passed; 0 failed
 -> PASS
 == sh demo/run.sh (the README demo: green build, bug patch red, replays)
    = assertion message: invariant 'paid once' broken: buyer and seller both paid
    = left: `11234`
    -> build FAILED (as it must)
      PASS  [0.0142s] test_attack_patched_replay
-     PASS  [0.0133s] test_contract_rejects_attack
+     PASS  [0.0146s] test_contract_rejects_attack
 -> PASS
 == bug flip: git apply demo/refund-after-release.patch && fe build (must fail)
 exit: 1
    = assertion message: invariant 'paid once' broken: buyer and seller both paid
     = left: `11234`
-seconds from clone to the red build (includes the gcc install): 53
-exit 0
+seconds from clone to the red build (includes the gcc install): 70
