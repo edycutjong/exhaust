@@ -10,6 +10,7 @@ Sections: (1) escrow capacity sweep, (2) the step budget (bench/budget_probe.py)
 (4) runtime search gas on the EVM backend and time on the native backend, (5) the vault.
 """
 import json
+import os
 import platform
 import re
 import shutil
@@ -97,7 +98,8 @@ def main():
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     dirty = bool(subprocess.run(["git", "status", "--porcelain", "--", "src"], cwd=ROOT, capture_output=True, text=True).stdout.strip())
     meta = {"date_utc": time.strftime("%Y-%m-%d %H:%M", time.gmtime()), "fe": fe, "commit": commit + ("+dirty-src" if dirty else ""),
-            "uname": " ".join(platform.uname()), "cpu": cpu(), "python": platform.python_version(), "fe_check_runs_per_row": RUNS}
+            "uname": " ".join(platform.uname()), "cpu": cpu(), "python": platform.python_version(), "fe_check_runs_per_row": RUNS,
+            "load_avg_start": " / ".join(f"{x:.1f}" for x in os.getloadavg())}
     d = make_copy()
     out = {"meta": meta}
 
@@ -148,7 +150,7 @@ def main():
     # (4) runtime search: gas on the EVM backend, time on the native backend
     runtime = {}
     for name, flt, nat in (("escrow C=17 (gas) / C=17 + C=21 (native)", "test_runtime_search_gas", "test_runtime_explore_agrees"),
-                           ("vault B=10 T=3 (gas) / four configurations (native)", "test_vault_runtime_search_gas", "test_vault_runtime_agrees")):
+                           ("vault B=10 T=3 (gas) / four configurations + edge pins (native)", "test_vault_runtime_search_gas", "test_vault_runtime_agrees")):
         rc, o, wall = run_test(flt)
         g = gas_of(o)
         rc2, o2, wall2 = run_test(nat, "native")
@@ -174,13 +176,20 @@ def main():
     out["vault_contract_graph"] = {k: m.vcontract_graph(10, 3, k == "ready") for k in ("ready", "locked")}
     shutil.rmtree(d)
 
+    # How far the fe check medians sit from the no-probe baseline, computed (never a hand-written bound).
+    walls = ([r["explore_fe_check_median_s"] for r in out["escrow_sweep"] if "explore_fe_check_median_s" in r]
+             + [r["fe_check_median_s"] for r in out["shard_scaling"]]
+             + [r["explore_fe_check_median_s"] for r in out["vault"] if "explore_fe_check_median_s" in r])
+    spread = lambda xs: (round(min(xs) - out["baseline_fe_check_s"], 3), round(max(xs) - out["baseline_fe_check_s"], 3))
+    out["wall_minus_baseline_s"] = {"all": spread(walls), "shards": spread([r["fe_check_median_s"] for r in out["shard_scaling"]])}
     (ROOT / "evidence" / f"bench-{date}.json").write_text(json.dumps(out, indent=1) + "\n")
     L = [f"# Benchmarks ({date}) — written by bench/run.py", "",
          f"{meta['date_utc']} UTC · `{fe}` · commit `{meta['commit']}` · `{meta['uname']}` · {meta['cpu']} · python {meta['python']}", "",
          "Counts are exact (Python oracle `tools/ref_model.py`); a `pass` row means the Fe compile-time search returned the same count.",
          f"Wall times are the median of {RUNS} `fe check` runs of the whole ingot, which includes compiling everything else:",
          f"the gate-stripped ingot with no probe takes **{out['baseline_fe_check_s']} s** on its own. Times vary by machine; counts do not.",
-         "At these sizes the wall times carry little signal: every median is within about 0.12 s of that baseline and does not track the state count closely;",
+         f"At these sizes the wall times carry little signal: every median minus that baseline lies between {out['wall_minus_baseline_s']['all'][0]} s and "
+         f"{out['wall_minus_baseline_s']['all'][1]} s (computed; load average at the start {out['meta']['load_avg_start']}: other jobs ran on this machine, so read them as noise-level);",
          "the step budget in section 2 is the cost that decides what fits, not the wall time.", "",
          "## 1. Escrow capacity sweep (`explore(C)`, one static_assert each; the attack printer `counterexample(C)` is one run)", "",
          "| C | states | edges | attempts | diameter | `explore(C)` | fe check median (s) | `counterexample(C)` |", "|---:|---:|---:|---:|---:|---|---:|---|"]
@@ -201,14 +210,14 @@ def main():
     for r in shards:
         L.append(f"| {r['shards']} | {', '.join(map(str, r['states_per_shard']))} | {r['largest_shard_states']} | {r['status']} | {r['fe_check_median_s']} |")
     L += ["", "714 = the locked-amount seeds only; the 22 Open states bring the escrow to 736, so this table is about shard sizes, not coverage. The wall column is",
-          "within about 0.12 s of the no-probe baseline and does not fall with more shards: read the largest-shard column.", "",
+          f"between {out['wall_minus_baseline_s']['shards'][0]} s and {out['wall_minus_baseline_s']['shards'][1]} s of the no-probe baseline and does not fall with more shards: read the largest-shard column.", "",
           "Independent asserts each get their own 1,000,000-step budget, so the largest shard is what has to fit; the compiler runs them one after another, so the wall time does not fall with more shards.", "",
           "## 4. Runtime search (the same explorer, run at runtime)", "",
           "| model | EVM gas of one search (Sonatina, `fe test`) | states | EVM test ok | native agreement test, `fe test` wall (s) | native test ok |", "|---|---:|---:|---|---:|---|"]
     for k, r in runtime.items():
         L.append(f"| {k} | {r['evm_gas']:,} | {r['states']} | {r['evm_test_ok']} | {r['native_fe_test_wall_s']} | {r['native_test_ok']} |")
     L += ["", "The native column is the wall time of the whole `fe test --backend native --filter <agreement test>` command: it includes compiling the ingot",
-          "and runs every search that test makes (escrow `test_runtime_explore_agrees`: C = 17 and C = 21; vault `test_vault_runtime_agrees`: four configurations),",
+          "and runs every search that test makes (escrow `test_runtime_explore_agrees`: C = 17 and C = 21; vault `test_vault_runtime_agrees`: four configurations plus the headline edge count and edge hash),",
           "so it is not the time of the single search whose gas is in the column to its left.", "",
           "## 5. Vault (2-of-3 approval + timelock)", "",
           "| B | T | states | edges | attempts | diameter | `vexplore(B, T)` | fe check median (s) | `vcounterexample` |", "|---:|---:|---:|---:|---:|---:|---|---:|---|"]
