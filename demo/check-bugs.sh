@@ -9,8 +9,10 @@ cd "$(dirname "$0")/.."
 root=$(pwd)
 mode=${1:-zoo}
 # Every temp copy, transcript and the failure flag live under one work root, removed on exit.
+case "$mode" in zoo|--conformance) ;; *) echo "usage: sh demo/check-bugs.sh [--conformance]" >&2; exit 2 ;; esac
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
+trap 'exit 130' INT TERM
 flag="$work/failed"
 
 # copy <patch> <full|nohash|stripped[+file]>: prints the path of a fresh patched copy of the ingot.
@@ -31,7 +33,9 @@ copy() {
       [ -n "$extra" ] && cp "$root/$extra" "$d/src/"
       ;;
   esac
-  [ -n "$1" ] && patch -s -d "$d" -p1 < "$root/$1"
+  if [ -n "$1" ] && ! patch -s -d "$d" -p1 < "$root/$1" >&2; then
+    echo "patch failed: $1" >&2; echo 1 > "$flag"
+  fi
   echo "$d"
 }
 
@@ -58,7 +62,10 @@ if [ "$mode" = "--conformance" ]; then
       rest=$expect
       while [ -n "$rest" ]; do
         pat=${rest%%;;*}
-        grep -Eq -- "$pat" "$log" || ok=0
+        case $pat in
+          !*) ! grep -Eq -- "${pat#!}" "$log" || ok=0 ;;  # "!regex": must NOT appear
+          *) grep -Eq -- "$pat" "$log" || ok=0 ;;
+        esac
         [ "$pat" = "$rest" ] && rest="" || rest=${rest#*;;}
       done
       if [ "$ok" -eq 1 ]; then r=PASS; else r=FAIL; echo 1 > "$flag"; fi
@@ -84,8 +91,13 @@ else
       s=$(copy "$patch" stripped)
       (cd "$s" && fe test --filter test_handler_ > h.txt 2>&1); h=$?
       (cd "$s" && fe test --filter test_contract_matches_step > c.txt 2>&1); c=$?
-      hcat=missed; [ "$h" -ne 0 ] && hcat="caught ($(grep -c '^FAIL' "$s/h.txt") of 5 fail)"
+      # "caught" needs a failing test (a compile error in the copy would be a broken check, not a catch).
+      hf=$(grep -c '^FAIL' "$s/h.txt"); cf=$(grep -c '^FAIL' "$s/c.txt")
+      hcat=missed; [ "$h" -ne 0 ] && hcat="caught ($hf of 5 fail)"
       ccat=missed; [ "$c" -ne 0 ] && ccat=caught
+      if { [ "$h" -ne 0 ] && [ "$hf" -eq 0 ]; } || { [ "$c" -ne 0 ] && [ "$cf" -eq 0 ]; }; then
+        hcat="$hcat (no FAIL line: broken check)"; echo 1 > "$flag"
+      fi
       r=PASS
       if [ "$st" -eq 0 ] || [ "$named" = no ] || [ "$shown" = no ]; then r=FAIL; echo 1 > "$flag"; fi
       echo "$r  $patch | exit $st | '$inv': $named | $digits: $shown | $hcat | $ccat"
@@ -94,6 +106,7 @@ else
   } > "$out" 2>&1
 fi
 cat "$out"
-[ "${EVIDENCE:-0}" = 1 ] && cp "$out" "$keep"
 if [ -f "$flag" ]; then echo "RESULT: FAIL"; exit 1; fi
+# Saved only from a green run, so a failing run never overwrites committed evidence.
+if [ "${EVIDENCE:-0}" = 1 ]; then cp "$out" "$keep"; fi
 echo "RESULT: all rows as expected"

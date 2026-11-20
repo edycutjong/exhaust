@@ -1,11 +1,13 @@
 #!/bin/sh
-# Runs the CI workflow's steps locally and writes a transcript to evidence/ci-local-<date>.txt.
+# Runs the CI workflow's steps locally and prints a transcript; with EVIDENCE=1 it is saved to
+# evidence/ci-local-<date>.txt (only when every step passed).
 # Usage: sh tools/ci_local.sh            (from anywhere inside the repository)
 set -u
 cd "$(dirname "$0")/.."
-out="evidence/ci-local-$(date -u +%Y-%m-%d).txt"
+keep="evidence/ci-local-$(date -u +%Y-%m-%d).txt"
+out=$(mktemp)
 log=$(mktemp)
-trap 'rm -f "$log"' EXIT
+trap 'rm -f "$log" "$out"' EXIT
 mkdir -p evidence
 fail=0
 cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 "model name" /proc/cpuinfo 2>/dev/null | cut -d: -f2)
@@ -31,4 +33,5 @@ cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 "model name" /p
   if [ "$fail" -eq 0 ]; then echo "RESULT: all steps passed"; else echo "RESULT: at least one step failed"; fi
 } > "$out" 2>&1
 cat "$out"
+if [ "${EVIDENCE:-0}" = 1 ] && [ "$fail" -eq 0 ]; then cp "$out" "$keep"; fi
 exit "$fail"

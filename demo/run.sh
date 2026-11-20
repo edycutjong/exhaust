@@ -38,6 +38,11 @@ if (cd "$work/bug" && fe build > out.txt 2>&1); then
 fi
 grep -E '^error\[|assertion message|left:' "$work/bug/out.txt" | sed 's/^ */   /'
 digits=$(grep -o 'left: `[0-9]*`' "$work/bug/out.txt" | head -1 | grep -o '[0-9][0-9]*')
+# The demo's claim, checked: the build names the invariant and prints the expected attack (demo/bugs.tsv).
+want=$(grep '^demo/refund-after-release.patch' "$root/demo/bugs.tsv" | cut -f3)
+if ! grep -q "invariant 'paid once' broken" "$work/bug/out.txt" || [ "$digits" != "$want" ]; then
+  echo "   unexpected: wanted invariant 'paid once' and digits $want, got '${digits:-none}'"; exit 1
+fi
 echo "   -> build FAILED (as it must)"
 
 echo
@@ -50,8 +55,10 @@ cp "$root/demo/attack_replay.fe" "$work/replay/src/"
 echo "   patched contract (search removed), fe test --filter test_attack_patched_replay:"
 r=$(cd "$work/replay" && fe test --filter test_attack_patched_replay 2>&1 | grep -E '^(PASS|FAIL)')
 echo "     $r"
+case $r in *FAIL*) r=FAIL ;; esac
 case $r in PASS*) echo "     -> all five calls accepted; the seller AND the buyer were paid" ;; *) echo "     unexpected result"; exit 1 ;; esac
 echo "   real contract, fe test --filter attack:"
 r=$(cd "$work/ok" && fe test --filter attack 2>&1 | grep -E '^(PASS|FAIL)')
 echo "     $r"
+case $r in *FAIL*) r=FAIL ;; esac
 case $r in PASS*) echo "     -> the first four calls accepted, the Refund refused, storage unchanged" ;; *) echo "     unexpected result"; exit 1 ;; esac
