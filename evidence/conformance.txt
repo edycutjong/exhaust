@@ -1,5 +1,5 @@
-# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 23:19 UTC
-commit: de43ffcacaccc28c4eee67f903ae783a36c336b3
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 23:26 UTC
+commit: 582d6f6ca637b06eb2be82f3941f07fb47e61c4e
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -15,3 +15,4 @@ PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_d
 PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_runtime_explore_agrees` exit 0 (want 0)  expect: ^PASS .*test_runtime_explore_agrees
 PASS  K6  conformance/bad-init.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'settled empty';;left: `9`
 PASS  K7  conformance/vault-skip-cancel.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `380`;;!invariant '
+PASS  K8  conformance/lock-boundary-gt.patch  [full]  `fe test` exit 1 (want 1)  expect: ^FAIL .*test_vault_contract_matches_vstep;;^FAIL .*test_vault_handler_execute;;^FAIL .*test_vault_differential;;test result: FAILED. 25 passed; 3 failed
