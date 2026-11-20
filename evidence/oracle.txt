@@ -1,4 +1,5 @@
-# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 21:54 UTC, Darwin arm64
+# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 22:46 UTC, Darwin arm64, commit 403ece4
+# oracle: tools/ref_model.py, python 3.11.1
 # oracle: tools/ref_model.py, python 3.11.1
 cap  states  edges  attempts  diameter  edge_hash
   2      14     16        70         5  1524000005756973351
@@ -25,6 +26,7 @@ bug settle-early           cap 19: 'settled empty' 1123
   10  2     171    470      1197        60
   10  3     211    580      1477        70
 bug vault-approve-twice    B=10 T=3: 'counted once' 122
+bug vault-cancel-pays      B=10 T=3: 'only execute pays' 17
 bug vault-execute-early    B=10 T=3: 'timelock respected' 1236
 bug vault-pay-twice        B=10 T=3: 'pays one unit' 1235556
 vault contract graph B=10 T=3 lock ready: 91 states, 250 edges, 546 attempts
@@ -40,10 +42,13 @@ check shard(15) == 385: oracle 385 -> AGREE
 check edges(21) == 966: oracle 966 -> AGREE
 check edge_hash(21) == 1194004490208706542: oracle 1194004490208706542 -> AGREE
 check explore(21) == 736: oracle 736 -> AGREE
-check: all 5 pins in src/vault_explore.fe parsed
+check: all 7 pins in src/vault_explore.fe parsed
 check vcounterexample(10, 3) == 0: oracle 0 -> AGREE
 check vexplore(10, 1) == 131: oracle 131 -> AGREE
 check vexplore(10, 2) == 171: oracle 171 -> AGREE
 check vexplore(8, 2) == 137: oracle 137 -> AGREE
 check vexplore(10, 3) == 211: oracle 211 -> AGREE
+check vedges(10, 3) == 580: oracle 580 -> AGREE
+check vedge_hash(10, 3) == 1115689132712769016: oracle 1115689132712769016 -> AGREE
+check src/oracle_edges.fe (cap 21, 3680 rows) == oracle's table now: AGREE
 RESULT: oracle agrees with every Fe pin

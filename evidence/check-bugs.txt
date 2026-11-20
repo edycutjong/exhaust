@@ -1,5 +1,5 @@
-# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-20 22:04 UTC
-commit: 044366e49571a4a45d0511f0e94aa9fe75445eae
+# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-20 22:46 UTC
+commit: 403ece4c8c15012d05f8ce7b1a48e11a3bc0141f
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -29,3 +29,6 @@ PASS  demo/vault-execute-early.patch | exit 1 | 'timelock respected': yes | 1236
 PASS  demo/vault-pay-twice.patch | exit 1 | 'pays one unit': yes | 1235556: yes | caught (1 of 4 fail) | caught
       = assertion message: invariant 'pays one unit' broken: execute paid out other than exactly one unit
       = left: `1235556`
+PASS  demo/vault-cancel-pays.patch | exit 1 | 'only execute pays': yes | 17: yes | caught (1 of 4 fail) | caught
+      = assertion message: invariant 'only execute pays' broken: units left the vault without an execute
+      = left: `17`

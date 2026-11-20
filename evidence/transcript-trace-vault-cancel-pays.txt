@@ -1,0 +1,11 @@
+# native trace of vault-cancel-pays, by action name
+# 2026-11-20 22:47 UTC · commit 403ece4 · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ sh tools/trace.sh demo/vault-cancel-pays.patch
+
+escrow, capacity 19: no counterexample (every reachable state and edge keeps every invariant)
+vault, B = 10, T = 3: shortest counterexample, 2 actions (digits 17)
+  start     (Idle, mask 0, count 0, clock 0, bal 10, paid 0)
+  1  Propose   (Proposed, mask 0, count 0, clock 0, bal 10, paid 0)
+  2  Cancel    (Idle, mask 0, count 0, clock 0, bal 9, paid 1)
+  ^ this edge breaks invariant 'only execute pays'
+exit status: 1

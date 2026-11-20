@@ -1,22 +1,22 @@
 # fail: vault-approve-twice (names 'counted once', prints 122)
-# 2026-11-20 22:03 UTC · commit 044366e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# 2026-11-20 22:47 UTC · commit 403ece4 · fe 26.6.0 (5b3f96a) · Darwin arm64
 # $ patch -p1 < demo/vault-approve-twice.patch && fe --color never build
 
 error[3-0036]: assertion failed in const context
-   ┌─ src/vault_explore.fe:34:5
+   ┌─ src/vault_explore.fe:36:5
    │  
-34 │ ╭     assert!(
-35 │ │         v != V_COUNTED_ONCE,
-36 │ │         "invariant 'counted once' broken: approval count differs from the signers in the mask",
-37 │ │     )
+36 │ ╭     assert!(
+37 │ │         v != V_COUNTED_ONCE,
+38 │ │         "invariant 'counted once' broken: approval count differs from the signers in the mask",
+39 │ │     )
    │ ╰─────^ `assert!` evaluated to `false`
    │  
    = assertion message: invariant 'counted once' broken: approval count differs from the signers in the mask
 
 error[8-0081]: static assertion failed
-    ┌─ src/vault_explore.fe:175:15
+    ┌─ src/vault_explore.fe:218:15
     │
-175 │ static_assert(vcounterexample(VB, VT) == 0)
+218 │ static_assert(vcounterexample(VB, VT) == 0)
     │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
     │
     = left: `122`

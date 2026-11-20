@@ -1,14 +1,15 @@
 {
  "meta": {
-  "date_utc": "2026-11-20 22:03",
+  "date_utc": "2026-11-20 22:45",
   "fe": "fe 26.6.0 (5b3f96a)",
-  "commit": "044366e+dirty-src",
+  "commit": "403ece4",
   "uname": "Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64 arm",
   "cpu": "Apple M1 Max",
   "python": "3.11.1",
-  "fe_check_runs_per_row": 5
+  "fe_check_runs_per_row": 5,
+  "load_avg_start": "79.2 / 54.6 / 48.1"
  },
- "baseline_fe_check_s": 0.509,
+ "baseline_fe_check_s": 0.52,
  "escrow_sweep": [
   {
    "cap": 2,
@@ -17,9 +18,9 @@
    "attempts": 70,
    "diameter": 5,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.512,
+   "explore_fe_check_median_s": 0.531,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.532
+   "counterexample_fe_check_s": 0.588
   },
   {
    "cap": 4,
@@ -28,9 +29,9 @@
    "attempts": 195,
    "diameter": 9,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.534,
+   "explore_fe_check_median_s": 0.521,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.599
+   "counterexample_fe_check_s": 0.519
   },
   {
    "cap": 8,
@@ -39,9 +40,9 @@
    "attempts": 625,
    "diameter": 17,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.515,
+   "explore_fe_check_median_s": 0.525,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.518
+   "counterexample_fe_check_s": 0.602
   },
   {
    "cap": 12,
@@ -50,9 +51,9 @@
    "attempts": 1295,
    "diameter": 25,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.57,
+   "explore_fe_check_median_s": 0.551,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.533
+   "counterexample_fe_check_s": 0.542
   },
   {
    "cap": 16,
@@ -61,9 +62,9 @@
    "attempts": 2205,
    "diameter": 33,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.575,
+   "explore_fe_check_median_s": 0.611,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.571
+   "counterexample_fe_check_s": 0.564
   },
   {
    "cap": 17,
@@ -72,9 +73,9 @@
    "attempts": 2470,
    "diameter": 35,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.605,
+   "explore_fe_check_median_s": 0.56,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.552
+   "counterexample_fe_check_s": 0.565
   },
   {
    "cap": 18,
@@ -83,9 +84,9 @@
    "attempts": 2750,
    "diameter": 37,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.628,
+   "explore_fe_check_median_s": 0.611,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.655
+   "counterexample_fe_check_s": 0.601
   },
   {
    "cap": 19,
@@ -94,9 +95,9 @@
    "attempts": 3045,
    "diameter": 39,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.589,
+   "explore_fe_check_median_s": 0.577,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.577
+   "counterexample_fe_check_s": 0.743
   },
   {
    "cap": 20,
@@ -105,9 +106,9 @@
    "attempts": 3355,
    "diameter": 41,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.611,
+   "explore_fe_check_median_s": 0.589,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.59
+   "counterexample_fe_check_s": 0.597
   },
   {
    "cap": 21,
@@ -116,9 +117,9 @@
    "attempts": 3680,
    "diameter": 43,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.577,
+   "explore_fe_check_median_s": 0.659,
    "counterexample_status": "step-limit",
-   "counterexample_fe_check_s": 0.307
+   "counterexample_fe_check_s": 0.342
   }
  ],
  "step_budget": {
@@ -129,8 +130,8 @@
    "limit": 1000000,
    "burn_iterations_that_fit": 43476,
    "steps_per_burn_iteration": 23.0012,
-   "probe_wall_time_s": 159.2,
-   "date_utc": "2026-11-20 21:53"
+   "probe_wall_time_s": 154.2,
+   "date_utc": "2026-11-20 22:41"
   },
   "rows": [
    {
@@ -238,8 +239,8 @@
     "expr": "vexplore(0, 0)",
     "pin": 1,
     "states": 1,
-    "steps": 94512,
-    "share_of_limit": 0.0945,
+    "steps": 94581,
+    "share_of_limit": 0.0946,
     "note": "B = 0: no unit to propose, one state; two 46,464-element tables initialised",
     "steps_per_state_after_setup": null
    },
@@ -248,50 +249,70 @@
     "expr": "vexplore(8, 2)",
     "pin": 137,
     "states": 137,
-    "steps": 391503,
-    "share_of_limit": 0.3915,
+    "steps": 414160,
+    "share_of_limit": 0.4142,
     "note": "the baseline configuration (B = 8, T = 2)",
-    "steps_per_state_after_setup": 2168
+    "steps_per_state_after_setup": 2333
    },
    {
     "search": "vexplore(VB, VT), B = 10, T = 3",
     "expr": "vexplore(VB, VT)",
     "pin": 211,
     "states": 211,
-    "steps": 551638,
-    "share_of_limit": 0.5516,
+    "steps": 586761,
+    "share_of_limit": 0.5868,
     "note": "the vault's headline assert",
-    "steps_per_state_after_setup": 2166
+    "steps_per_state_after_setup": 2333
    },
    {
     "search": "vcounterexample(VB, VT)",
     "expr": "vcounterexample(VB, VT)",
     "pin": 0,
     "states": 211,
-    "steps": 654407,
-    "share_of_limit": 0.6544,
+    "steps": 667380,
+    "share_of_limit": 0.6674,
     "note": "green: full search; four tables, so its per-state column is overstated",
-    "steps_per_state_after_setup": 2654
+    "steps_per_state_after_setup": 2715
+   },
+   {
+    "search": "vsearch(VB, VT, V_COUNT_EDGES)",
+    "expr": "vsearch(VB, VT, V_COUNT_EDGES)",
+    "pin": 580,
+    "states": 211,
+    "steps": 582482,
+    "share_of_limit": 0.5825,
+    "note": "the vault's edge-count pin: the same checked search, counting edges",
+    "steps_per_state_after_setup": 2312
+   },
+   {
+    "search": "vsearch(VB, VT, V_HASH_EDGES)",
+    "expr": "vsearch(VB, VT, V_HASH_EDGES)",
+    "pin": 1115689132712769016,
+    "states": 211,
+    "steps": 613833,
+    "share_of_limit": 0.6138,
+    "note": "the vault's edge-hash pin: the same checked search, u128 hash",
+    "steps_per_state_after_setup": 2461
    },
    {
     "search": "vexplore(10, 1)",
     "expr": "vexplore(10, 1)",
     "pin": 131,
     "states": 131,
-    "steps": 379888,
-    "share_of_limit": 0.3799,
+    "steps": 401325,
+    "share_of_limit": 0.4013,
     "note": "separate model (T = 1), not a part of the headline",
-    "steps_per_state_after_setup": 2178
+    "steps_per_state_after_setup": 2342
    },
    {
     "search": "vexplore(10, 2)",
     "expr": "vexplore(10, 2)",
     "pin": 171,
     "states": 171,
-    "steps": 465751,
-    "share_of_limit": 0.4658,
+    "steps": 494043,
+    "share_of_limit": 0.494,
     "note": "separate model (T = 2), not a part of the headline",
-    "steps_per_state_after_setup": 2171
+    "steps_per_state_after_setup": 2336
    }
   ]
  },
@@ -303,7 +324,7 @@
    ],
    "largest_shard_states": 714,
    "status": "pass",
-   "fe_check_median_s": 0.628
+   "fe_check_median_s": 0.587
   },
   {
    "shards": 2,
@@ -313,7 +334,7 @@
    ],
    "largest_shard_states": 505,
    "status": "pass",
-   "fe_check_median_s": 0.581
+   "fe_check_median_s": 0.647
   },
   {
    "shards": 4,
@@ -325,7 +346,7 @@
    ],
    "largest_shard_states": 290,
    "status": "pass",
-   "fe_check_median_s": 0.594
+   "fe_check_median_s": 0.589
   },
   {
    "shards": 8,
@@ -341,7 +362,7 @@
    ],
    "largest_shard_states": 129,
    "status": "pass",
-   "fe_check_median_s": 0.591
+   "fe_check_median_s": 0.674
   }
  ],
  "runtime_search": {
@@ -349,17 +370,17 @@
    "evm_gas": 16394182,
    "states": 494,
    "evm_test_ok": true,
-   "evm_fe_test_wall_s": 1.588,
+   "evm_fe_test_wall_s": 1.627,
    "native_test_ok": true,
-   "native_fe_test_wall_s": 1.508
+   "native_fe_test_wall_s": 1.51
   },
-  "vault B=10 T=3 (gas) / four configurations (native)": {
-   "evm_gas": 18702670,
+  "vault B=10 T=3 (gas) / four configurations + edge pins (native)": {
+   "evm_gas": 18737712,
    "states": 211,
    "evm_test_ok": true,
-   "evm_fe_test_wall_s": 1.461,
+   "evm_fe_test_wall_s": 1.939,
    "native_test_ok": true,
-   "native_fe_test_wall_s": 1.442
+   "native_fe_test_wall_s": 1.426
   }
  },
  "vault": [
@@ -371,7 +392,7 @@
    "attempts": 959,
    "diameter": 48,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.551
+   "explore_fe_check_median_s": 0.558
   },
   {
    "b": 10,
@@ -381,7 +402,7 @@
    "attempts": 917,
    "diameter": 50,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.537
+   "explore_fe_check_median_s": 0.616
   },
   {
    "b": 10,
@@ -391,7 +412,7 @@
    "attempts": 1197,
    "diameter": 60,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.573
+   "explore_fe_check_median_s": 0.552
   },
   {
    "b": 10,
@@ -401,9 +422,9 @@
    "attempts": 1477,
    "diameter": 70,
    "explore_status": "pass",
-   "explore_fe_check_median_s": 0.612,
+   "explore_fe_check_median_s": 0.625,
    "counterexample_status": "pass",
-   "counterexample_fe_check_s": 0.665
+   "counterexample_fe_check_s": 0.57
   },
   {
    "b": 12,
@@ -427,5 +448,15 @@
    "edges": 21,
    "attempts": 54
   }
+ },
+ "wall_minus_baseline_s": {
+  "all": [
+   0.001,
+   0.154
+  ],
+  "shards": [
+   0.067,
+   0.154
+  ]
  }
 }

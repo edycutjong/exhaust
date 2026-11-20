@@ -1,22 +1,22 @@
 # fail: vault-pay-twice (names 'pays one unit', prints 1235556)
-# 2026-11-20 22:03 UTC · commit 044366e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# 2026-11-20 22:47 UTC · commit 403ece4 · fe 26.6.0 (5b3f96a) · Darwin arm64
 # $ patch -p1 < demo/vault-pay-twice.patch && fe --color never build
 
 error[3-0036]: assertion failed in const context
-   ┌─ src/vault_explore.fe:62:5
+   ┌─ src/vault_explore.fe:64:5
    │  
-62 │ ╭     assert!(
-63 │ │         v != V_PAYS_ONE,
-64 │ │         "invariant 'pays one unit' broken: execute paid out other than exactly one unit",
-65 │ │     )
+64 │ ╭     assert!(
+65 │ │         v != V_PAYS_ONE,
+66 │ │         "invariant 'pays one unit' broken: execute paid out other than exactly one unit",
+67 │ │     )
    │ ╰─────^ `assert!` evaluated to `false`
    │  
    = assertion message: invariant 'pays one unit' broken: execute paid out other than exactly one unit
 
 error[8-0081]: static assertion failed
-    ┌─ src/vault_explore.fe:175:15
+    ┌─ src/vault_explore.fe:218:15
     │
-175 │ static_assert(vcounterexample(VB, VT) == 0)
+218 │ static_assert(vcounterexample(VB, VT) == 0)
     │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
     │
     = left: `1235556`

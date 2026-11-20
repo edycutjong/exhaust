@@ -32,7 +32,7 @@ Both red patches failed `fe build` naming their invariant and printing their dig
 Things that did not work the first time, in the order they came up:
 
 1. **Table size.** The first configuration, B = 16 and T = 3 (box 110,976), fit one `static_assert` (95.1% of the budget; measured once, the raw row was not committed, see `evidence/capacities.md`) but the
-   attack printer `vcounterexample` did not (four tables). The box was cut to B ≤ 10, T ≤ 3 (46,464): the headline assert now uses 55.2% of the budget and the attack printer 65.4% (`evidence/budget.md`). This is the pattern's one real cost: **the model size is set by the 1,000,000-step budget, and every extra field multiplies the box.**
+   attack printer `vcounterexample` did not (four tables). The box was cut to B ≤ 10, T ≤ 3 (46,464): the headline assert used 55.2% of the budget and the attack printer 65.4% at the time; after invariant 10 and the vault edge pins (one checked search, `vsearch`) they use 58.7% and 66.7% (`evidence/budget.md`). This is the pattern's one real cost: **the model size is set by the 1,000,000-step budget, and every extra field multiplies the box.**
 2. **`Duration::from_secs` does not exist** in 26.6.0; use `std::evm::days(n)` and `Duration::zero()` (as `src/vault_tests.fe` does).
 3. **`usize` → `u32` with `as` is rejected**; `.downcast_truncate()` is the truncating spelling used elsewhere in the repo (`src/escrow_explore.fe`).
 4. **`Timestamp` is not a `u256`**: no `.seconds`, no cast. Block time stays a `Timestamp`, compared as `now >= queued_at + lock`.

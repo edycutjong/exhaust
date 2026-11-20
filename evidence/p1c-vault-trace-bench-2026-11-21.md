@@ -2,6 +2,9 @@
 
 Run on `fe 26.6.0 (5b3f96a)`, Darwin arm64 (Apple M1 Max), 2026-11-21. Every number below is read from a file in `evidence/` (the test counts from `evidence/transcript-tests.txt`) or re-derived by the command beside it.
 
+Superseded for the vault and the test counts by `evidence/p1d-review-fixes-2026-11-21.md`: a tenth invariant, two vault edge pins and one more test changed the vault's
+step counts and the test count; the escrow rows below are unchanged.
+
 | What | Result | Where |
 |---|---|---|
 | Vault model, B = 10, T = 3 (nine invariants) | 211 states in one `static_assert` (551,638 of 1,000,000 steps); attack printer 654,407 steps; the oracle agrees on the 211-state pin; 580 edges, 1,477 attempts and diameter 70 are oracle-only (the Fe vault has no edge pin) | `evidence/budget.md`, `evidence/oracle.txt` |

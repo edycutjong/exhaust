@@ -413,6 +413,13 @@
    "digits": "122"
   },
   {
+   "bug": "vault-cancel-pays",
+   "b": 10,
+   "t": 3,
+   "invariant": "only execute pays",
+   "digits": "17"
+  },
+  {
    "bug": "vault-execute-early",
    "b": 10,
    "t": 3,

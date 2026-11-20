@@ -1,5 +1,5 @@
-# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 21:54 UTC
-commit: d9280c3f2b539057796d1e827a79b6bc28e964f9
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 22:47 UTC
+commit: 403ece4c8c15012d05f8ce7b1a48e11a3bc0141f
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -14,3 +14,4 @@ PASS  K5  conformance/adapter-corruption.patch  [full]  `fe build` exit 0 (want 
 PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_differential_all_edges` exit 1 (want 1)  expect: ^FAIL .*test_differential_all_edges
 PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_runtime_explore_agrees` exit 0 (want 0)  expect: ^PASS .*test_runtime_explore_agrees
 PASS  K6  conformance/bad-init.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'settled empty';;left: `9`
+PASS  K7  conformance/vault-skip-cancel.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `380`;;!invariant '

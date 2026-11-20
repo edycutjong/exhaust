@@ -1,0 +1,26 @@
+# fail: vault-cancel-pays (names 'only execute pays', prints 17)
+# 2026-11-20 22:47 UTC · commit 403ece4 · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ patch -p1 < demo/vault-cancel-pays.patch && fe --color never build
+
+error[3-0036]: assertion failed in const context
+   ┌─ src/vault_explore.fe:68:5
+   │  
+68 │ ╭     assert!(
+69 │ │         v != V_ONLY_EXECUTE_PAYS,
+70 │ │         "invariant 'only execute pays' broken: units left the vault without an execute",
+71 │ │     )
+   │ ╰─────^ `assert!` evaluated to `false`
+   │  
+   = assertion message: invariant 'only execute pays' broken: units left the vault without an execute
+
+error[8-0081]: static assertion failed
+    ┌─ src/vault_explore.fe:218:15
+    │
+218 │ static_assert(vcounterexample(VB, VT) == 0)
+    │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
+    │
+    = left: `17`
+    = right: `0`
+    = operator: `==`
+
+exit status: 1
