@@ -164,3 +164,94 @@ fn test_runtime_search_gas() uses (ctx: std::evm::Ctx, log: mut std::evm::Log) {
     // Measured: 16,151,766 gas on Fe 26.6.0. A search folded away at compile time would cost almost nothing.
     assert!(used > 1000000)
 }
+
+// ---- EVM only: per-handler suite, written from MODEL.md's action table (happy path + the phase guard) ----
+
+#[cfg(target = "evm")]
+fn read_raw(evm: mut Evm, _ addr: Address) -> u256 {
+    evm.call(
+        addr: addr,
+        gas: 100000,
+        value: Wei::zero(),
+        message: EscrowMsg::RawState {},
+    )
+}
+
+/// The raw_state() word for (phase id, escrow, seller, buyer).
+#[cfg(target = "evm")]
+fn raw_of(_ p: u256, _ e: u256, _ s: u256, _ b: u256) -> u256 {
+    p | (e << 64) | (s << 128) | (b << 192)
+}
+
+/// Deposit: accepted while Open, adds one unit to escrow; rejected once Locked.
+#[cfg(target = "evm")]
+#[test]
+fn test_handler_deposit() uses (evm: mut Evm) {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: 101)
+    assert!(send(mut evm, addr, 0))
+    assert!(read_raw(mut evm, addr) == raw_of(0, 1, 0, 0))
+    assert!(send(mut evm, addr, 0))
+    assert!(read_raw(mut evm, addr) == raw_of(0, 2, 0, 0))
+    assert!(send(mut evm, addr, 1))
+    assert!(!send(mut evm, addr, 0))
+    assert!(read_raw(mut evm, addr) == raw_of(1, 2, 0, 0))
+}
+
+/// Lock: rejected with nothing in escrow; accepted after a deposit, the phase becomes Locked.
+#[cfg(target = "evm")]
+#[test]
+fn test_handler_lock() uses (evm: mut Evm) {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: 102)
+    assert!(!send(mut evm, addr, 1))
+    assert!(read_raw(mut evm, addr) == raw_of(0, 0, 0, 0))
+    assert!(send(mut evm, addr, 0))
+    assert!(send(mut evm, addr, 1))
+    assert!(read_raw(mut evm, addr) == raw_of(1, 1, 0, 0))
+    assert!(!send(mut evm, addr, 1))
+}
+
+/// Release: rejected while Open; once Locked each call pays the seller one unit, the last one settles.
+#[cfg(target = "evm")]
+#[test]
+fn test_handler_release() uses (evm: mut Evm) {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: 103)
+    assert!(send(mut evm, addr, 0))
+    assert!(send(mut evm, addr, 0))
+    assert!(!send(mut evm, addr, 2))
+    assert!(send(mut evm, addr, 1))
+    assert!(send(mut evm, addr, 2))
+    assert!(read_raw(mut evm, addr) == raw_of(1, 1, 1, 0))
+    assert!(send(mut evm, addr, 2))
+    assert!(read_raw(mut evm, addr) == raw_of(3, 0, 2, 0))
+    assert!(!send(mut evm, addr, 2))
+}
+
+/// Refund: rejected while Open; once Locked each call returns one unit to the buyer, the last one settles.
+#[cfg(target = "evm")]
+#[test]
+fn test_handler_refund() uses (evm: mut Evm) {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: 104)
+    assert!(send(mut evm, addr, 0))
+    assert!(send(mut evm, addr, 0))
+    assert!(!send(mut evm, addr, 3))
+    assert!(send(mut evm, addr, 1))
+    assert!(send(mut evm, addr, 3))
+    assert!(read_raw(mut evm, addr) == raw_of(1, 1, 0, 1))
+    assert!(send(mut evm, addr, 3))
+    assert!(read_raw(mut evm, addr) == raw_of(3, 0, 0, 2))
+    assert!(!send(mut evm, addr, 3))
+}
+
+/// Dispute: rejected while Open; accepted when Locked; a disputed escrow can still be refunded.
+#[cfg(target = "evm")]
+#[test]
+fn test_handler_dispute() uses (evm: mut Evm) {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: 105)
+    assert!(send(mut evm, addr, 0))
+    assert!(!send(mut evm, addr, 4))
+    assert!(send(mut evm, addr, 1))
+    assert!(send(mut evm, addr, 4))
+    assert!(read_raw(mut evm, addr) == raw_of(2, 1, 0, 0))
+    assert!(send(mut evm, addr, 3))
+    assert!(read_raw(mut evm, addr) == raw_of(3, 0, 0, 1))
+}
