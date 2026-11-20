@@ -1,0 +1,13 @@
+diff --git a/src/escrow.fe b/src/escrow.fe
+index d36fc43..0bb1ef4 100644
+--- a/src/escrow.fe
++++ b/src/escrow.fe
+@@ -125,7 +125,7 @@ pub const fn step(_ s: State, _ a: Action, _ cap: u32) -> Next {
+             // Open, and the total stays within the capacity.
+             match s.phase {
+                 Phase::Open => {
+-                    if s.escrow + s.seller + s.buyer < cap {
++                    if s.escrow + s.seller + s.buyer <= cap {
+                         return Next {
+                             ok: true,
+                             s: State {

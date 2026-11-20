@@ -1,0 +1,13 @@
+diff --git a/src/escrow.fe b/src/escrow.fe
+index d36fc43..2d58979 100644
+--- a/src/escrow.fe
++++ b/src/escrow.fe
+@@ -165,7 +165,7 @@ pub const fn step(_ s: State, _ a: Action, _ cap: u32) -> Next {
+                 Phase::Locked => {
+                     if s.escrow > 0 && s.buyer == 0 {
+                         let e = s.escrow - 1
+-                        let np = if e == 0 {
++                        let np = if e <= 1 {
+                             Phase::Settled
+                         } else {
+                             Phase::Locked
