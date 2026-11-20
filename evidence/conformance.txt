@@ -1,11 +1,11 @@
-# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 21:03 UTC
-commit: a01722ee801e743650f92046335f3a19865065bd
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 21:12 UTC
+commit: f57e6c700a6df144558cc2f83c57b36de5451432
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
 PASS  K1  demo/mint-release.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'conserved';;left: `123`
 PASS  K1  demo/mint-release.patch  [stripped+conformance/k1_replay.fe]  `fe test --filter test_k1_shared_bug_replay` exit 0 (want 0)  expect: ^PASS .*test_k1_shared_bug_replay
-PASS  K2  conformance/swap-release-refund.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `877585624444148941`
+PASS  K2  conformance/swap-release-refund.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `877585624444148941`;;!step limit;;!invariant ';;!left: `[0-9]{1,17}`
 PASS  K2  conformance/swap-release-refund.patch  [nohash]  `fe test --filter test_oracle_edges` exit 1 (want 1)  expect: ^FAIL .*test_oracle_edges
 PASS  K2  conformance/swap-release-refund.patch  [nohash]  `fe test --backend native --filter test_oracle_edges` exit 1 (want 1)  expect: ^FAIL .*test_oracle_edges
 PASS  K3  demo/cap-off-by-one.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'within capacity'

@@ -1,4 +1,4 @@
-# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 21:03 UTC, Darwin arm64
+# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 21:12 UTC, Darwin arm64
 # oracle: tools/ref_model.py, python 3.11.1
 cap  states  edges  attempts  diameter  edge_hash
   2      14     16        70         5  1524000005756973351

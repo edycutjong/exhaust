@@ -1,4 +1,4 @@
-# sh demo/run.sh, 2026-11-20 21:03 UTC, commit a01722e, fe: fe 26.6.0 (5b3f96a), Darwin arm64
+# sh demo/run.sh, 2026-11-20 21:12 UTC, commit f57e6c7, fe: fe 26.6.0 (5b3f96a), Darwin arm64
 
 == 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)
    build OK: static_assert(explore(CAP) == STATES) held, STATES = 736, every invariant held on every reachable state and edge
