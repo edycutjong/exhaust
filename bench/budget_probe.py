@@ -36,6 +36,8 @@ SEARCHES = [
     ("vexplore(8, 2): baseline", "vexplore(8, 2)", 137, 137, "the baseline configuration (B = 8, T = 2)"),
     ("vexplore(VB, VT), B = 10, T = 3", "vexplore(VB, VT)", 211, 211, "the vault's headline assert"),
     ("vcounterexample(VB, VT)", "vcounterexample(VB, VT)", 0, 211, "green: full search; four tables, so its per-state column is overstated"),
+    ("vsearch(VB, VT, V_COUNT_EDGES)", "vsearch(VB, VT, V_COUNT_EDGES)", 580, 211, "the vault's edge-count pin: the same checked search, counting edges"),
+    ("vsearch(VB, VT, V_HASH_EDGES)", "vsearch(VB, VT, V_HASH_EDGES)", 1115689132712769016, 211, "the vault's edge-hash pin: the same checked search, u128 hash"),
     ("vexplore(10, 1)", "vexplore(10, 1)", 131, 131, "separate model (T = 1), not a part of the headline"),
     ("vexplore(10, 2)", "vexplore(10, 2)", 171, 171, "separate model (T = 2), not a part of the headline"),
 ]
@@ -43,7 +45,7 @@ SEARCHES = [
 HEADER = """use ingot::escrow::CAP
 use ingot::escrow_explore::{explore, explore_seeds, counterexample, fingerprint, STATES, LOCKED_BASE, LOCKED_STRIDE}
 use ingot::vault::{VB, VT}
-use ingot::vault_explore::{vexplore, vcounterexample}
+use ingot::vault_explore::{vexplore, vcounterexample, vsearch, V_COUNT_EDGES, V_HASH_EDGES}
 
 const fn burn(_ n: u32) -> u32 {
     var i: u32 = 0
@@ -99,14 +101,14 @@ def main():
     per = LIMIT / n0
     rows = []
     for label, expr, pin, states, note in SEARCHES:
-        cast = "as u256" if expr.startswith(("counterexample", "vcounterexample")) else "as u128" if expr.startswith("fingerprint") else "as usize"
+        cast = "as u256" if expr.startswith(("counterexample", "vcounterexample")) else "as u128" if expr.startswith(("fingerprint", "vsearch")) else "as usize"
         n = largest(d, lambda k: f"static_assert({expr} + (burn({k}) {cast}) == {pin} + {k})", n0)
         steps = None if n is None else round((n0 - n) * per)
         rows.append({"search": label, "expr": expr, "pin": pin, "states": states, "steps": steps,
                      "share_of_limit": None if steps is None else round(steps / LIMIT, 4), "note": note})
     setups = {"e": rows[0]["steps"], "v": next(r["steps"] for r in rows if r["expr"] == "vexplore(0, 0)")}
     for r in rows:
-        setup = setups["v" if r["expr"].startswith("vexplore") or r["expr"].startswith("vcounter") else "e"]
+        setup = setups["v" if r["expr"].startswith(("vexplore", "vcounter", "vsearch")) else "e"]
         r["steps_per_state_after_setup"] = (None if r["steps"] is None or r["states"] <= 1
                                             else round((r["steps"] - setup) / r["states"]))
     fe = subprocess.run(["fe", "--version"], capture_output=True, text=True).stdout.strip()
@@ -124,7 +126,7 @@ def main():
         "reference other consts share one budget (`evidence/probes-2026-11-15.txt`, section 4), so every search below is its own",
         "`static_assert`. Steps are measured indirectly: a burn loop fits "
         f"{n0:,} iterations alone (≈ {per:.3f} steps per iteration); each row is the",
-        "burn headroom lost when the search runs in the same assert, converted to steps (± a few steps).",
+        "burn headroom lost when the search runs in the same assert, converted to steps (resolution: one burn iteration, ≈ 23 steps).",
         "",
         "| Search | States | Steps used | Share of 1M | Steps per state (after setup) | Note |",
         "|---|---:|---:|---:|---:|---|",

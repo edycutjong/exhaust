@@ -166,6 +166,8 @@ fn vsend(evm: mut Evm, _ addr: Address, _ a: u32) -> bool {
             message: VaultMsg::Execute {},
         )
     }
+    // Only Cancel is left: an unknown id (or Tick, which has no handler) fails the test instead of sending Cancel.
+    assert!(a == 6)
     evm.call(
         addr: addr,
         gas: 200000,

@@ -602,6 +602,21 @@ def main():
             ok = got == val
             status |= 0 if ok else 1
             print(f"check {kind}({b}, {t}) == {val}: oracle {got} -> {'AGREE' if ok else 'MISMATCH'}")
+        # The generated edge table in src/oracle_edges.fe must be what this oracle emits now (no drift after an edit).
+        table = (root / "src" / "oracle_edges.fe").read_text()
+        cap_t = int(re.search(r"const CAP_TABLE: u32 = (\d+)", table).group(1))
+        arrays = {name: [int(x) for x in re.findall(r"\d+", body)]
+                  for name, body in re.findall(r"const (FROM|ACT|OKS|TO): \[u32; ROWS\] = \[([^\]]*)\]", table)}
+        want = {"FROM": [], "ACT": [], "OKS": [], "TO": []}
+        pk = lambda st: (st[0] << 24) | (st[1] << 16) | (st[2] << 8) | st[3]
+        for st in search(cap_t)["order"]:
+            for a in range(5):
+                n = step(st, a, cap_t)
+                want["FROM"].append(pk(st)); want["ACT"].append(a); want["OKS"].append(0 if n is None else 1)
+                want["TO"].append(pk(st if n is None else n))
+        same = arrays == want
+        status |= 0 if same else 1
+        print(f"check src/oracle_edges.fe (cap {cap_t}, {len(want['FROM'])} rows) == oracle's table now: {'AGREE' if same else 'DRIFT: re-run --emit-fe'}")
         print("RESULT: oracle agrees with every Fe pin" if status == 0 else "RESULT: MISMATCH")
 
     if args.json:

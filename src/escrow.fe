@@ -233,7 +233,8 @@ pub const IN_BOUNDS: u8 = 2
 pub const PAID_ONCE: u8 = 3
 /// `settled empty`: a Settled escrow holds nothing.
 pub const SETTLED_EMPTY: u8 = 4
-/// `conserved`: only Deposit creates units; every other action moves one or none.
+/// `conserved`: Deposit adds exactly one unit to the total, every other action keeps the total. It bounds the total
+/// only: a move of two units at once between escrow and seller (or buyer) keeps it, and no invariant here forbids that.
 pub const CONSERVED: u8 = 5
 
 /// First state invariant that `n` breaks, or OK. Each condition is written out in place (no helper calls): this

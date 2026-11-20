@@ -129,6 +129,8 @@ fn send(evm: mut Evm, _ addr: Address, _ a: u32) -> bool {
             message: EscrowMsg::Refund {},
         )
     }
+    // Only Dispute is left: an unknown id fails the test instead of sending Dispute.
+    assert!(a == 4)
     evm.call(
         addr: addr,
         gas: 200000,

@@ -3,9 +3,10 @@
 **The Fe compiler is the model checker.** A `const fn` explores every reachable state of a small protocol state machine
 inside `fe build`, at a stated capacity: the escrow at C = 21 units, all 736 reachable states and every accepted transition
 checked against five named invariants. When an invariant breaks, `static_assert` fails the build: the compiler error names
-the invariant, and a second diagnostic prints a shortest counterexample as action digits (searched at C′ = 19, two units below
-the main check: C′ = 20 fits at 98.4% of the budget but leaves no room to edit `step()`, see `evidence/capacities.md`). The transition function that was checked, `step()`, is the same one the contract's `recv` handlers call, and
-an exhaustive-edge differential test replays every reachable transition attempt through the deployed contract.
+the invariant and, when the bug is reachable within C′ = 19 units, a second diagnostic prints a shortest counterexample as action
+digits (C′ = 19 is two units below the main check: C′ = 20 fits at 98.4% of the budget but leaves no room to edit `step()`, see `evidence/capacities.md`). The transition function that was checked, `step()`, is the same one the contract's `recv` handlers call, and
+an exhaustive-edge differential test replays every reachable transition attempt through the deployed escrow contract (the vault's
+contract graph is smaller than its model, see Limitations).
 
 This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification.
 
@@ -62,8 +63,13 @@ python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early   # d
   from the refusing side (`test_vault_identity_guards`: signer A's ApproveB / ApproveC and a non-signer's Propose are refused, nothing
   stored changes); a refused non-signer Cancel, the exact lock boundary (`queued_at`) and signer distinctness are untested, and `init`
   does not require the three signer addresses to differ.
-- `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits.
+- `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits. The vault's
+  `two distinct approvals` is defence in depth the same way: it fires first only if Execute loses its phase, quorum and timelock
+  guards together (`MODEL.md`).
+- The escrow's `conserved` bounds the total only: a Release or Refund that moved two units at once would keep every escrow
+  invariant. The vault checks the size of each payout (`pays one unit`) and that nothing but Execute pays (`only execute pays`).
 
-Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute. The model in words: `MODEL.md`. Numbers: `evidence/`.
+Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute (vault: 1 Propose · 2 ApproveA · 3 ApproveB · 4 ApproveC ·
+5 Tick · 6 Execute · 7 Cancel). A printed `9` means the start state itself breaks an invariant (no action). The model in words: `MODEL.md`. Numbers: `evidence/`.
 
 License: Apache-2.0. See `DECLARATION.md` for pre-existing work, reused code and AI assistance.
