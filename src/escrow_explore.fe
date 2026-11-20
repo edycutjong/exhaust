@@ -182,7 +182,8 @@ pub const HASH_P: u128 = 1000003
 /// A wrong successor that keeps the state set and the edge count (two successors swapped) still changes h.
 /// The search stops and returns DEFERRED as soon as it reaches more than `max_states` states: such a model already
 /// fails `explore` (by an invariant or by the state pin), and without the stop a larger buggy graph would only add a
-/// step-limit error to the build output.
+/// step-limit error to the build output. The edge pins therefore rely on the `explore(CAP) == STATES` pin: keep it. A
+/// model with FEWER states is searched in full, so it fails the edge pins with its real values as well.
 pub const fn fingerprint(_ cap: u32, _ hash: bool, _ max_states: usize) -> u128 {
     var visited: [bool; SIZE] = [false; SIZE]
     var queue: [u32; SIZE] = [0; SIZE]

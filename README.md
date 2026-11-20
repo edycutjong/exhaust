@@ -10,12 +10,12 @@ an exhaustive-edge differential test replays every reachable transition attempt 
 This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification.
 
 **The ceiling.** Fe 26.6.0 gives each `static_assert` evaluation 1,000,000 evaluator steps and a recursion limit of 64, with
-no CLI or config override. The C = 21 search uses 940,335 of them (≈ 1,160 steps per state); consts that reference other
+no CLI or config override. The C = 21 search uses 940,335 of them (≈ 86k to set up its two tables, then ≈ 1,160 steps per state); consts that reference other
 consts share one budget, so a bigger model is split into independent asserts, never chained (`evidence/budget.md`).
 
-> Work in progress (Fe Builders Challenge 2026). The full README, evidence and limitations land before submission.
+> Fe Builders Challenge 2026. The core and its evidence are in place; this README is a stub that a fuller write-up replaces.
 
-## Try it (macOS Apple Silicon or Linux x86-64; git + curl; python3 not needed for this)
+## Try it (macOS Apple Silicon or Linux x86-64; git, curl and patch; python3 not needed for this)
 
 1. `git clone https://github.com/edycutjong/exhaust && cd exhaust`
 2. `curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path`
@@ -43,10 +43,13 @@ python3 tools/ref_model.py --check    # the Python oracle (follows MODEL.md) aga
   not checked. Liveness is not checked, only safety invariants.
 - The escrow model has no caller identity: `msg.sender` authorization is not modelled. Units are abstract counters: no ETH or
   token moves, so value transfer, reentrancy and gas are out of scope.
+- The contract is a model-faithful demonstrator, not a custody contract: there is no access control (any address can call
+  any handler), and a rejected transition returns `false` instead of reverting.
 - The differential test covers every transition reachable through the handlers at C = 21; storage states the handlers cannot
   reach (an upgrade, a storage collision) are not covered.
-- `MODEL.md`, the Fe model and the oracle share one author and one reading of the protocol; the oracle is independent by
-  language and encoding, so a misreading shared by all three is not caught.
+- `MODEL.md`, the Fe model and the oracle share one author and one reading of the protocol. The oracle is independent in
+  language and state representation (Python tuples; its edge table packs states differently), but its edge hash uses the
+  same radix-22 index formula as the Fe encoding. A misreading shared by all three is not caught.
 - `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits.
 
 Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute. The model in words: `MODEL.md`. Numbers: `evidence/`.
