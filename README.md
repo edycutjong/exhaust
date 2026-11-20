@@ -17,6 +17,8 @@ consts share one budget, so a bigger model is split into independent asserts, ne
 
 ## Try it (macOS Apple Silicon or Linux x86-64; git, curl and patch; python3 not needed for this)
 
+<!-- The Linux run (evidence/repro-linux-2026-11-21.txt) predates the vault, the native trace and the V3 patch. -->
+
 1. `git clone https://github.com/edycutjong/exhaust && cd exhaust`
 2. `curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path`
    then `export PATH=$HOME/.fe/bin:$PATH` and `fe --version` → `fe 26.6.0 (5b3f96a)`
@@ -36,6 +38,8 @@ sh tools/differential.sh              # the exhaustive-edge differential report 
 sh demo/check-bugs.sh                 # every bug patch must fail fe build naming its invariant and printing its digits
 sh demo/check-bugs.sh --conformance   # the checker's own negative tests
 python3 tools/ref_model.py --check    # the Python oracle (follows MODEL.md) against every pin
+sh tools/trace.sh demo/vault-execute-early.patch   # native trace of a bug by action name (macOS arm64; see tools/trace.sh)
+python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early   # digits from the compile error -> names
 ```
 
 ## Limitations: what this does not prove
@@ -51,10 +55,10 @@ python3 tools/ref_model.py --check    # the Python oracle (follows MODEL.md) aga
 - `MODEL.md`, the Fe model and the oracle share one author and one reading of the protocol. The oracle is independent in
   language and state representation (Python tuples; its edge table packs states differently), but its edge hash uses the
   same radix-22 index formula as the Fe encoding. A misreading shared by all three is not caught.
-- The vault (second protocol, `MODEL.md`) is explored only at B = 10 with T = 3 (T = 1 and T = 2 as separate models). Its contract has
-  no `Tick` handler and the `fe test` harness can neither move the block time nor change the caller, so the vault differential
-  walks 91 of the model's 211 states (lock period passed) and 9 (lock that never passes); all three signers are one address in the
-  tests. Caller authorization, the exact lock boundary (`queued_at`) and signer distinctness are untested, and `init` does not
+- The vault (second protocol, `MODEL.md`) is explored at B = 10 with T = 3, plus T = 1, T = 2 and a B = 8, T = 2 baseline as separate
+  models. Its contract has no `Tick` handler and the `fe test` harness can neither move the block time nor change the caller, so the
+  contract's own graph has 91 states (lock period passed) and 9 (a lock that never passes) against the model's 211, and the vault
+  differential replays exactly those; all three signers are one address in the tests. Caller authorization, the exact lock boundary (`queued_at`) and signer distinctness are untested, and `init` does not
   require the three signer addresses to differ.
 - `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits.
 

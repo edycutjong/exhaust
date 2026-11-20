@@ -47,6 +47,14 @@ done
   sh tools/trace.sh demo/vault-execute-early.patch 2>&1; echo "exit status: $?"
 } > evidence/transcript-trace-vault-execute-early.txt
 
+{
+  head "native trace of vault-pay-twice, by action name" "sh tools/trace.sh demo/vault-pay-twice.patch"
+  sh tools/trace.sh demo/vault-pay-twice.patch 2>&1; echo "exit status: $?"
+} > evidence/transcript-trace-vault-pay-twice.txt
+for f in evidence/transcript-trace-*.txt; do
+  grep -q "breaks invariant '[a-z]" "$f" || { echo "FAIL: $f names no invariant" >&2; exit 1; }
+done
+
 # The test runs (the counts the evidence cites), on a fresh temp copy.
 d=$(copy)
 {
@@ -57,4 +65,4 @@ d=$(copy)
   (cd "$d" && fe --color never test --backend native > t2.out 2>&1); rc=$?
   grep -E '^(PASS|FAIL)|test result' "$d/t2.out"; echo "exit status (native): $rc"
 } > evidence/transcript-tests.txt
-echo "wrote evidence/transcript-pass.txt, evidence/transcript-tests.txt and the two trace transcripts"
+echo "wrote evidence/transcript-pass.txt, evidence/transcript-tests.txt and the trace transcripts"

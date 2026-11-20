@@ -179,5 +179,5 @@ static_assert(vcounterexample(VB, VT) == 0)
 // are separate checks of separate models (not extra coverage of B = 10, T = 3). tools/ref_model.py pins the same counts.
 static_assert(vexplore(VB, 1) == 131)
 static_assert(vexplore(VB, 2) == 171)
-/// The baseline configuration of the spec (B = 8, T = 2): hand-checkable.
+/// The baseline configuration (B = 8, T = 2): hand-checkable.
 static_assert(vexplore(8, 2) == 137)

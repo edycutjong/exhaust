@@ -33,7 +33,7 @@ SEARCHES = [
     ("shard B, k = 8..14", "explore_seeds(LOCKED_BASE + 8 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)", 238, 238, ""),
     ("shard C, k = 15..21", "explore_seeds(LOCKED_BASE + 15 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)", 385, 385, ""),
     ("vexplore(0, 0): vault array setup only", "vexplore(0, 0)", 1, 1, "B = 0: no unit to propose, one state; two 46,464-element tables initialised"),
-    ("vexplore(8, 2): baseline", "vexplore(8, 2)", 137, 137, "the baseline configuration of the spec"),
+    ("vexplore(8, 2): baseline", "vexplore(8, 2)", 137, 137, "the baseline configuration (B = 8, T = 2)"),
     ("vexplore(VB, VT), B = 10, T = 3", "vexplore(VB, VT)", 211, 211, "the vault's headline assert"),
     ("vcounterexample(VB, VT)", "vcounterexample(VB, VT)", 0, 211, "green: full search; four tables, so its per-state column is overstated"),
     ("vexplore(10, 1)", "vexplore(10, 1)", 131, 131, "T = 1 shard"),

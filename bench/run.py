@@ -180,8 +180,8 @@ def main():
          "Counts are exact (Python oracle `tools/ref_model.py`); a `pass` row means the Fe compile-time search returned the same count.",
          f"Wall times are the median of {RUNS} `fe check` runs of the whole ingot, which includes compiling everything else:",
          f"the gate-stripped ingot with no probe takes **{out['baseline_fe_check_s']} s** on its own. Times vary by machine; counts do not.",
-         "At these sizes the search itself is within the spread of the medians on top of that baseline (every row is about 0.5-0.7 s; the evaluator runs a 736-state",
-         "search in well under a second); the step budget in section 2 is the cost that decides what fits, not the wall time.", "",
+         "At these sizes the wall times carry no signal: the medians do not follow the state count (see the sweep) and vary by several tenths of a second on top of that baseline;",
+         "the step budget in section 2 is the cost that decides what fits, not the wall time.", "",
          "## 1. Escrow capacity sweep (`explore(C)`, one static_assert each; the attack printer `counterexample(C)` is one run)", "",
          "| C | states | edges | attempts | diameter | `explore(C)` | fe check median (s) | `counterexample(C)` |", "|---:|---:|---:|---:|---:|---|---:|---|"]
     for r in sweep:

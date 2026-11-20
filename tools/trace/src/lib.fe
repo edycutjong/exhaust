@@ -86,10 +86,16 @@ fn print_vault_invariant(_ v: u8) uses (out: mut Stdout) {
         print!("queued means quorum")
     }
     if v == 6 {
-        print!("two distinct approvals")
+        print!("proposed below quorum")
     }
     if v == 7 {
+        print!("two distinct approvals")
+    }
+    if v == 8 {
         print!("timelock respected")
+    }
+    if v == 9 {
+        print!("pays one unit")
     }
 }
 

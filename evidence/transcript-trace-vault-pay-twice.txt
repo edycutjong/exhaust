@@ -1,0 +1,16 @@
+# native trace of vault-pay-twice, by action name
+# 2026-11-20 22:03 UTC · commit 044366e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ sh tools/trace.sh demo/vault-pay-twice.patch
+
+escrow, capacity 19: no counterexample (every reachable state and edge keeps every invariant)
+vault, B = 10, T = 3: shortest counterexample, 7 actions (digits 1235556)
+  start     (Idle, mask 0, count 0, clock 0, bal 10, paid 0)
+  1  Propose   (Proposed, mask 0, count 0, clock 0, bal 10, paid 0)
+  2  ApproveA  (Proposed, mask 1, count 1, clock 0, bal 10, paid 0)
+  3  ApproveB  (Queued, mask 3, count 2, clock 0, bal 10, paid 0)
+  4  Tick      (Queued, mask 3, count 2, clock 1, bal 10, paid 0)
+  5  Tick      (Queued, mask 3, count 2, clock 2, bal 10, paid 0)
+  6  Tick      (Queued, mask 3, count 2, clock 3, bal 10, paid 0)
+  7  Execute   (Idle, mask 0, count 0, clock 0, bal 8, paid 2)
+  ^ this edge breaks invariant 'pays one unit'
+exit status: 1

@@ -320,7 +320,7 @@ static_assert(VB <= MAX_B)
 static_assert(VT <= MAX_T)
 
 // ---- invariants (checked in this order; the first that fails is the one the compiler names) ----
-// State invariants are checked on the start state and on every accepted successor; the last two are transition
+// State invariants are checked on the start state and on every accepted successor; the last three are transition
 // invariants, checked on every accepted edge (s, a, s').
 
 /// No violation.

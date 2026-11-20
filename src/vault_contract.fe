@@ -1,6 +1,6 @@
 //! The deployed vault. Its `recv` handlers are thin adapters around the same `vstep()` the compile-time search
 //! explored (with the same timelock `VT`): load the stored fields into a `VState`, call `vstep`, store the result if
-//! accepted. Two things live outside the checked model and are the adapter's job:
+//! accepted. Three things live outside the checked model and are the adapter's job:
 //!   * identity: ApproveA / ApproveB / ApproveC are separate messages that only the stored signer A / B / C can send;
 //!     Propose and Cancel need any signer. The model has the three signers as three distinct actions; it has no `msg.sender`.
 //!   * distinct signers: `init` does not check that the three signer addresses differ. With two equal addresses one key

@@ -1,5 +1,5 @@
 # green: the unpatched ingot
-# 2026-11-20 21:54 UTC · commit d9280c3 · fe 26.6.0 (5b3f96a) · Darwin arm64
+# 2026-11-20 22:03 UTC · commit 044366e · fe 26.6.0 (5b3f96a) · Darwin arm64
 # $ fe --color never build
 
 Wrote out/Escrow.bin

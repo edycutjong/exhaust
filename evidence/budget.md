@@ -21,7 +21,7 @@ burn headroom lost when the search runs in the same assert, converted to steps (
 | `explore_seeds(LOCKED_BASE + 8 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)` | 238 | 362,821 | 36.3% | 1,162 |  |
 | `explore_seeds(LOCKED_BASE + 15 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)` | 385 | 534,870 | 53.5% | 1,165 |  |
 | `vexplore(0, 0)` | 1 | 94,512 | 9.4% | — | B = 0: no unit to propose, one state; two 46,464-element tables initialised |
-| `vexplore(8, 2)` | 137 | 391,503 | 39.1% | 2,168 | the baseline configuration of the spec |
+| `vexplore(8, 2)` | 137 | 391,503 | 39.1% | 2,168 | the baseline configuration (B = 8, T = 2) |
 | `vexplore(VB, VT)` | 211 | 551,638 | 55.2% | 2,166 | the vault's headline assert |
 | `vcounterexample(VB, VT)` | 211 | 654,407 | 65.4% | 2,654 | green: full search; four tables, so its per-state column is overstated |
 | `vexplore(10, 1)` | 131 | 379,888 | 38.0% | 2,178 | T = 1 shard |

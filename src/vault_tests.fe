@@ -31,7 +31,7 @@ use ingot::vault_contract::{Vault, VaultMsg}
 // ---- both backends ----
 
 /// The runtime search agrees with the compile-time pins: the headline (B = 10, T = 3), the other timelocks and the
-/// baseline of the spec (B = 8, T = 2).
+/// baseline configuration (B = 8, T = 2).
 #[test]
 fn test_vault_runtime_agrees() {
     assert!(vexplore(black_box(VB), black_box(VT)) == 211)

@@ -2,7 +2,7 @@
 
 This file describes each protocol model in plain language: its state, its actions (guard and effect), its invariants in check
 order, and the encoding. Two things follow this description rather than the Fe code: the oracle `tools/ref_model.py`
-(Python, its own tuple representation) and the per-handler test suite in `src/tests.fe` (`test_handler_*`). If the Fe model and the
+(Python, its own tuple representation) and the per-handler test suites in `src/tests.fe` (`test_handler_*`, escrow) and `src/vault_tests.fe` (`test_vault_handler_*`, vault). If the Fe model and the
 oracle disagree, a test or the oracle's `--check` fails; this text itself is checked only by reading. A misreading shared by all three is not caught (README, "Limitations").
 
 ## Protocol 1: unit escrow (`src/escrow.fe`)

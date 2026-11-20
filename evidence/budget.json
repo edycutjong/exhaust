@@ -127,7 +127,7 @@
    "states": 137,
    "steps": 391503,
    "share_of_limit": 0.3915,
-   "note": "the baseline configuration of the spec",
+   "note": "the baseline configuration (B = 8, T = 2)",
    "steps_per_state_after_setup": 2168
   },
   {
