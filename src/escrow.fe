@@ -111,11 +111,6 @@ pub const fn decode(_ x: u32) -> State {
     }
 }
 
-/// True when `encode(s)` is exact (no field aliases into another state's index).
-pub const fn in_bounds(_ s: State) -> bool {
-    s.escrow < W && s.seller < W && s.buyer < W
-}
-
 /// THE transition function. The compile-time search, both runtime searches and the contract's `recv`
 /// handlers all call this one function. `cap` is the escrow capacity in units (`cap <= MAX_CAP`).
 /// Written without helper calls: every call costs evaluator steps, and the search runs this 5 times per state.

@@ -67,14 +67,14 @@ fn test_counterexample_none() {
     assert!(counterexample(black_box(19 as u32)) == 0)
 }
 
-/// encode(decode(x)) == x for every 97th index of the box, and decode(encode(s)) == s for one boundary state.
+/// encode(decode(x)) == x for every index of the box, and decode(encode(s)) == s for one boundary state.
 #[test]
 fn test_encode_roundtrip() {
     var x: u32 = 0
     while x < 42592 {
         let s = decode(x)
         assert!(encode(s) == x)
-        x += 97
+        x += 1
     }
     let s = State { phase: Phase::Disputed, escrow: W - 1, seller: 0, buyer: 3 }
     let t = decode(encode(s))
@@ -194,7 +194,7 @@ fn test_runtime_search_gas() uses (ctx: std::evm::Ctx, log: mut std::evm::Log) {
     assert!(used > 1000000)
 }
 
-// ---- EVM only: per-handler suite, written from MODEL.md's action table (happy path + the phase guard) ----
+// ---- EVM only: per-handler suite, following MODEL.md's action table (happy path + the phase guard) ----
 
 #[cfg(target = "evm")]
 fn read_raw(evm: mut Evm, _ addr: Address) -> u256 {
@@ -368,7 +368,8 @@ fn test_differential_all_edges() uses (evm: mut Evm, log: mut std::evm::Log) {
         let first = replay(mut evm, deployments, path, len)
         deployments += 1
         calls += len as u256
-        // Rejected actions first: refused, nothing stored changes.
+        // Rejected actions first: refused, nothing stored changes. (A reverted or out-of-gas call also reads as
+        // `false` here; the raw-state comparison after it is what shows that nothing changed.)
         var a: u32 = 0
         while a < ACTIONS {
             let n = step(cur, action_of(a), CAP)
@@ -419,7 +420,7 @@ fn test_differential_all_edges() uses (evm: mut Evm, log: mut std::evm::Log) {
             reads: calls,
         },
     )
-    // Pinned from the oracle (tools/ref_model.py, written from MODEL.md), not from this test's own output.
+    // Pinned from the oracle (tools/ref_model.py, which follows MODEL.md), not from this test's own output.
     assert!(tail == 736 && edges == 966)
     assert!(deployments == 1008 && calls == 25646)
 }

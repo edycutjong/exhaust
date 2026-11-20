@@ -1,9 +1,9 @@
 # MODEL.md: the models, in words
 
 This file describes each protocol model in plain language: its state, its actions (guard and effect), its invariants in check
-order, and the encoding. Two things are written **from this file**, not from the Fe code: the independent oracle
-`tools/ref_model.py` (X6) and the per-handler test suite in `src/tests.fe` (`test_handler_*`). If the Fe model, this text and the
-oracle disagree, a test or the oracle's `--check` fails. A misreading shared by all three is not caught (README, Limitations).
+order, and the encoding. Two things follow this description rather than the Fe code: the oracle `tools/ref_model.py`
+(Python, its own tuple representation) and the per-handler test suite in `src/tests.fe` (`test_handler_*`). If the Fe model, this text and the
+oracle disagree, a test or the oracle's `--check` fails. A misreading shared by all three is not caught (README, "Limitations").
 
 ## Protocol 1: unit escrow (`src/escrow.fe`)
 
