@@ -451,3 +451,22 @@ fn test_vault_differential() uses (evm: mut Evm, log: mut std::evm::Log) {
     )
     assert!(s2 == 9 && e2 == 21)
 }
+
+#[cfg(target = "evm")]
+#[event]
+struct VaultGasUsed { runtime_search_gas: u256, states: u256 }
+
+/// The runtime search really runs: it reports the gas it used (read by bench/run.py).
+#[cfg(target = "evm")]
+#[test]
+fn test_vault_runtime_search_gas() uses (ctx: Ctx, log: mut std::evm::Log) {
+    let before = ctx.gas()
+    let n = black_box(vexplore(black_box(VB), black_box(VT)))
+    let used = before - ctx.gas()
+    log.emit(
+        VaultGasUsed { runtime_search_gas: used, states: n as u256 },
+    )
+    assert!(n == 211)
+    // A search folded away at compile time would cost almost nothing.
+    assert!(used > 1000000)
+}
