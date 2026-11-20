@@ -51,6 +51,11 @@ done
   head "native trace of vault-pay-twice, by action name" "sh tools/trace.sh demo/vault-pay-twice.patch"
   sh tools/trace.sh demo/vault-pay-twice.patch 2>&1; echo "exit status: $?"
 } > evidence/transcript-trace-vault-pay-twice.txt
+
+{
+  head "native trace of vault-cancel-pays, by action name" "sh tools/trace.sh demo/vault-cancel-pays.patch"
+  sh tools/trace.sh demo/vault-cancel-pays.patch 2>&1; echo "exit status: $?"
+} > evidence/transcript-trace-vault-cancel-pays.txt
 for f in evidence/transcript-trace-*.txt; do
   grep -q "breaks invariant '[a-z]" "$f" || { echo "FAIL: $f names no invariant" >&2; exit 1; }
 done
