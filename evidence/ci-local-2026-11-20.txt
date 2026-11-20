@@ -1,5 +1,5 @@
-# CI steps run locally, 2026-11-20 20:44 UTC
-commit: e1530cee8bc17a4b2e4b0d967b7fed4abef7ae0f
+# CI steps run locally, 2026-11-20 20:51 UTC
+commit: 83e6459b759e612960b01bca42775a363c7d139b
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 cpu: Apple M1 Max
@@ -14,32 +14,34 @@ cpu: Apple M1 Max
 -> PASS
 
 ## fe test
-PASS  [0.0002s] test_contract_rejects_attack
-PASS  [0.0002s] test_handler_dispute
 PASS  [0.0002s] test_action_ids_distinct
+PASS  [0.0002s] test_contract_rejects_attack
 PASS  [0.0002s] test_handler_deposit
-PASS  [0.0002s] test_contract_matches_step
-PASS  [0.0002s] test_encode_roundtrip
-PASS  [0.0001s] test_handler_lock
-PASS  [0.0001s] test_handler_release
+PASS  [0.0002s] test_handler_dispute
 PASS  [0.0001s] test_handler_refund
-PASS  [0.0035s] test_runtime_search_gas
-PASS  [0.0041s] test_counterexample_none
-PASS  [0.0072s] test_runtime_explore_agrees
-PASS  [0.0084s] test_shards_partition
-PASS  [0.1379s] test_differential_all_edges
+PASS  [0.0002s] test_handler_lock
+PASS  [0.0001s] test_handler_release
+PASS  [0.0003s] test_contract_matches_step
+PASS  [0.0003s] test_encode_roundtrip
+PASS  [0.0035s] test_counterexample_none
+PASS  [0.0033s] test_runtime_search_gas
+PASS  [0.0073s] test_runtime_explore_agrees
+PASS  [0.0077s] test_oracle_edges
+PASS  [0.0085s] test_shards_partition
+PASS  [0.1389s] test_differential_all_edges
 
-test result: ok. 14 passed; 0 failed
+test result: ok. 15 passed; 0 failed
 -> PASS
 
 ## fe test --backend native
-PASS  [0.1185s] test_runtime_explore_agrees
-PASS  [0.1199s] test_action_ids_distinct
-PASS  [0.1200s] test_encode_roundtrip
-PASS  [0.1202s] test_counterexample_none
-PASS  [0.1203s] test_shards_partition
+PASS  [0.0378s] test_encode_roundtrip
+PASS  [0.0498s] test_oracle_edges
+PASS  [0.0498s] test_action_ids_distinct
+PASS  [0.0498s] test_runtime_explore_agrees
+PASS  [0.0501s] test_shards_partition
+PASS  [0.0501s] test_counterexample_none
 
-test result: ok. 5 passed; 0 failed
+test result: ok. 6 passed; 0 failed
 -> PASS
 
 ## sh demo/run.sh
@@ -51,6 +53,8 @@ test result: ok. 5 passed; 0 failed
    + if s.escrow > 0 {
 
 == 3. fe build again
+   error[3-0026]: const evaluation exceeded the step limit
+   error[3-0026]: const evaluation exceeded the step limit
    error[3-0036]: assertion failed in const context
    = assertion message: invariant 'paid once' broken: buyer and seller both paid
    error[8-0081]: static assertion failed
@@ -68,8 +72,8 @@ test result: ok. 5 passed; 0 failed
 -> PASS
 
 ## sh demo/check-bugs.sh
-# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-20 20:44 UTC
-commit: e1530cee8bc17a4b2e4b0d967b7fed4abef7ae0f
+# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-20 20:51 UTC
+commit: 83e6459b759e612960b01bca42775a363c7d139b
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -82,28 +86,37 @@ PASS  demo/refund-after-release.patch | exit 1 | 'paid once': yes | 11234: yes |
 PASS  demo/settle-early.patch | exit 1 | 'settled empty': yes | 1123: yes | caught (1 of 5 fail) | caught
       = assertion message: invariant 'settled empty' broken: settled with units still in escrow
       = left: `1123`
-PASS  demo/cap-off-by-one.patch | exit 1 | 'within capacity': yes | 111111111111111111111: yes | missed | missed
+      = left: `946`
+      = left: `649063484112972613`
+PASS  demo/cap-off-by-one.patch | exit 1 | 'within capacity': yes | 11111111111111111111: yes | missed | missed
       = assertion message: invariant 'within capacity' broken: more units than the capacity
-      = left: `111111111111111111111`
+      = left: `11111111111111111111`
+      = left: `968`
+      = left: `1770024059661220277`
 PASS  demo/mint-release.patch | exit 1 | 'conserved': yes | 123: yes | caught (1 of 5 fail) | caught
       = assertion message: invariant 'conserved' broken: units created or lost by a non-deposit action
       = left: `123`
+      = left: `1197`
 RESULT: all rows as expected
 -> PASS
 
 ## sh demo/check-bugs.sh --conformance
-# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 20:44 UTC
-commit: e1530cee8bc17a4b2e4b0d967b7fed4abef7ae0f
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 20:51 UTC
+commit: 83e6459b759e612960b01bca42775a363c7d139b
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
 PASS  K1  demo/mint-release.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'conserved';;left: `123`
 PASS  K1  demo/mint-release.patch  [stripped+conformance/k1_replay.fe]  `fe test --filter test_k1_shared_bug_replay` exit 0 (want 0)  expect: ^PASS .*test_k1_shared_bug_replay
+PASS  K2  conformance/swap-release-refund.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `877585624444148941`
+PASS  K2  conformance/swap-release-refund.patch  [nohash]  `fe test --filter test_oracle_edges` exit 1 (want 1)  expect: ^FAIL .*test_oracle_edges
+PASS  K2  conformance/swap-release-refund.patch  [nohash]  `fe test --backend native --filter test_oracle_edges` exit 1 (want 1)  expect: ^FAIL .*test_oracle_edges
 PASS  K3  demo/cap-off-by-one.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'within capacity'
 PASS  K4  conformance/skip-action.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `341`
 PASS  K5  conformance/adapter-corruption.patch  [full]  `fe build` exit 0 (want 0)  expect: Wrote .*Escrow.bin
 PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_differential_all_edges` exit 1 (want 1)  expect: ^FAIL .*test_differential_all_edges
 PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_runtime_explore_agrees` exit 0 (want 0)  expect: ^PASS .*test_runtime_explore_agrees
+PASS  K6  conformance/bad-init.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'settled empty';;left: `9`
 RESULT: all rows as expected
 -> PASS
 
@@ -130,10 +143,12 @@ differential workload at cap 21: 1008 deployments, 25646 action calls, 25646 raw
 shards at cap 21: k=1..7 91, k=8..14 238, k=15..21 385, Open 22; disjoint True, union == reachable set True
 check explore(17) == 494: oracle 494 -> AGREE
 check explore(21) == 736: oracle 736 -> AGREE
-check counterexample(20) == 0: oracle 0 -> AGREE
+check counterexample(19) == 0: oracle 0 -> AGREE
 check shard(1) == 91: oracle 91 -> AGREE
 check shard(8) == 238: oracle 238 -> AGREE
 check shard(15) == 385: oracle 385 -> AGREE
+check edges(21) == 966: oracle 966 -> AGREE
+check edge_hash(21) == 1194004490208706542: oracle 1194004490208706542 -> AGREE
 RESULT: oracle agrees with every Fe pin
 -> PASS
 

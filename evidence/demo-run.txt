@@ -1,4 +1,4 @@
-# sh demo/run.sh, 2026-11-20 20:39 UTC, fe: fe 26.6.0 (5b3f96a), Darwin arm64
+# sh demo/run.sh, 2026-11-20 20:51 UTC, fe: fe 26.6.0 (5b3f96a), Darwin arm64
 
 == 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)
    build OK: static_assert(explore(CAP) == 736) held, every invariant held on every reachable state and edge
@@ -8,6 +8,8 @@
    + if s.escrow > 0 {
 
 == 3. fe build again
+   error[3-0026]: const evaluation exceeded the step limit
+   error[3-0026]: const evaluation exceeded the step limit
    error[3-0036]: assertion failed in const context
    = assertion message: invariant 'paid once' broken: buyer and seller both paid
    error[8-0081]: static assertion failed
@@ -17,7 +19,7 @@
 == 4. the counterexample 11234, decoded (1 Deposit . 2 Lock . 3 Release . 4 Refund . 5 Dispute)
    Deposit Deposit Lock Release Refund 
    patched contract (search removed), fe test --filter test_attack_patched_replay:
-     PASS  [0.0021s] test_attack_patched_replay
+     PASS  [0.0002s] test_attack_patched_replay
      -> all five calls accepted; the seller AND the buyer were paid
    real contract, fe test --filter attack:
      PASS  [0.0002s] test_contract_rejects_attack
