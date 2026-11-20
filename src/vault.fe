@@ -393,7 +393,7 @@ pub const fn vfirst_violation(_ s: VState, _ a: VAction, _ n: VState, _ b: u32, 
         VAction::Execute => {
             // two distinct approvals, then timelock respected, then pays one unit
             let pop = (s.mask & 1) + ((s.mask >> 1) & 1) + ((s.mask >> 2) & 1)
-            if pop < 2 {
+            if pop < K {
                 return V_TWO_DISTINCT
             }
             if s.clock < t {

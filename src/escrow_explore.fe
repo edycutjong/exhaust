@@ -48,6 +48,11 @@ const fn require(_ v: u8) {
         v != CONSERVED,
         "invariant 'conserved' broken: units created or lost by a non-deposit action",
     )
+    // Reached only for an id with no message above: fail loudly instead of letting the search go on.
+    assert!(
+        v == OK,
+        "unknown invariant id: give it a message in require",
+    )
 }
 
 /// Number of states reachable from the initial state at capacity `cap`.

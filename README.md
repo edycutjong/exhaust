@@ -58,8 +58,9 @@ python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early   # d
 - The differential test covers every transition reachable through the handlers at C = 21; storage states the handlers cannot
   reach (an upgrade, a storage collision) are not covered.
 - `MODEL.md`, the Fe model and the oracle share one author and one reading of the protocol. The oracle is independent in
-  language and state representation (Python tuples; its edge table packs states differently), but its edge hash uses the
-  same radix-22 index formula as the Fe encoding. A misreading shared by all three is not caught.
+  language and state representation (Python tuples; its escrow edge table packs states differently), but its edge hashes use
+  the Fe index formulas (radix 22 for the escrow, the vault's mixed radix for the vault). A misreading shared by all three is not
+  caught.
 - The vault (second protocol, `MODEL.md`) is explored at B = 10 with T = 3, plus T = 1, T = 2 and a B = 8, T = 2 baseline as separate
   models. Its contract has no `Tick` handler and the `fe test` harness can neither move the block time nor change the caller, so the
   contract's own graph has 91 states (lock period passed) and 9 (a lock that never passes) against the model's 211, and the vault

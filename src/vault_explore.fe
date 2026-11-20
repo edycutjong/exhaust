@@ -69,6 +69,11 @@ const fn vrequire(_ v: u8) {
         v != V_ONLY_EXECUTE_PAYS,
         "invariant 'only execute pays' broken: balance or paid-out units changed on an action other than execute",
     )
+    // Reached only for an id with no message above: fail loudly instead of letting the search go on.
+    assert!(
+        v == V_OK,
+        "unknown vault invariant id: give it a message in vrequire",
+    )
 }
 
 /// Number of states reachable from the initial state of a vault of `b` units with a timelock of `t` ticks. Fails the

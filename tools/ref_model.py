@@ -285,7 +285,7 @@ def vviolation(s, a, n, b, t):
     if v:
         return v
     if a == 5:
-        if popcount(s[1]) < 2:
+        if popcount(s[1]) < K:
             return 7
         if s[3] < t:
             return 8
