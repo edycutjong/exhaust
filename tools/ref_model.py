@@ -140,6 +140,25 @@ def search(cap, bug=None):
     }
 
 
+def diff_workload(cap):
+    """Calls the exhaustive-edge differential makes (architecture: per state, one deployment replays the path, tries
+    every rejected action, then the first accepted one; each further accepted action gets its own deployment)."""
+    r = search(cap)
+    depth = {}
+    for s in r["order"]:
+        depth[s] = 0 if r["parent"][s] is None else depth[r["parent"][s][0]] + 1
+    deployments = actions = 0
+    for s in r["order"]:
+        k = sum(1 for a in range(5) if step(s, a, cap) is not None)
+        if k == 0:
+            deployments += 1
+            actions += depth[s] + 5
+        else:
+            deployments += k
+            actions += k * depth[s] + (5 - k) + k
+    return {"cap": cap, "deployments": deployments, "action_calls": actions, "reads": actions, "calls": 2 * actions}
+
+
 def trace(parent, s):
     out = []
     while parent[s] is not None:
@@ -223,6 +242,10 @@ def main():
             bugs.append({"bug": name, "cap": cap, "invariant": INVARIANTS[b["violation"] - 1], "digits": b["digits"]})
             print(f"bug {name:22s} cap {cap}: '{bugs[-1]['invariant']}' {b['digits']}")
 
+    w = diff_workload(max(c for c in caps if c <= MAX_CAP))
+    print(f"differential workload at cap {w['cap']}: {w['deployments']} deployments, {w['action_calls']} action calls, "
+          f"{w['reads']} raw_state() reads, {w['calls']} calls")
+
     status = 0
     if args.check:
         for kind, cap, val in fe_pins(root):
@@ -237,7 +260,7 @@ def main():
         print("RESULT: oracle agrees with every Fe pin" if status == 0 else "RESULT: MISMATCH")
 
     if args.json:
-        Path(args.json).write_text(json.dumps({"python": platform.python_version(), "escrow": rows, "bugs": bugs}, indent=1) + "\n")
+        Path(args.json).write_text(json.dumps({"python": platform.python_version(), "escrow": rows, "bugs": bugs, "differential": w}, indent=1) + "\n")
     return status
 
 

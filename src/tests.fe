@@ -18,6 +18,7 @@ use ingot::escrow::{
     ACTIONS,
     INIT,
     W,
+    SIZE,
 }
 use ingot::escrow_explore::{explore_from, counterexample}
 use ingot::escrow_contract::{Escrow, EscrowMsg}
@@ -253,4 +254,143 @@ fn test_handler_dispute() uses (evm: mut Evm) {
     assert!(read_raw(mut evm, addr) == raw_of(2, 1, 0, 0))
     assert!(send(mut evm, addr, 3))
     assert!(read_raw(mut evm, addr) == raw_of(3, 0, 0, 1))
+}
+
+// ---- EVM only: the exhaustive-edge differential (X5) ----
+
+/// Asserts that a raw_state() word holds a valid state (every lane in bounds, phase < 4) equal to `m`, lane by lane.
+#[cfg(target = "evm")]
+fn check_raw(_ raw: u256, _ m: State) {
+    let mask: u256 = (1 << 64) - 1
+    let p = raw & mask
+    let e = (raw >> 64) & mask
+    let se = (raw >> 128) & mask
+    let b = raw >> 192
+    let w = W as u256
+    assert!(p < 4 && e < w && se < w && b < w)
+    assert!(p == phase_id(m.phase) as u256)
+    assert!(
+        e == m.escrow as u256 && se == m.seller as u256 && b == m.buyer as u256,
+    )
+}
+
+/// Deploys a fresh escrow (salt = `salt`) and drives it along `path` (action digits, last action at index 0),
+/// checking the contract's answer and raw state against `step()` after every call. Returns the address.
+#[cfg(target = "evm")]
+fn replay(evm: mut Evm, _ salt: u256, _ path: [u8; 64], _ len: usize) -> Address {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: salt)
+    var m = initial()
+    var i = len
+    while i > 0 {
+        i -= 1
+        let a = (path[i] - 1) as u32
+        let n = step(m, action_of(a), CAP)
+        assert!(n.ok)
+        assert!(send(mut evm, addr, a))
+        check_raw(read_raw(mut evm, addr), n.s)
+        m = n.s
+    }
+    addr
+}
+
+#[cfg(target = "evm")]
+#[event]
+struct DifferentialRun {
+    cap: u256,
+    states: u256,
+    edges: u256,
+    attempts: u256,
+    deployments: u256,
+    action_calls: u256,
+    reads: u256,
+}
+
+/// Every reachable transition attempt at the contract's capacity, replayed through the deployed contract. For each
+/// reachable state s (BFS order, the same search `explore` runs): a fresh deployment is driven to s along its BFS
+/// path (every path step compared), every rejected action is tried first (the contract must refuse it and leave
+/// all four stored fields unchanged), then the first accepted action; each further accepted action at s gets its
+/// own fresh deployment. After every call the contract's `ok` and its raw stored fields must equal `step()`.
+#[cfg(target = "evm")]
+#[test]
+fn test_differential_all_edges() uses (evm: mut Evm, log: mut std::evm::Log) {
+    var visited: [bool; SIZE] = [false; SIZE]
+    var parent: [u32; SIZE] = [0; SIZE]
+    var via: [u8; SIZE] = [0; SIZE]
+    var queue: [u32; SIZE] = [0; SIZE]
+    var path: [u8; 64] = [0; 64]
+    var head: usize = 0
+    var tail: usize = 1
+    queue[0] = INIT
+    visited[INIT as usize] = true
+    var edges: u256 = 0
+    var deployments: u256 = 0
+    var calls: u256 = 0
+    while head < tail {
+        let x = queue[head]
+        head += 1
+        let cur = decode(x)
+        var len: usize = 0
+        var p = x
+        while p != INIT {
+            path[len] = via[p as usize]
+            len += 1
+            p = parent[p as usize]
+        }
+        let first = replay(mut evm, deployments, path, len)
+        deployments += 1
+        calls += len as u256
+        // Rejected actions first: refused, nothing stored changes.
+        var a: u32 = 0
+        while a < ACTIONS {
+            let n = step(cur, action_of(a), CAP)
+            if !n.ok {
+                assert!(!send(mut evm, first, a))
+                check_raw(read_raw(mut evm, first), cur)
+                calls += 1
+            }
+            a += 1
+        }
+        // Accepted actions: the first on this deployment, each further one on a fresh deployment.
+        var used = false
+        a = 0
+        while a < ACTIONS {
+            let n = step(cur, action_of(a), CAP)
+            if n.ok {
+                var addr = first
+                if used {
+                    addr = replay(mut evm, deployments, path, len)
+                    deployments += 1
+                    calls += len as u256
+                }
+                used = true
+                assert!(send(mut evm, addr, a))
+                check_raw(read_raw(mut evm, addr), n.s)
+                calls += 1
+                edges += 1
+                let y = encode(n.s)
+                if !visited[y as usize] {
+                    visited[y as usize] = true
+                    parent[y as usize] = x
+                    via[y as usize] = (a + 1).downcast_truncate()
+                    queue[tail] = y
+                    tail += 1
+                }
+            }
+            a += 1
+        }
+    }
+    log.emit(
+        DifferentialRun {
+            cap: CAP as u256,
+            states: tail as u256,
+            edges,
+            attempts: 5 * tail as u256,
+            deployments,
+            action_calls: calls,
+            reads: calls,
+        },
+    )
+    // Pinned from the oracle (tools/ref_model.py, written from MODEL.md), not from this test's own output.
+    assert!(tail == 736 && edges == 966)
+    assert!(deployments == 1008 && calls == 25646)
 }
