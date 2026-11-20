@@ -5,7 +5,7 @@ Run on `fe 26.6.0 (5b3f96a)`, Darwin arm64 (Apple M1 Max), 2026-11-21. Every num
 | What | Result | Where |
 |---|---|---|
 | Vault model, B = 10, T = 3 (nine invariants) | 211 states in one `static_assert` (551,638 of 1,000,000 steps); attack printer 654,407 steps; the oracle agrees on the 211-state pin; 580 edges, 1,477 attempts and diameter 70 are oracle-only (the Fe vault has no edge pin) | `evidence/budget.md`, `evidence/oracle.txt` |
-| Vault at other timelocks | T = 1: 131, T = 2: 171, plus the spec's baseline B = 8, T = 2: 137; each its own assert | `src/vault_explore.fe`, `evidence/oracle.txt` |
+| Vault at other timelocks | T = 1: 131, T = 2: 171, plus the baseline B = 8, T = 2: 137; each its own assert | `src/vault_explore.fe`, `evidence/oracle.txt` |
 | Vault bugs | `vault-approve-twice` names `counted once`, prints `122`; `vault-execute-early` names `timelock respected`, prints `1236`; `vault-pay-twice` names `pays one unit`, prints `1235556`; all three fail `fe build` | `evidence/check-bugs.txt`, `evidence/transcript-fail-vault-*.txt` |
 | Vault contract | six handlers over the shared `vstep()`; 12 vault tests incl. the differential (91 states / 250 edges with the lock passed, 9 / 21 with a lock that never passes; oracle-pinned) | `src/vault_contract.fe`, `src/vault_tests.fe`, `MODEL.md` |
 | Tests | `fe test` 27 passed (Sonatina); `fe test --backend native` 10 passed | `evidence/transcript-tests.txt` |

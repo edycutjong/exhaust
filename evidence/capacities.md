@@ -11,7 +11,7 @@ Each search is exhaustive only at the capacity named in its row. Step counts: `b
 | shards | 21 | three `explore_seeds` asserts over the locked amount k = 1..7, 8..14, 15..21: 91 + 238 + 385 states, + 22 Open states = 736 | disjoint by construction (after Lock the total is fixed); sum checked by `test_shards_partition` on both backends, disjointness and union by `tools/ref_model.py` |
 | spike | 17 | `static_assert(explore(17) == 494)`, the day-0 spike's capacity | a regression pin on the encoding, not extra coverage: the escrow's reachable sets nest (only Deposit reads `cap`) |
 | C_hash | 21 | `fingerprint(CAP, false, STATES)` == EDGES = 966 (accepted edges) and `fingerprint(CAP, true, STATES)` == EDGE_HASH = 1194004490208706542 (labeled-edge hash, MODEL.md); both stop past STATES states and defer to `explore` | 775,899 and 815,507 steps |
-| C_table | 21 | `test_oracle_edges` (both backends): `step()` against all 3,680 attempts of the generated `src/oracle_edges.fe` | about 1 s per backend for `fe test --filter test_oracle_edges` (wall, incl. compile) |
+| C_table | 21 | `test_oracle_edges` (both backends): `step()` against all 3,680 attempts of the generated `src/oracle_edges.fe` | about 0.8 s per backend for the probe version of this test (`evidence/probes-2026-11-15.txt`, section 5; wall, incl. compile) |
 
 History: P1a (2026-11-15) had C_model = 19 (609) and C′ = 18; P1b leaned `step()` and the predicate (no helper calls on the
 hot path), which moved them to 21 and 20; C′ was then set to 19 for headroom (see the C′ row).

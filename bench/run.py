@@ -180,7 +180,7 @@ def main():
          "Counts are exact (Python oracle `tools/ref_model.py`); a `pass` row means the Fe compile-time search returned the same count.",
          f"Wall times are the median of {RUNS} `fe check` runs of the whole ingot, which includes compiling everything else:",
          f"the gate-stripped ingot with no probe takes **{out['baseline_fe_check_s']} s** on its own. Times vary by machine; counts do not.",
-         "At these sizes the wall times carry no signal: the medians do not follow the state count (see the sweep) and vary by several tenths of a second on top of that baseline;",
+         "At these sizes the wall times carry little signal: every median is within about 0.12 s of that baseline and does not track the state count closely;",
          "the step budget in section 2 is the cost that decides what fits, not the wall time.", "",
          "## 1. Escrow capacity sweep (`explore(C)`, one static_assert each; the attack printer `counterexample(C)` is one run)", "",
          "| C | states | edges | attempts | diameter | `explore(C)` | fe check median (s) | `counterexample(C)` |", "|---:|---:|---:|---:|---:|---|---:|---|"]
@@ -201,7 +201,7 @@ def main():
     for r in shards:
         L.append(f"| {r['shards']} | {', '.join(map(str, r['states_per_shard']))} | {r['largest_shard_states']} | {r['status']} | {r['fe_check_median_s']} |")
     L += ["", "714 = the locked-amount seeds only; the 22 Open states bring the escrow to 736, so this table is about shard sizes, not coverage. The wall column is",
-          "indistinguishable from the no-probe baseline: read the largest-shard column.", "",
+          "within about 0.12 s of the no-probe baseline and does not fall with more shards: read the largest-shard column.", "",
           "Independent asserts each get their own 1,000,000-step budget, so the largest shard is what has to fit; the compiler runs them one after another, so the wall time does not fall with more shards.", "",
           "## 4. Runtime search (the same explorer, run at runtime)", "",
           "| model | EVM gas of one search (Sonatina, `fe test`) | states | EVM test ok | native agreement test, `fe test` wall (s) | native test ok |", "|---|---:|---:|---|---:|---|"]

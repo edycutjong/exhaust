@@ -24,7 +24,7 @@ unchanged. It is not generic, by design (a monomorphic explorer per protocol).
 
 The vault model, explorer, contract with its tests, and the first two bug patches were committed in four commits, all stamped
 04:25:22-04:25:23 on 2026-11-21 (the previous commit is 04:15:37), together with the oracle and budget-probe commits. The work was
-interleaved with the oracle and bench work, so read it as an upper bound of about ten minutes by commit stamps, not hours.
+interleaved with the oracle and bench work. Commit stamps do not measure working time (the stamps are 9 min 46 s after the previous commit, 04:15:37).
 Both red patches failed `fe build` naming their invariant and printing their digits (`evidence/check-bugs.txt`, current run).
 
 ## Failure points hit
