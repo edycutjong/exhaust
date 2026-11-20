@@ -18,7 +18,7 @@ consts share one budget, so a bigger model is split into independent asserts, ne
 
 ## Try it (macOS Apple Silicon or Linux x86-64; git, curl and patch; python3 not needed for this)
 
-<!-- The Linux run (evidence/repro-linux-2026-11-21.txt) is a clean clone of commit 470bca8: fe fmt --check, fe build, fe test,
+<!-- The Linux run (evidence/repro-linux-2026-11-21.txt) is a clean clone of commit 7b5e404: fe fmt --check, fe build, fe test,
      fe test --backend native (after installing gcc), demo/run.sh and the bug flip. The native trace printer was not run on Linux. -->
 
 1. `git clone https://github.com/edycutjong/exhaust && cd exhaust`
