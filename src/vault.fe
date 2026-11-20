@@ -320,7 +320,7 @@ static_assert(VB <= MAX_B)
 static_assert(VT <= MAX_T)
 
 // ---- invariants (checked in this order; the first that fails is the one the compiler names) ----
-// State invariants are checked on the start state and on every accepted successor; the last three are transition
+// State invariants are checked on the start state and on every accepted successor; the last four are transition
 // invariants, checked on every accepted edge (s, a, s').
 
 /// No violation.
@@ -343,6 +343,9 @@ pub const V_TWO_DISTINCT: u8 = 7
 pub const V_TIMELOCK: u8 = 8
 /// `pays one unit`: Execute pays out exactly one unit (transition).
 pub const V_PAYS_ONE: u8 = 9
+/// `only execute pays`: every action other than Execute leaves the balance and the paid-out units as they were
+/// (transition). Without it, a Cancel that paid a unit out would keep `conserved` and every state invariant.
+pub const V_ONLY_EXECUTE_PAYS: u8 = 10
 
 /// First state invariant that `n` breaks (vault of `b` units), or V_OK. Written out in place (no helper calls).
 pub const fn vstate_violation(_ n: VState, _ b: u32) -> u8 {
@@ -401,7 +404,12 @@ pub const fn vfirst_violation(_ s: VState, _ a: VAction, _ n: VState, _ b: u32, 
                 return V_PAYS_ONE
             }
         },
-        _ => {},
+        _ => {
+            // only execute pays: no unit leaves the vault, and none is counted as paid, on any other action
+            if n.bal != s.bal || n.paid != s.paid {
+                return V_ONLY_EXECUTE_PAYS
+            }
+        },
     }
     V_OK
 }

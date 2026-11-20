@@ -97,6 +97,9 @@ fn print_vault_invariant(_ v: u8) uses (out: mut Stdout) {
     if v == 9 {
         print!("pays one unit")
     }
+    if v == 10 {
+        print!("only execute pays")
+    }
 }
 
 fn print_vault_action(_ a: VAction) uses (out: mut Stdout) {

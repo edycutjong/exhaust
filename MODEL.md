@@ -136,12 +136,23 @@ A rejected action leaves the state unchanged and adds no edge.
 | 7 | `two distinct approvals` | transition | action Execute ⇒ `popcount(s.mask) ≥ 2` |
 | 8 | `timelock respected` | transition | action Execute ⇒ `s.clock ≥ T` |
 | 9 | `pays one unit` | transition | action Execute ⇒ `bal′ == bal − 1` and `paid′ == paid + 1` |
+| 10 | `only execute pays` | transition | any action other than Execute ⇒ `bal′ == bal` and `paid′ == paid` |
 
 `vault-approve-twice` breaks `counted once` and `queued means quorum` on the same state; `counted once` is first in the check
 order, so it is the one the compiler names. `vault-execute-early` breaks no state invariant: every state it reaches is also
 reachable in the correct model, and the step itself (an Execute before the timelock) is what the transition invariant rejects.
 `vault-pay-twice` (Execute pays two units) keeps `conserved` (`bal + paid` is unchanged) and is caught only by `pays one unit`.
 `proposed below quorum` and `pays one unit` were added after review: nothing else bounded a Proposed withdrawal or the size of one payout.
+`only execute pays` was added after a second review: `vault-cancel-pays` (Cancel pays the pending unit out) keeps `conserved` and
+every state invariant and only lands on states the correct model also reaches, so the state count stays 211; the build names
+`only execute pays` and prints `17` (Propose, Cancel). `two distinct approvals` cannot be the first invariant to fail while
+Execute keeps any one of its phase, quorum or timelock guards (`queued means quorum` and `counted once` already hold on every
+Queued state); the oracle finds it named first, with digits `6`, only when all three guards are dropped. Like the escrow's
+`in bounds`, it is defence in depth.
+
+Pins: the state count (211), and two more `static_assert`s running the same checked search (`vsearch`) that count the accepted
+edges (580) and hash them (labeled-edge hash, the escrow's formula with 7 actions and the vault's SIZE; value from the oracle).
+The state count alone would miss an explorer that never tries Cancel: it still reaches all 211 states, with 380 edges.
 
 ### Encoding
 Mixed radix `(3, 8, 4, MAX_T + 1, MAX_B + 1, MAX_B + 1)` with `MAX_B = 10`, `MAX_T = 3`, for every `B ≤ 10` and `T ≤ 3`:

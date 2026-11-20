@@ -1,6 +1,7 @@
 //! The explorer for the vault: the same breadth-first search as `escrow_explore.fe`, copied (not generic) and
 //! written as a `const fn` so that `static_assert` runs it inside `fe build`. See that file for the step budget.
 
+use ingot::escrow_explore::{HASH_M, HASH_P}
 use ingot::vault::{
     vstep,
     vencode,
@@ -23,6 +24,7 @@ use ingot::vault::{
     V_TWO_DISTINCT,
     V_TIMELOCK,
     V_PAYS_ONE,
+    V_ONLY_EXECUTE_PAYS,
 }
 
 /// Turns an invariant id into a compile error that names the invariant (called only when `v != V_OK`).
@@ -63,11 +65,32 @@ const fn vrequire(_ v: u8) {
         v != V_PAYS_ONE,
         "invariant 'pays one unit' broken: execute paid out other than exactly one unit",
     )
+    assert!(
+        v != V_ONLY_EXECUTE_PAYS,
+        "invariant 'only execute pays' broken: units left the vault without an execute",
+    )
 }
 
 /// Number of states reachable from the initial state of a vault of `b` units with a timelock of `t` ticks. Fails the
 /// evaluation, naming the invariant, if any reachable state or edge breaks one.
 pub const fn vexplore(_ b: u32, _ t: u32) -> usize {
+    vsearch(b, t, V_COUNT_STATES).downcast_truncate()
+}
+
+/// What `vsearch` returns: the number of reachable states, the number of accepted edges, or the labeled-edge hash.
+pub const V_COUNT_STATES: u8 = 0
+pub const V_COUNT_EDGES: u8 = 1
+pub const V_HASH_EDGES: u8 = 2
+
+/// SIZE as a u128 (a usize-to-u128 cast is rejected as not provably lossless); the assert ties the two.
+const VSIZE_U128: u128 = 46464
+static_assert(SIZE == 46464)
+
+/// The vault's checked breadth-first search. Every invariant is checked on every accepted edge in every mode, so the
+/// edge pins below run the same search as the state pin, not a second, unchecked copy. `mode` picks the result:
+/// V_COUNT_STATES, V_COUNT_EDGES, or V_HASH_EDGES: h = (h * P + ((enc(s) * 7 + a) * SIZE + enc(s'))) mod M over the
+/// accepted labeled edges (s, a, s') in search order, M and P as for the escrow (MODEL.md), computed in u128.
+pub const fn vsearch(_ b: u32, _ t: u32, _ mode: u8) -> u128 {
     let init = vinit_index(b)
     if vstate_violation(vdecode(init), b) != V_OK {
         vrequire(vstate_violation(vdecode(init), b))
@@ -77,6 +100,8 @@ pub const fn vexplore(_ b: u32, _ t: u32) -> usize {
     var queue: [u32; SIZE] = [0; SIZE]
     var head: usize = 0
     var tail: usize = 1
+    // states (V_COUNT_STATES), accepted edges (V_COUNT_EDGES) or the running hash (V_HASH_EDGES)
+    var acc: u128 = if mode == V_COUNT_STATES { 1 } else { 0 }
     queue[0] = init
     visited[init as usize] = true
     while head < tail {
@@ -92,16 +117,26 @@ pub const fn vexplore(_ b: u32, _ t: u32) -> usize {
                 let v = vfirst_violation(cur, act, n.s, b, t)
                 if v != V_OK { vrequire(v) }
                 let y = vencode(n.s)
+                if mode == V_COUNT_EDGES {
+                    acc += 1
+                } else if mode == V_HASH_EDGES {
+                    let label: u128 = ((x as u128) * (ACTIONS as u128) + (a as u128)) * VSIZE_U128
+                        + (y as u128)
+                    acc = (acc * HASH_P + label) % HASH_M
+                }
                 if !visited[y as usize] {
                     visited[y as usize] = true
                     queue[tail] = y
                     tail += 1
+                    if mode == V_COUNT_STATES {
+                        acc += 1
+                    }
                 }
             }
             a += 1
         }
     }
-    tail
+    acc
 }
 
 /// Code returned when the start state itself breaks an invariant (no action uses the digit 9).
@@ -168,9 +203,17 @@ pub const fn vcounterexample(_ b: u32, _ t: u32) -> u256 {
 
 /// Reachable states at B = VB, T = VT (value from tools/ref_model.py, evidence/oracle.json).
 pub const VSTATES: usize = 211
+/// Accepted edges at B = VB, T = VT, and their labeled-edge hash (both from tools/ref_model.py). A state count alone
+/// would not catch everything: an explorer that never tried Cancel still reaches all 211 states (with 380 edges), and a
+/// successor that lands on another reachable state keeps the count.
+pub const VEDGES: u128 = 580
+pub const VEDGE_HASH: u128 = 1115689132712769016
 
 // ---- pins: the build fails if the reachable-state count drifts ----
 static_assert(vexplore(VB, VT) == VSTATES)
+/// The same checked search, counting the accepted edges, then hashing them (each its own budget).
+static_assert(vsearch(VB, VT, V_COUNT_EDGES) == VEDGES)
+static_assert(vsearch(VB, VT, V_HASH_EDGES) == VEDGE_HASH)
 /// The attack printer: green it is a full search with parent/action writes (four tables). Same configuration.
 static_assert(vcounterexample(VB, VT) == 0)
 

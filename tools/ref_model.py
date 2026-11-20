@@ -207,7 +207,8 @@ IDLE, PROPOSED, QUEUED = 0, 1, 2
 VPHASES = ["Idle", "Proposed", "Queued"]
 VACTIONS = ["Propose", "ApproveA", "ApproveB", "ApproveC", "Tick", "Execute", "Cancel"]  # digit = index + 1
 VINVARIANTS = ["in bounds", "counted once", "conserved", "idle clean", "queued means quorum",
-               "proposed below quorum", "two distinct approvals", "timelock respected", "pays one unit"]  # check order, ids 1..9
+               "proposed below quorum", "two distinct approvals", "timelock respected", "pays one unit",
+               "only execute pays"]  # check order, ids 1..10
 K = 2
 MAX_B, MAX_T = 10, 3
 RB, RT = MAX_B + 1, MAX_T + 1
@@ -216,6 +217,7 @@ VBUGS = {
     "vault-approve-twice": "an approver's bit is not checked before counting the approval (count still += 1)",
     "vault-execute-early": "Execute no longer requires clock >= T",
     "vault-pay-twice": "Execute pays out two units (bal - 2, paid + 2) instead of one",
+    "vault-cancel-pays": "Cancel pays the pending unit out (bal - 1, paid + 1) instead of dropping it",
 }
 
 
@@ -251,7 +253,11 @@ def vstep(s, a, t, bug=None):
         if bug == "vault-pay-twice":
             return (IDLE, 0, 0, 0, bal - 2, paid + 2) if bal >= 2 else None
         return (IDLE, 0, 0, 0, bal - 1, paid + 1)
-    return None if ph == IDLE else (IDLE, 0, 0, 0, bal, paid)  # Cancel
+    if ph == IDLE:  # Cancel
+        return None
+    if bug == "vault-cancel-pays" and bal > 0:
+        return (IDLE, 0, 0, 0, bal - 1, paid + 1)
+    return (IDLE, 0, 0, 0, bal, paid)
 
 
 def vstate_violation(s, b):
@@ -282,6 +288,8 @@ def vviolation(s, a, n, b, t):
             return 8
         if n[4] + 1 != s[4] or n[5] != s[5] + 1:
             return 9
+    elif n[4] != s[4] or n[5] != s[5]:
+        return 10
     return 0
 
 
@@ -294,6 +302,7 @@ def vsearch(b, t, bug=None):
     depth = {start: 0}
     parent = {start: None}
     edges = []
+    h = 0
     q = deque([start])
     while q:
         s = q.popleft()
@@ -313,12 +322,13 @@ def vsearch(b, t, bug=None):
                     p = prev
                 return {"violation": v, "digits": "".join(str(d) for d in reversed(digits)), "path": list(reversed(chain))}
             edges.append((s, a, n))
+            h = (h * HASH_P + ((venc(s) * 7 + a) * VSIZE + venc(n))) % HASH_M
             if n not in depth:
                 depth[n] = depth[s] + 1
                 parent[n] = (s, a)
                 order.append(n)
                 q.append(n)
-    return {"b": b, "t": t, "states": len(order), "edges": len(edges), "attempts": 7 * len(order),
+    return {"b": b, "t": t, "states": len(order), "edges": len(edges), "edge_hash": h, "attempts": 7 * len(order),
             "diameter": max(depth.values()), "depth": depth, "order": order, "edge_list": edges, "parent": parent}
 
 
@@ -356,6 +366,9 @@ def vfe_pins(root):
         pins.append((kind, val(b), val(t), int(n)))
     for name in re.findall(r"static_assert\(vexplore\(VB, VT\) == (VSTATES)\)", src):
         pins.append(("vexplore", consts["VB"], consts["VT"], int(re.search(r"VSTATES: usize = (\d+)", src).group(1))))
+    named = {k: int(v) for k, v in re.findall(r"pub const (\w+): u128 = (\d+)", src)}
+    for mode, name in re.findall(r"static_assert\(vsearch\(VB, VT, (V_COUNT_EDGES|V_HASH_EDGES)\) == (\w+)\)", src):
+        pins.append(("vedges" if mode == "V_COUNT_EDGES" else "vedge_hash", consts["VB"], consts["VT"], named[name]))
     return pins, src[src.index("// ---- pins"):].count("static_assert(")
 
 
@@ -579,6 +592,10 @@ def main():
         for kind, b, t, val in vpins:
             if kind == "vexplore":
                 got = vsearch(b, t)["states"]
+            elif kind == "vedges":
+                got = vsearch(b, t)["edges"]
+            elif kind == "vedge_hash":
+                got = vsearch(b, t)["edge_hash"]
             else:
                 r = vsearch(b, t)
                 got = int(r["digits"]) if "digits" in r else 0

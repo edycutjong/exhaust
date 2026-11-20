@@ -25,19 +25,34 @@ use ingot::vault::{
     RB,
     RT,
 }
-use ingot::vault_explore::{vexplore, vcounterexample}
+use ingot::vault_explore::{
+    vexplore,
+    vcounterexample,
+    vsearch,
+    V_COUNT_EDGES,
+    V_HASH_EDGES,
+    VEDGES,
+    VEDGE_HASH,
+}
 use ingot::vault_contract::{Vault, VaultMsg}
 
 // ---- both backends ----
 
-/// The runtime search agrees with the compile-time pins: the headline (B = 10, T = 3), the other timelocks and the
-/// baseline configuration (B = 8, T = 2).
+/// The runtime search agrees with the compile-time pins: the headline (B = 10, T = 3) incl. its edge count and edge
+/// hash, the other timelocks and the baseline configuration (B = 8, T = 2).
 #[test]
 fn test_vault_runtime_agrees() {
     assert!(vexplore(black_box(VB), black_box(VT)) == 211)
     assert!(vexplore(black_box(VB), black_box(1 as u32)) == 131)
     assert!(vexplore(black_box(VB), black_box(2 as u32)) == 171)
     assert!(vexplore(black_box(8 as u32), black_box(2 as u32)) == 137)
+    // the edge pins: same accepted-edge count and labeled-edge hash at runtime
+    assert!(
+        vsearch(black_box(VB), black_box(VT), black_box(V_COUNT_EDGES)) == VEDGES,
+    )
+    assert!(
+        vsearch(black_box(VB), black_box(VT), black_box(V_HASH_EDGES)) == VEDGE_HASH,
+    )
 }
 
 /// The attack printer finds nothing at runtime either.
