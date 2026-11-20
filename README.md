@@ -31,7 +31,7 @@ patched contract (it pays twice) and on the real one (the Refund is refused).
 ```sh
 fe build                              # the compile-time search (exhaustive at the stated capacities)
 fe test                               # Sonatina (EVM) backend
-fe test --backend native              # native backend (on Linux this needs a C linker, `cc`)
+fe test --backend native              # native backend (on Linux this needs a C linker, `cc`: apt-get install gcc libc6-dev)
 sh demo/check-bugs.sh                 # every bug patch must fail fe build naming its invariant and printing its digits
 sh demo/check-bugs.sh --conformance   # the checker's own negative tests
 python3 tools/ref_model.py --check    # the Python oracle (follows MODEL.md) against every pin
@@ -48,8 +48,6 @@ python3 tools/ref_model.py --check    # the Python oracle (follows MODEL.md) aga
 - `MODEL.md`, the Fe model and the oracle share one author and one reading of the protocol; the oracle is independent by
   language and encoding, so a misreading shared by all three is not caught.
 - `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits.
-- Linux x86-64 was last reproduced on the P1a code (`evidence/repro-linux-2026-11-15.txt`); the current code is verified on
-  macOS Apple Silicon.
 
 Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute. The model in words: `MODEL.md`. Numbers: `evidence/`.
 
