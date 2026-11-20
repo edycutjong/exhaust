@@ -14,6 +14,7 @@ use ingot::escrow::{
     state_violation,
     first_violation,
     SIZE,
+    W,
     ACTIONS,
     INIT,
     CAP,
@@ -57,15 +58,34 @@ pub const fn explore(_ cap: u32) -> usize {
 /// Number of states reachable from `start` (an encoded state) at capacity `cap`. Fails the evaluation, naming
 /// the invariant, if any reachable state or edge breaks one.
 pub const fn explore_from(_ start: u32, _ cap: u32) -> usize {
+    explore_seeds(start, 1, 0, cap)
+}
+
+/// Encoding of (Locked, k, 0, 0) is `LOCKED_BASE + k * LOCKED_STRIDE`: the seeds of the locked-amount shards.
+pub const LOCKED_BASE: u32 = W * W * W
+pub const LOCKED_STRIDE: u32 = W * W
+
+/// Number of states reachable from the `count` seeds `first`, `first + stride`, ... (encoded states) at capacity
+/// `cap`, each seed counted once. Fails the evaluation, naming the invariant, if any reachable state or edge
+/// breaks one.
+pub const fn explore_seeds(_ first: u32, _ count: u32, _ stride: u32, _ cap: u32) -> usize {
     var visited: [bool; SIZE] = [false; SIZE]
     // Each index is enqueued only when it is first marked visited, so the queue never holds more than SIZE.
     var queue: [u32; SIZE] = [0; SIZE]
     var head: usize = 0
-    var tail: usize = 1
-    let v0 = state_violation(decode(start), cap)
-    if v0 != OK { require(v0) }
-    queue[0] = start
-    visited[start as usize] = true
+    var tail: usize = 0
+    var i: u32 = 0
+    while i < count {
+        let x0 = first + i * stride
+        let v0 = state_violation(decode(x0), cap)
+        if v0 != OK { require(v0) }
+        if !visited[x0 as usize] {
+            visited[x0 as usize] = true
+            queue[tail] = x0
+            tail += 1
+        }
+        i += 1
+    }
     while head < tail {
         let x = queue[head]
         head += 1
@@ -161,3 +181,15 @@ static_assert(explore(CAP) == 736)
 /// C' = 20: the attack printer. Green it is a full search with parent/action writes (four tables), so it fits a
 /// smaller capacity than `explore`; C = 21 exceeds the step limit (measured, see evidence/budget.md).
 static_assert(counterexample(20) == 0)
+
+// ---- shards: the same reachable set split into disjoint parts, each in its own static_assert (own budget) ----
+// After Lock the total never changes (only Deposit adds a unit, and only while Open), so the states reachable from
+// (Locked, k, 0, 0) all have total k: shards with different k share no state. Every reachable state is either one
+// of the C + 1 Open states (Open, k, 0, 0) or reachable from some (Locked, k, 0, 0), k = 1..C. The runtime test
+// test_shards_partition checks the sum on both backends; tools/ref_model.py checks disjointness and the union.
+/// Shard A: locked amount k = 1..7.
+static_assert(explore_seeds(LOCKED_BASE + LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP) == 91)
+/// Shard B: locked amount k = 8..14.
+static_assert(explore_seeds(LOCKED_BASE + 8 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP) == 238)
+/// Shard C: locked amount k = 15..21.
+static_assert(explore_seeds(LOCKED_BASE + 15 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP) == 385)

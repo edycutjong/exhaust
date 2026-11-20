@@ -159,6 +159,31 @@ def diff_workload(cap):
     return {"cap": cap, "deployments": deployments, "action_calls": actions, "reads": actions, "calls": 2 * actions}
 
 
+def reach(seeds, cap):
+    seen, q = set(seeds), deque(seeds)
+    while q:
+        s = q.popleft()
+        for a in range(5):
+            n = step(s, a, cap)
+            if n is not None and n not in seen:
+                seen.add(n)
+                q.append(n)
+    return seen
+
+
+SHARDS = [(1, 7), (8, 14), (15, 21)]  # locked amount k ranges, seeds (Locked, k, 0, 0)
+
+
+def shards(cap=MAX_CAP):
+    """Locked-amount shards: counts, pairwise disjointness, and whether shards + Open states == the reachable set."""
+    full = set(search(cap)["order"])
+    sets = [reach([(LOCKED, k, 0, 0) for k in range(lo, hi + 1)], cap) for lo, hi in SHARDS]
+    opens = {s for s in full if s[0] == OPEN}
+    disjoint = all(not (a & b) for i, a in enumerate(sets) for b in sets[i + 1:]) and not any(s & opens for s in sets)
+    return {"cap": cap, "shards": [{"k": f"{lo}..{hi}", "states": len(s)} for (lo, hi), s in zip(SHARDS, sets)],
+            "open_states": len(opens), "disjoint": disjoint, "union_is_reachable_set": set().union(*sets) | opens == full}
+
+
 def trace(parent, s):
     out = []
     while parent[s] is not None:
@@ -180,6 +205,8 @@ def fe_pins(root):
     for kind, arg, val in re.findall(r"static_assert\((explore|counterexample)\((\w+)(?: as u32)?\) == (\d+)\)", src):
         cap = int(arg) if arg.isdigit() else consts[arg]
         pins.append((kind, cap, int(val)))
+    for k0, val in re.findall(r"static_assert\(explore_seeds\(LOCKED_BASE \+ (?:(\d+) \* )?LOCKED_STRIDE, \d+, LOCKED_STRIDE, CAP\) == (\d+)\)", src):
+        pins.append(("shard", int(k0 or 1), int(val)))
     return pins
 
 
@@ -246,10 +273,19 @@ def main():
     print(f"differential workload at cap {w['cap']}: {w['deployments']} deployments, {w['action_calls']} action calls, "
           f"{w['reads']} raw_state() reads, {w['calls']} calls")
 
+    sh = shards()
+    print("shards at cap 21: " + ", ".join(f"k={x['k']} {x['states']}" for x in sh["shards"])
+          + f", Open {sh['open_states']}; disjoint {sh['disjoint']}, union == reachable set {sh['union_is_reachable_set']}")
+
     status = 0
+    if not (sh["disjoint"] and sh["union_is_reachable_set"]):
+        status = 1
     if args.check:
         for kind, cap, val in fe_pins(root):
-            if kind == "explore":
+            if kind == "shard":
+                lo, hi = next(r for r in SHARDS if r[0] == cap)
+                got = len(reach([(LOCKED, k, 0, 0) for k in range(lo, hi + 1)], MAX_CAP))
+            elif kind == "explore":
                 got = search(cap)["states"]
             else:
                 r = search(cap)
@@ -260,7 +296,7 @@ def main():
         print("RESULT: oracle agrees with every Fe pin" if status == 0 else "RESULT: MISMATCH")
 
     if args.json:
-        Path(args.json).write_text(json.dumps({"python": platform.python_version(), "escrow": rows, "bugs": bugs, "differential": w}, indent=1) + "\n")
+        Path(args.json).write_text(json.dumps({"python": platform.python_version(), "escrow": rows, "bugs": bugs, "differential": w, "shards": sh}, indent=1) + "\n")
     return status
 
 

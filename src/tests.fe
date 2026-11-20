@@ -20,7 +20,7 @@ use ingot::escrow::{
     W,
     SIZE,
 }
-use ingot::escrow_explore::{explore_from, counterexample}
+use ingot::escrow_explore::{explore_from, explore_seeds, counterexample, LOCKED_BASE, LOCKED_STRIDE}
 use ingot::escrow_contract::{Escrow, EscrowMsg}
 
 // ---- both backends ----
@@ -30,6 +30,35 @@ use ingot::escrow_contract::{Escrow, EscrowMsg}
 fn test_runtime_explore_agrees() {
     assert!(explore_from(black_box(INIT), black_box(17 as u32)) == 494)
     assert!(explore_from(black_box(INIT), black_box(CAP)) == 736)
+}
+
+/// The three locked-amount shards plus the C + 1 Open states add up to the single search's count at C = CAP (the
+/// shards are disjoint: after Lock the total is fixed). Also every shard count matches its compile-time pin.
+#[test]
+fn test_shards_partition() {
+    let a = explore_seeds(
+        black_box(LOCKED_BASE + LOCKED_STRIDE),
+        7,
+        LOCKED_STRIDE,
+        black_box(CAP),
+    )
+    let b = explore_seeds(
+        black_box(LOCKED_BASE + 8 * LOCKED_STRIDE),
+        7,
+        LOCKED_STRIDE,
+        black_box(CAP),
+    )
+    let c = explore_seeds(
+        black_box(LOCKED_BASE + 15 * LOCKED_STRIDE),
+        7,
+        LOCKED_STRIDE,
+        black_box(CAP),
+    )
+    assert!(a == 91 && b == 238 && c == 385)
+    let open = (CAP + 1) as usize
+    assert!(
+        a + b + c + open == explore_from(black_box(INIT), black_box(CAP)),
+    )
 }
 
 /// The attack printer finds nothing at runtime either.
