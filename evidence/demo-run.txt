@@ -1,15 +1,13 @@
-# sh demo/run.sh, 2026-11-20 20:51 UTC, fe: fe 26.6.0 (5b3f96a), Darwin arm64
+# sh demo/run.sh, 2026-11-20 21:03 UTC, commit a01722e, fe: fe 26.6.0 (5b3f96a), Darwin arm64
 
 == 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)
-   build OK: static_assert(explore(CAP) == 736) held, every invariant held on every reachable state and edge
+   build OK: static_assert(explore(CAP) == STATES) held, STATES = 736, every invariant held on every reachable state and edge
 
 == 2. the bug: one line in the Refund guard (demo/refund-after-release.patch)
    - if s.escrow > 0 && s.seller == 0 {
    + if s.escrow > 0 {
 
 == 3. fe build again
-   error[3-0026]: const evaluation exceeded the step limit
-   error[3-0026]: const evaluation exceeded the step limit
    error[3-0036]: assertion failed in const context
    = assertion message: invariant 'paid once' broken: buyer and seller both paid
    error[8-0081]: static assertion failed

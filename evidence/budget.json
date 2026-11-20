@@ -6,8 +6,8 @@
   "limit": 1000000,
   "burn_iterations_that_fit": 43476,
   "steps_per_burn_iteration": 23.0012,
-  "probe_wall_time_s": 66.5,
-  "date_utc": "2026-11-20 20:50"
+  "probe_wall_time_s": 71.7,
+  "date_utc": "2026-11-20 21:01"
  },
  "rows": [
   {
@@ -62,23 +62,23 @@
   },
   {
    "search": "edge count, C_hash = 21",
-   "expr": "fingerprint(CAP, false)",
+   "expr": "fingerprint(CAP, false, STATES)",
    "pin": 966,
    "states": 736,
-   "steps": 763387,
-   "share_of_limit": 0.7634,
+   "steps": 775899,
+   "share_of_limit": 0.7759,
    "note": "no invariant checks",
-   "steps_per_state_after_setup": 920
+   "steps_per_state_after_setup": 937
   },
   {
    "search": "labeled-edge hash, C_hash = 21",
-   "expr": "fingerprint(CAP, true)",
+   "expr": "fingerprint(CAP, true, STATES)",
    "pin": 1194004490208706542,
    "states": 736,
-   "steps": 802052,
-   "share_of_limit": 0.8021,
+   "steps": 815507,
+   "share_of_limit": 0.8155,
    "note": "u128 arithmetic",
-   "steps_per_state_after_setup": 972
+   "steps_per_state_after_setup": 991
   },
   {
    "search": "shard A, k = 1..7",

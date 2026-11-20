@@ -1,60 +1,58 @@
-# CI steps run locally, 2026-11-20 20:51 UTC
-commit: 83e6459b759e612960b01bca42775a363c7d139b
+# CI steps run locally, 2026-11-20 21:02 UTC
+commit: a01722ee801e743650f92046335f3a19865065bd
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 cpu: Apple M1 Max
 
 ## fe fmt --check
--> PASS
+-> PASS (0.17 s wall)
 
 ## fe check
--> PASS
+-> PASS (1.05 s wall)
 
 ## fe build
--> PASS
+-> PASS (1.12 s wall)
 
 ## fe test
-PASS  [0.0002s] test_action_ids_distinct
-PASS  [0.0002s] test_contract_rejects_attack
-PASS  [0.0002s] test_handler_deposit
-PASS  [0.0002s] test_handler_dispute
-PASS  [0.0001s] test_handler_refund
-PASS  [0.0002s] test_handler_lock
+PASS  [0.0031s] test_handler_dispute
+PASS  [0.0032s] test_handler_deposit
+PASS  [0.0032s] test_contract_rejects_attack
+PASS  [0.0001s] test_handler_lock
 PASS  [0.0001s] test_handler_release
-PASS  [0.0003s] test_contract_matches_step
-PASS  [0.0003s] test_encode_roundtrip
-PASS  [0.0035s] test_counterexample_none
-PASS  [0.0033s] test_runtime_search_gas
-PASS  [0.0073s] test_runtime_explore_agrees
-PASS  [0.0077s] test_oracle_edges
-PASS  [0.0085s] test_shards_partition
-PASS  [0.1389s] test_differential_all_edges
+PASS  [0.0001s] test_handler_refund
+PASS  [0.0051s] test_contract_matches_step
+PASS  [0.0068s] test_counterexample_none
+PASS  [0.0069s] test_action_ids_distinct
+PASS  [0.0082s] test_runtime_search_gas
+PASS  [0.0102s] test_runtime_explore_agrees
+PASS  [0.0095s] test_shards_partition
+PASS  [0.0121s] test_oracle_edges
+PASS  [0.0166s] test_encode_roundtrip
+PASS  [0.1547s] test_differential_all_edges
 
 test result: ok. 15 passed; 0 failed
--> PASS
+-> PASS (4.08 s wall)
 
 ## fe test --backend native
-PASS  [0.0378s] test_encode_roundtrip
-PASS  [0.0498s] test_oracle_edges
-PASS  [0.0498s] test_action_ids_distinct
-PASS  [0.0498s] test_runtime_explore_agrees
-PASS  [0.0501s] test_shards_partition
-PASS  [0.0501s] test_counterexample_none
+PASS  [0.1106s] test_action_ids_distinct
+PASS  [0.1107s] test_encode_roundtrip
+PASS  [0.1107s] test_shards_partition
+PASS  [0.1108s] test_counterexample_none
+PASS  [0.1108s] test_oracle_edges
+PASS  [0.1109s] test_runtime_explore_agrees
 
 test result: ok. 6 passed; 0 failed
--> PASS
+-> PASS (1.86 s wall)
 
 ## sh demo/run.sh
 == 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)
-   build OK: static_assert(explore(CAP) == 736) held, every invariant held on every reachable state and edge
+   build OK: static_assert(explore(CAP) == STATES) held, STATES = 736, every invariant held on every reachable state and edge
 
 == 2. the bug: one line in the Refund guard (demo/refund-after-release.patch)
    - if s.escrow > 0 && s.seller == 0 {
    + if s.escrow > 0 {
 
 == 3. fe build again
-   error[3-0026]: const evaluation exceeded the step limit
-   error[3-0026]: const evaluation exceeded the step limit
    error[3-0036]: assertion failed in const context
    = assertion message: invariant 'paid once' broken: buyer and seller both paid
    error[8-0081]: static assertion failed
@@ -69,11 +67,11 @@ test result: ok. 6 passed; 0 failed
    real contract, fe test --filter attack:
      PASS  [0.0002s] test_contract_rejects_attack
      -> the first four calls accepted, the Refund refused, storage unchanged
--> PASS
+-> PASS (3.04 s wall)
 
 ## sh demo/check-bugs.sh
-# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-20 20:51 UTC
-commit: 83e6459b759e612960b01bca42775a363c7d139b
+# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-20 21:02 UTC
+commit: a01722ee801e743650f92046335f3a19865065bd
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -91,18 +89,15 @@ PASS  demo/settle-early.patch | exit 1 | 'settled empty': yes | 1123: yes | caug
 PASS  demo/cap-off-by-one.patch | exit 1 | 'within capacity': yes | 11111111111111111111: yes | missed | missed
       = assertion message: invariant 'within capacity' broken: more units than the capacity
       = left: `11111111111111111111`
-      = left: `968`
-      = left: `1770024059661220277`
 PASS  demo/mint-release.patch | exit 1 | 'conserved': yes | 123: yes | caught (1 of 5 fail) | caught
       = assertion message: invariant 'conserved' broken: units created or lost by a non-deposit action
       = left: `123`
-      = left: `1197`
 RESULT: all rows as expected
--> PASS
+-> PASS (8.07 s wall)
 
 ## sh demo/check-bugs.sh --conformance
-# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 20:51 UTC
-commit: 83e6459b759e612960b01bca42775a363c7d139b
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-20 21:02 UTC
+commit: a01722ee801e743650f92046335f3a19865065bd
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -118,7 +113,7 @@ PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_d
 PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_runtime_explore_agrees` exit 0 (want 0)  expect: ^PASS .*test_runtime_explore_agrees
 PASS  K6  conformance/bad-init.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'settled empty';;left: `9`
 RESULT: all rows as expected
--> PASS
+-> PASS (10.25 s wall)
 
 ## python3 -I tools/ref_model.py --check
 # oracle: tools/ref_model.py, python 3.11.1
@@ -141,15 +136,16 @@ bug settle-early           cap 18: 'settled empty' 1123
 bug settle-early           cap 19: 'settled empty' 1123
 differential workload at cap 21: 1008 deployments, 25646 action calls, 25646 raw_state() reads, 51292 calls
 shards at cap 21: k=1..7 91, k=8..14 238, k=15..21 385, Open 22; disjoint True, union == reachable set True
+check: all 8 pins in src/escrow_explore.fe parsed
 check explore(17) == 494: oracle 494 -> AGREE
-check explore(21) == 736: oracle 736 -> AGREE
 check counterexample(19) == 0: oracle 0 -> AGREE
 check shard(1) == 91: oracle 91 -> AGREE
 check shard(8) == 238: oracle 238 -> AGREE
 check shard(15) == 385: oracle 385 -> AGREE
 check edges(21) == 966: oracle 966 -> AGREE
 check edge_hash(21) == 1194004490208706542: oracle 1194004490208706542 -> AGREE
+check explore(21) == 736: oracle 736 -> AGREE
 RESULT: oracle agrees with every Fe pin
--> PASS
+-> PASS (0.45 s wall)
 
 RESULT: all steps passed
