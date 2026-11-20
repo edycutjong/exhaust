@@ -1,0 +1,26 @@
+# fail: cap-off-by-one (names 'within capacity', prints 11111111111111111111)
+# 2026-11-20 21:39 UTC · commit f34c34e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ patch -p1 < demo/cap-off-by-one.patch && fe --color never build
+
+error[3-0036]: assertion failed in const context
+   ┌─ src/escrow_explore.fe:31:5
+   │  
+31 │ ╭     assert!(
+32 │ │         v != WITHIN_CAPACITY,
+33 │ │         "invariant 'within capacity' broken: more units than the capacity",
+34 │ │     )
+   │ ╰─────^ `assert!` evaluated to `false`
+   │  
+   = assertion message: invariant 'within capacity' broken: more units than the capacity
+
+error[8-0081]: static assertion failed
+    ┌─ src/escrow_explore.fe:253:15
+    │
+253 │ static_assert(counterexample(19) == 0)
+    │               ^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
+    │
+    = left: `11111111111111111111`
+    = right: `0`
+    = operator: `==`
+
+exit status: 1

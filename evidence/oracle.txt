@@ -1,4 +1,4 @@
-# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 21:12 UTC, Darwin arm64
+# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 21:39 UTC, Darwin arm64
 # oracle: tools/ref_model.py, python 3.11.1
 cap  states  edges  attempts  diameter  edge_hash
   2      14     16        70         5  1524000005756973351
@@ -17,6 +17,17 @@ bug refund-after-release   cap 18: 'paid once' 11234
 bug refund-after-release   cap 19: 'paid once' 11234
 bug settle-early           cap 18: 'settled empty' 1123
 bug settle-early           cap 19: 'settled empty' 1123
+
+# vault (2-of-3 + timelock)
+   B  T  states  edges  attempts  diameter
+   8  2     137    376       959        48
+  10  1     131    360       917        50
+  10  2     171    470      1197        60
+  10  3     211    580      1477        70
+bug vault-approve-twice    B=10 T=3: 'counted once' 122
+bug vault-execute-early    B=10 T=3: 'timelock respected' 1236
+vault contract graph B=10 T=3 lock ready: 91 states, 250 edges, 546 attempts
+vault contract graph B=10 T=3 lock locked: 9 states, 21 edges, 54 attempts
 differential workload at cap 21: 1008 deployments, 25646 action calls, 25646 raw_state() reads, 51292 calls
 shards at cap 21: k=1..7 91, k=8..14 238, k=15..21 385, Open 22; disjoint True, union == reachable set True
 check: all 8 pins in src/escrow_explore.fe parsed
@@ -28,4 +39,10 @@ check shard(15) == 385: oracle 385 -> AGREE
 check edges(21) == 966: oracle 966 -> AGREE
 check edge_hash(21) == 1194004490208706542: oracle 1194004490208706542 -> AGREE
 check explore(21) == 736: oracle 736 -> AGREE
+check: all 5 pins in src/vault_explore.fe parsed
+check vcounterexample(10, 3) == 0: oracle 0 -> AGREE
+check vexplore(10, 1) == 131: oracle 131 -> AGREE
+check vexplore(10, 2) == 171: oracle 171 -> AGREE
+check vexplore(8, 2) == 137: oracle 137 -> AGREE
+check vexplore(10, 3) == 211: oracle 211 -> AGREE
 RESULT: oracle agrees with every Fe pin

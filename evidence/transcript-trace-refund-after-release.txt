@@ -1,0 +1,14 @@
+# native trace of refund-after-release, by action name
+# 2026-11-20 21:39 UTC · commit f34c34e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ sh tools/trace.sh demo/refund-after-release.patch
+
+escrow, capacity 19: shortest counterexample, 5 actions (digits 11234)
+  start     (Open, 0, 0, 0)
+  1  Deposit  (Open, 1, 0, 0)
+  2  Deposit  (Open, 2, 0, 0)
+  3  Lock     (Locked, 2, 0, 0)
+  4  Release  (Locked, 1, 1, 0)
+  5  Refund   (Settled, 0, 1, 1)
+  ^ this edge breaks invariant 'paid once'
+vault, B = 10, T = 3: no counterexample (every reachable state and edge keeps every invariant)
+exit status: 1

@@ -370,6 +370,68 @@
    "digits": "1123"
   }
  ],
+ "vault": [
+  {
+   "b": 8,
+   "t": 2,
+   "states": 137,
+   "edges": 376,
+   "attempts": 959,
+   "diameter": 48
+  },
+  {
+   "b": 10,
+   "t": 1,
+   "states": 131,
+   "edges": 360,
+   "attempts": 917,
+   "diameter": 50
+  },
+  {
+   "b": 10,
+   "t": 2,
+   "states": 171,
+   "edges": 470,
+   "attempts": 1197,
+   "diameter": 60
+  },
+  {
+   "b": 10,
+   "t": 3,
+   "states": 211,
+   "edges": 580,
+   "attempts": 1477,
+   "diameter": 70
+  }
+ ],
+ "vault_bugs": [
+  {
+   "bug": "vault-approve-twice",
+   "b": 10,
+   "t": 3,
+   "invariant": "counted once",
+   "digits": "122"
+  },
+  {
+   "bug": "vault-execute-early",
+   "b": 10,
+   "t": 3,
+   "invariant": "timelock respected",
+   "digits": "1236"
+  }
+ ],
+ "vault_contract_graph": {
+  "ready": {
+   "states": 91,
+   "edges": 250,
+   "attempts": 546
+  },
+  "locked": {
+   "states": 9,
+   "edges": 21,
+   "attempts": 54
+  }
+ },
  "differential": {
   "cap": 21,
   "deployments": 1008,

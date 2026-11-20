@@ -1,0 +1,26 @@
+# fail: vault-execute-early (names 'timelock respected', prints 1236)
+# 2026-11-20 21:39 UTC · commit f34c34e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ patch -p1 < demo/vault-execute-early.patch && fe --color never build
+
+error[3-0036]: assertion failed in const context
+   ┌─ src/vault_explore.fe:52:5
+   │  
+52 │ ╭     assert!(
+53 │ │         v != V_TIMELOCK,
+54 │ │         "invariant 'timelock respected' broken: executed before the timelock ran out",
+55 │ │     )
+   │ ╰─────^ `assert!` evaluated to `false`
+   │  
+   = assertion message: invariant 'timelock respected' broken: executed before the timelock ran out
+
+error[8-0081]: static assertion failed
+    ┌─ src/vault_explore.fe:165:15
+    │
+165 │ static_assert(vcounterexample(VB, VT) == 0)
+    │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
+    │
+    = left: `1236`
+    = right: `0`
+    = operator: `==`
+
+exit status: 1

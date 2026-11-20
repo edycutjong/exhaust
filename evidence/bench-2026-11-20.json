@@ -1,0 +1,431 @@
+{
+ "meta": {
+  "date_utc": "2026-11-20 21:37",
+  "fe": "fe 26.6.0 (5b3f96a)",
+  "commit": "1c1c509",
+  "uname": "Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64 arm",
+  "cpu": "Apple M1 Max",
+  "python": "3.11.1",
+  "fe_check_runs_per_row": 5
+ },
+ "baseline_fe_check_s": 0.552,
+ "escrow_sweep": [
+  {
+   "cap": 2,
+   "states": 14,
+   "edges": 16,
+   "attempts": 70,
+   "diameter": 5,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.526,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.505
+  },
+  {
+   "cap": 4,
+   "states": 39,
+   "edges": 48,
+   "attempts": 195,
+   "diameter": 9,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.524,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.564
+  },
+  {
+   "cap": 8,
+   "states": 125,
+   "edges": 160,
+   "attempts": 625,
+   "diameter": 17,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.525,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.529
+  },
+  {
+   "cap": 12,
+   "states": 259,
+   "edges": 336,
+   "attempts": 1295,
+   "diameter": 25,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.618,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.548
+  },
+  {
+   "cap": 16,
+   "states": 441,
+   "edges": 576,
+   "attempts": 2205,
+   "diameter": 33,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.584,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.637
+  },
+  {
+   "cap": 17,
+   "states": 494,
+   "edges": 646,
+   "attempts": 2470,
+   "diameter": 35,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.587,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.569
+  },
+  {
+   "cap": 18,
+   "states": 550,
+   "edges": 720,
+   "attempts": 2750,
+   "diameter": 37,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.615,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.588
+  },
+  {
+   "cap": 19,
+   "states": 609,
+   "edges": 798,
+   "attempts": 3045,
+   "diameter": 39,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.591,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.613
+  },
+  {
+   "cap": 20,
+   "states": 671,
+   "edges": 880,
+   "attempts": 3355,
+   "diameter": 41,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.605,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.584
+  },
+  {
+   "cap": 21,
+   "states": 736,
+   "edges": 966,
+   "attempts": 3680,
+   "diameter": 43,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.59,
+   "counterexample_status": "step-limit",
+   "counterexample_fe_check_s": 0.355
+  }
+ ],
+ "step_budget": {
+  "meta": {
+   "fe": "fe 26.6.0 (5b3f96a)",
+   "uname": "Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64 arm",
+   "python": "3.11.1",
+   "limit": 1000000,
+   "burn_iterations_that_fit": 43476,
+   "steps_per_burn_iteration": 23.0012,
+   "probe_wall_time_s": 161.7,
+   "date_utc": "2026-11-20 21:32"
+  },
+  "rows": [
+   {
+    "search": "explore(0): array setup only",
+    "expr": "explore(0)",
+    "pin": 1,
+    "states": 1,
+    "steps": 86323,
+    "share_of_limit": 0.0863,
+    "note": "1 state, no successors: two 42,592-element tables initialised",
+    "steps_per_state_after_setup": null
+   },
+   {
+    "search": "explore(17)",
+    "expr": "explore(17)",
+    "pin": 494,
+    "states": 494,
+    "steps": 658271,
+    "share_of_limit": 0.6583,
+    "note": "spike capacity",
+    "steps_per_state_after_setup": 1158
+   },
+   {
+    "search": "explore(CAP), C_model = 21",
+    "expr": "explore(CAP)",
+    "pin": 736,
+    "states": 736,
+    "steps": 940335,
+    "share_of_limit": 0.9403,
+    "note": "the headline assert",
+    "steps_per_state_after_setup": 1160
+   },
+   {
+    "search": "counterexample(19), C' = 19",
+    "expr": "counterexample(19)",
+    "pin": 0,
+    "states": 609,
+    "steps": 908455,
+    "share_of_limit": 0.9085,
+    "note": "green: full search; it sets up 4 tables, not 2, so its per-state column is overstated by \u2248 86k / 609",
+    "steps_per_state_after_setup": 1350
+   },
+   {
+    "search": "counterexample(20)",
+    "expr": "counterexample(20)",
+    "pin": 0,
+    "states": 671,
+    "steps": 983899,
+    "share_of_limit": 0.9839,
+    "note": "fits, but too close to the limit for edits to step() (K2 exceeds it); not pinned",
+    "steps_per_state_after_setup": 1338
+   },
+   {
+    "search": "edge count, C_hash = 21",
+    "expr": "fingerprint(CAP, false, STATES)",
+    "pin": 966,
+    "states": 736,
+    "steps": 775899,
+    "share_of_limit": 0.7759,
+    "note": "no invariant checks",
+    "steps_per_state_after_setup": 937
+   },
+   {
+    "search": "labeled-edge hash, C_hash = 21",
+    "expr": "fingerprint(CAP, true, STATES)",
+    "pin": 1194004490208706542,
+    "states": 736,
+    "steps": 815507,
+    "share_of_limit": 0.8155,
+    "note": "u128 arithmetic",
+    "steps_per_state_after_setup": 991
+   },
+   {
+    "search": "shard A, k = 1..7",
+    "expr": "explore_seeds(LOCKED_BASE + LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)",
+    "pin": 91,
+    "states": 91,
+    "steps": 190749,
+    "share_of_limit": 0.1907,
+    "note": "",
+    "steps_per_state_after_setup": 1148
+   },
+   {
+    "search": "shard B, k = 8..14",
+    "expr": "explore_seeds(LOCKED_BASE + 8 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)",
+    "pin": 238,
+    "states": 238,
+    "steps": 362821,
+    "share_of_limit": 0.3628,
+    "note": "",
+    "steps_per_state_after_setup": 1162
+   },
+   {
+    "search": "shard C, k = 15..21",
+    "expr": "explore_seeds(LOCKED_BASE + 15 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)",
+    "pin": 385,
+    "states": 385,
+    "steps": 534870,
+    "share_of_limit": 0.5349,
+    "note": "",
+    "steps_per_state_after_setup": 1165
+   },
+   {
+    "search": "vexplore(0, 0): vault array setup only",
+    "expr": "vexplore(0, 0)",
+    "pin": 1,
+    "states": 1,
+    "steps": 94512,
+    "share_of_limit": 0.0945,
+    "note": "B = 0: no unit to propose, one state; two 46,464-element tables initialised",
+    "steps_per_state_after_setup": null
+   },
+   {
+    "search": "vexplore(8, 2): baseline",
+    "expr": "vexplore(8, 2)",
+    "pin": 137,
+    "states": 137,
+    "steps": 389617,
+    "share_of_limit": 0.3896,
+    "note": "the baseline configuration of the spec",
+    "steps_per_state_after_setup": 2154
+   },
+   {
+    "search": "vexplore(VB, VT), B = 10, T = 3",
+    "expr": "vexplore(VB, VT)",
+    "pin": 211,
+    "states": 211,
+    "steps": 549269,
+    "share_of_limit": 0.5493,
+    "note": "the vault's headline assert",
+    "steps_per_state_after_setup": 2155
+   },
+   {
+    "search": "vcounterexample(VB, VT)",
+    "expr": "vcounterexample(VB, VT)",
+    "pin": 0,
+    "states": 211,
+    "steps": 652061,
+    "share_of_limit": 0.6521,
+    "note": "green: full search; four tables, so its per-state column is overstated",
+    "steps_per_state_after_setup": 2642
+   },
+   {
+    "search": "vexplore(10, 1)",
+    "expr": "vexplore(10, 1)",
+    "pin": 131,
+    "states": 131,
+    "steps": 377519,
+    "share_of_limit": 0.3775,
+    "note": "T = 1 shard",
+    "steps_per_state_after_setup": 2160
+   },
+   {
+    "search": "vexplore(10, 2)",
+    "expr": "vexplore(10, 2)",
+    "pin": 171,
+    "states": 171,
+    "steps": 463405,
+    "share_of_limit": 0.4634,
+    "note": "T = 2 shard",
+    "steps_per_state_after_setup": 2157
+   }
+  ]
+ },
+ "shard_scaling": [
+  {
+   "shards": 1,
+   "states_per_shard": [
+    714
+   ],
+   "largest_shard_states": 714,
+   "status": "pass",
+   "fe_check_median_s": 0.591
+  },
+  {
+   "shards": 2,
+   "states_per_shard": [
+    209,
+    505
+   ],
+   "largest_shard_states": 505,
+   "status": "pass",
+   "fe_check_median_s": 0.598
+  },
+  {
+   "shards": 4,
+   "states_per_shard": [
+    69,
+    140,
+    215,
+    290
+   ],
+   "largest_shard_states": 290,
+   "status": "pass",
+   "fe_check_median_s": 0.603
+  },
+  {
+   "shards": 8,
+   "states_per_shard": [
+    21,
+    48,
+    75,
+    102,
+    129,
+    101,
+    113,
+    125
+   ],
+   "largest_shard_states": 129,
+   "status": "pass",
+   "fe_check_median_s": 0.64
+  }
+ ],
+ "runtime_search": {
+  "escrow C=17": {
+   "evm_gas": 16394182,
+   "states": 494,
+   "evm_test_ok": true,
+   "evm_fe_test_wall_s": 1.453,
+   "native_test_ok": true,
+   "native_fe_test_wall_s": 1.586
+  },
+  "vault B=10 T=3": {
+   "evm_gas": 18696270,
+   "states": 211,
+   "evm_test_ok": true,
+   "evm_fe_test_wall_s": 1.704,
+   "native_test_ok": true,
+   "native_fe_test_wall_s": 1.462
+  }
+ },
+ "vault": [
+  {
+   "b": 8,
+   "t": 2,
+   "states": 137,
+   "edges": 376,
+   "attempts": 959,
+   "diameter": 48,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.548
+  },
+  {
+   "b": 10,
+   "t": 1,
+   "states": 131,
+   "edges": 360,
+   "attempts": 917,
+   "diameter": 50,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.58
+  },
+  {
+   "b": 10,
+   "t": 2,
+   "states": 171,
+   "edges": 470,
+   "attempts": 1197,
+   "diameter": 60,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.565
+  },
+  {
+   "b": 10,
+   "t": 3,
+   "states": 211,
+   "edges": 580,
+   "attempts": 1477,
+   "diameter": 70,
+   "explore_status": "pass",
+   "explore_fe_check_median_s": 0.641,
+   "counterexample_status": "pass",
+   "counterexample_fe_check_s": 0.586
+  },
+  {
+   "b": 12,
+   "t": 3,
+   "note": "outside the encoding (MAX_B = 10): not searched"
+  },
+  {
+   "b": 16,
+   "t": 3,
+   "note": "outside the encoding (MAX_B = 10): not searched"
+  }
+ ],
+ "vault_contract_graph": {
+  "ready": {
+   "states": 91,
+   "edges": 250,
+   "attempts": 546
+  },
+  "locked": {
+   "states": 9,
+   "edges": 21,
+   "attempts": 54
+  }
+ }
+}

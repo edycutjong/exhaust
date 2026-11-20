@@ -1,0 +1,14 @@
+# green: the unpatched ingot
+# 2026-11-20 21:39 UTC · commit f34c34e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ fe --color never build
+
+Wrote out/Escrow.bin
+Wrote out/Escrow.runtime.bin
+Wrote out/Vault.bin
+Wrote out/Vault.runtime.bin
+Wrote out/Who.bin
+Wrote out/Who.runtime.bin
+Wrote out/Escrow.abi.json
+Wrote out/Vault.abi.json
+Wrote out/Who.abi.json
+exit status: 0

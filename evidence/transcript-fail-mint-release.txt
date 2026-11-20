@@ -1,0 +1,26 @@
+# fail: mint-release (names 'conserved', prints 123)
+# 2026-11-20 21:39 UTC · commit f34c34e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ patch -p1 < demo/mint-release.patch && fe --color never build
+
+error[3-0036]: assertion failed in const context
+   ┌─ src/escrow_explore.fe:47:5
+   │  
+47 │ ╭     assert!(
+48 │ │         v != CONSERVED,
+49 │ │         "invariant 'conserved' broken: units created or lost by a non-deposit action",
+50 │ │     )
+   │ ╰─────^ `assert!` evaluated to `false`
+   │  
+   = assertion message: invariant 'conserved' broken: units created or lost by a non-deposit action
+
+error[8-0081]: static assertion failed
+    ┌─ src/escrow_explore.fe:253:15
+    │
+253 │ static_assert(counterexample(19) == 0)
+    │               ^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
+    │
+    = left: `123`
+    = right: `0`
+    = operator: `==`
+
+exit status: 1

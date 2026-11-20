@@ -1,0 +1,46 @@
+# fail: settle-early (names 'settled empty', prints 1123)
+# 2026-11-20 21:39 UTC · commit f34c34e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ patch -p1 < demo/settle-early.patch && fe --color never build
+
+error[3-0036]: assertion failed in const context
+   ┌─ src/escrow_explore.fe:43:5
+   │  
+43 │ ╭     assert!(
+44 │ │         v != SETTLED_EMPTY,
+45 │ │         "invariant 'settled empty' broken: settled with units still in escrow",
+46 │ │     )
+   │ ╰─────^ `assert!` evaluated to `false`
+   │  
+   = assertion message: invariant 'settled empty' broken: settled with units still in escrow
+
+error[8-0081]: static assertion failed
+    ┌─ src/escrow_explore.fe:253:15
+    │
+253 │ static_assert(counterexample(19) == 0)
+    │               ^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
+    │
+    = left: `1123`
+    = right: `0`
+    = operator: `==`
+
+error[8-0081]: static assertion failed
+    ┌─ src/escrow_explore.fe:256:15
+    │
+256 │ static_assert(or_deferred(fingerprint(CAP, false, STATES), EDGES) == EDGES)
+    │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
+    │
+    = left: `946`
+    = right: `966`
+    = operator: `==`
+
+error[8-0081]: static assertion failed
+    ┌─ src/escrow_explore.fe:257:15
+    │
+257 │ static_assert(or_deferred(fingerprint(CAP, true, STATES), EDGE_HASH) == EDGE_HASH)
+    │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
+    │
+    = left: `649063484112972613`
+    = right: `1194004490208706542`
+    = operator: `==`
+
+exit status: 1

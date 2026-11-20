@@ -1,0 +1,26 @@
+# fail: refund-after-release (names 'paid once', prints 11234)
+# 2026-11-20 21:39 UTC · commit f34c34e · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ patch -p1 < demo/refund-after-release.patch && fe --color never build
+
+error[3-0036]: assertion failed in const context
+   ┌─ src/escrow_explore.fe:39:5
+   │  
+39 │ ╭     assert!(
+40 │ │         v != PAID_ONCE,
+41 │ │         "invariant 'paid once' broken: buyer and seller both paid",
+42 │ │     )
+   │ ╰─────^ `assert!` evaluated to `false`
+   │  
+   = assertion message: invariant 'paid once' broken: buyer and seller both paid
+
+error[8-0081]: static assertion failed
+    ┌─ src/escrow_explore.fe:253:15
+    │
+253 │ static_assert(counterexample(19) == 0)
+    │               ^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
+    │
+    = left: `11234`
+    = right: `0`
+    = operator: `==`
+
+exit status: 1
