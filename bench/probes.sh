@@ -2,6 +2,7 @@
 # Feasibility probes for the Fe 26.6.0 compile-time explorer; prints a transcript.
 # Every probe runs in a scratch copy of the committed ingot (git archive HEAD); src/ is never modified.
 # Usage: sh bench/probes.sh > evidence/probes-$(date -u +%Y-%m-%d).txt
+# evidence/probes-2026-11-15.txt ran on the P1a code; P1b leaned step() (section 5 limits moved, see evidence/budget.md).
 set -u
 cd "$(dirname "$0")/.."
 root=$(pwd)
@@ -46,7 +47,7 @@ fresh; printf 'const FIRST: usize = explore(19)\nconst SECOND: usize = explore(1
 echo "two consts in one static_assert: $(cd "$tmp/ingot" && fe build 2>&1 | limit_or_value)"
 
 echo; echo "## 5. capacity limits with every invariant checked (one static_assert each)"
-for q in "explore(19)" "explore(20)" "explore(21)" "counterexample(18)" "counterexample(19)"; do
+for q in "explore(19)" "explore(20)" "explore(21)" "counterexample(18)" "counterexample(19)" "counterexample(20)" "counterexample(21)"; do
   fresh; echo "static_assert($q == 12345)" >> "$tmp/ingot/src/escrow_explore.fe"
   echo "$q: $(cd "$tmp/ingot" && fe build 2>&1 | limit_or_value)"
 done

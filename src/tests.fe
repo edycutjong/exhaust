@@ -190,7 +190,7 @@ fn test_runtime_search_gas() uses (ctx: std::evm::Ctx, log: mut std::evm::Log) {
     let used = before - ctx.gas()
     log.emit(GasUsed { runtime_search_gas: used, states: n as u256 })
     assert!(n == 494)
-    // Measured: 16,151,766 gas on Fe 26.6.0. A search folded away at compile time would cost almost nothing.
+    // Measured: 16,394,182 gas on Fe 26.6.0 (evidence/p1b-core-2026-11-21.md). A search folded away at compile time would cost almost nothing.
     assert!(used > 1000000)
 }
 
