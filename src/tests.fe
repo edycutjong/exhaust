@@ -394,3 +394,24 @@ fn test_differential_all_edges() uses (evm: mut Evm, log: mut std::evm::Log) {
     assert!(tail == 736 && edges == 966)
     assert!(deployments == 1008 && calls == 25646)
 }
+
+// ---- EVM only: the attack the compiler printed, replayed on the real contract ----
+
+/// Digits 1 1 2 3 4 (Deposit, Deposit, Lock, Release, Refund), the counterexample `fe build` prints when the Refund
+/// guard loses `seller == 0` (demo/refund-after-release.patch). On the unpatched contract the first four calls are
+/// accepted and the Refund is refused, leaving every stored field unchanged.
+#[cfg(target = "evm")]
+#[test]
+fn test_contract_rejects_attack() uses (evm: mut Evm) {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: 201)
+    let attack: [u32; 5] = [0, 0, 1, 2, 3]
+    var i: usize = 0
+    while i < 4 {
+        assert!(send(mut evm, addr, attack[i]))
+        i += 1
+    }
+    let before = read_raw(mut evm, addr)
+    assert!(before == raw_of(1, 1, 1, 0))
+    assert!(!send(mut evm, addr, attack[4]))
+    assert!(read_raw(mut evm, addr) == before)
+}
