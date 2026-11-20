@@ -28,6 +28,8 @@ def main():
     a = ap.parse_args()
     if not a.digits.isdigit() or "0" in a.digits:
         ap.error("digits must be 1-9 only (a `left: 0` means no counterexample)")
+    if a.bug and (a.bug in m.VBUGS) != (a.protocol == "vault"):
+        ap.error(f"--bug {a.bug} belongs to the {'vault' if a.bug in m.VBUGS else 'escrow'}, not the {a.protocol}: add --protocol {'vault' if a.bug in m.VBUGS else 'escrow'}")
     if a.protocol == "escrow":
         names, state, fmt = m.ACTIONS, (m.OPEN, 0, 0, 0), m.fmt
         step = lambda s, x: m.step(s, x, a.cap, a.bug if a.bug in m.BUGS else None)

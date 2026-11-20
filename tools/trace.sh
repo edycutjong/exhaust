@@ -4,7 +4,7 @@
 # patch applied and its compile-time pins removed (a patched model fails `fe build` by design; the pins are what stop it).
 #   sh tools/trace.sh                                   the unpatched models: no counterexample, exit 0
 #   sh tools/trace.sh demo/refund-after-release.patch   the attack `fe build` names, by action name: exit 1
-# Needs a native toolchain for `fe build --backend native` (macOS arm64, or Linux x86-64 with a C linker `cc`).
+# Needs a native toolchain for `fe build --backend native` (run on macOS arm64; Linux x86-64 needs a C linker `cc` and has not been run).
 set -u
 cd "$(dirname "$0")/.."
 root=$(pwd)

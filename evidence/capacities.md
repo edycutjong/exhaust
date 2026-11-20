@@ -29,5 +29,6 @@ radix box 46,464). Both searches share the 1,000,000-step budget with their own 
 | baseline | (8, 2) | `vexplore(8, 2) == 137` | the baseline of the spec, hand-checkable |
 | B_diff | (10, 3) | `test_vault_differential` (EVM): 91 + 9 states over the six handlers | see MODEL.md, "The deployed vault is a smaller graph" |
 
-A first try at (16, 3) (337 states, box 110,976) fit one assert with 95% of the budget and its attack printer did not fit
-(measured by `budget_probe.py` before the box was cut), so the box was cut to `B_MAX = 10`: the headline assert uses 54.9% of the budget and the attack printer 65.2% (`budget.md`), margins of 45% and 35%, above the 20% the spec asked for.
+A first try at (16, 3) (337 states, box 110,976) fit one assert at 95.1% of the budget (951,168 steps) and its attack printer did
+not fit; `budget_probe.py` measured that once, before the box was cut, and the raw row was not committed (the box is derived: 3·8·4·4·17·17).
+The box was cut to `MAX_B = 10`: the headline assert and the attack printer now leave the margins in `budget.md`, above a 20% target.

@@ -51,6 +51,11 @@ python3 tools/ref_model.py --check    # the Python oracle (follows MODEL.md) aga
 - `MODEL.md`, the Fe model and the oracle share one author and one reading of the protocol. The oracle is independent in
   language and state representation (Python tuples; its edge table packs states differently), but its edge hash uses the
   same radix-22 index formula as the Fe encoding. A misreading shared by all three is not caught.
+- The vault (second protocol, `MODEL.md`) is explored only at B = 10 with T = 3 (T = 1 and T = 2 as separate models). Its contract has
+  no `Tick` handler and the `fe test` harness can neither move the block time nor change the caller, so the vault differential
+  walks 91 of the model's 211 states (lock period passed) and 9 (lock that never passes); all three signers are one address in the
+  tests. Caller authorization, the exact lock boundary (`queued_at`) and signer distinctness are untested, and `init` does not
+  require the three signer addresses to differ.
 - `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits.
 
 Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute. The model in words: `MODEL.md`. Numbers: `evidence/`.

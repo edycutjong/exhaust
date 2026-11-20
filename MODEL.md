@@ -103,11 +103,11 @@ the model. Mapping `msg.sender` to a signer is adapter code in `src/vault_contra
 | `mask` | 0..7 | which signers approved: bit 0 = A, bit 1 = B, bit 2 = C |
 | `count` | 0..3 | approvals counted: the number the threshold guard reads |
 | `clock` | 0..T | ticks since the withdrawal was queued, saturating at `T` |
-| `bal`, `paid` | 0..B | units in the vault / units paid out; `bal + paid == B` throughout |
+| `bal`, `paid` | 0..B | units in the vault / units paid out; `bal + paid == B` in every reachable state at the checked configurations |
 
 `count` is a separate field on purpose: it is what the threshold guard (`count ≥ K`, K = 2) reads, and the bug `vault-approve-twice`
-(an approver counted twice) needs a count that can disagree with the mask. In the correct model `count == popcount(mask)` always
-(invariant `counted once`). The initial state is `(Idle, 0, 0, 0, B, 0)`.
+(an approver counted twice) needs a count that can disagree with the mask. In the correct model `count == popcount(mask)` in every
+reachable state at the checked configurations (B ≤ 10, T ≤ 3; invariant `counted once`). The initial state is `(Idle, 0, 0, 0, B, 0)`.
 
 ### Actions (digit = the number a counterexample prints)
 
@@ -127,20 +127,24 @@ A rejected action leaves the state unchanged and adds no edge.
 
 | Id | Name | Kind | Holds when |
 |---|---|---|---|
-| 1 | `in bounds` | state | `mask < 8`, `count < 4`, `clock ≤ T_MAX`, `bal` and `paid ≤ B_MAX` (so the encoding is exact) |
+| 1 | `in bounds` | state | `mask < 8`, `count < 4`, `clock ≤ MAX_T`, `bal` and `paid ≤ MAX_B` (so the encoding is exact) |
 | 2 | `counted once` | state | `count == popcount(mask)` |
 | 3 | `conserved` | state | `bal + paid == B` |
 | 4 | `idle clean` | state | phase Idle ⇒ `mask == 0` and `clock == 0` |
 | 5 | `queued means quorum` | state | phase Queued ⇒ `popcount(mask) ≥ K` |
-| 6 | `two distinct approvals` | transition | action Execute ⇒ `popcount(s.mask) ≥ 2` |
-| 7 | `timelock respected` | transition | action Execute ⇒ `s.clock ≥ T` |
+| 6 | `proposed below quorum` | state | phase Proposed ⇒ `popcount(mask) < K` and `clock == 0` |
+| 7 | `two distinct approvals` | transition | action Execute ⇒ `popcount(s.mask) ≥ 2` |
+| 8 | `timelock respected` | transition | action Execute ⇒ `s.clock ≥ T` |
+| 9 | `pays one unit` | transition | action Execute ⇒ `bal′ == bal − 1` and `paid′ == paid + 1` |
 
 `vault-approve-twice` breaks `counted once` and `queued means quorum` on the same state; `counted once` is first in the check
 order, so it is the one the compiler names. `vault-execute-early` breaks no state invariant: every state it reaches is also
 reachable in the correct model, and the step itself (an Execute before the timelock) is what the transition invariant rejects.
+`vault-pay-twice` (Execute pays two units) keeps `conserved` (`bal + paid` is unchanged) and is caught only by `pays one unit`.
+`proposed below quorum` and `pays one unit` were added after review: nothing else bounded a Proposed withdrawal or the size of one payout.
 
 ### Encoding
-Mixed radix `(3, 8, 4, T_MAX + 1, B_MAX + 1, B_MAX + 1)` with `B_MAX = 10`, `T_MAX = 3`, for every `B ≤ 10` and `T ≤ 3`:
+Mixed radix `(3, 8, 4, MAX_T + 1, MAX_B + 1, MAX_B + 1)` with `MAX_B = 10`, `MAX_T = 3`, for every `B ≤ 10` and `T ≤ 3`:
 `enc(s) = ((((phase · 8 + mask) · 4 + count) · 4 + clock) · 11 + bal) · 11 + paid`; the box holds `3 · 8 · 4 · 4 · 11 · 11 = 46,464`
 indices. The initial state is not index 0 (`bal = B`): it is `B · 11`.
 
@@ -165,4 +169,8 @@ only walk states with `clock = 0`. The `fe test` harness can neither advance the
 differential (`test_vault_differential`) replays the contract graph: 91 states and 250 accepted edges with a lock period of zero
 (the lock has always passed), 9 states and 21 edges with a lock period that never passes (B = 10, T = 3; the oracle counts the
 same, `vault_contract_graph` in `evidence/oracle.json`). Authorization (who may send which message) is untested: all three signers
-are the one harness address.
+are the one harness address. Also untested: where the lock period starts (`queued_at`, set when a withdrawal is queued) and the exact
+`>=` boundary of the lock check — every Execute run uses a lock of zero or one that never passes — and signer distinctness: `init` does
+not require the three signer addresses to differ, so with two equal addresses one key could supply both approvals. `Propose` and `Cancel`
+need any one signer (the model has no owner), so a single signer can cancel a queued withdrawal. The harness limits are recorded in
+`FE-NOTES.md`.

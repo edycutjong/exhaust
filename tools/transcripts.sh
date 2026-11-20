@@ -42,4 +42,19 @@ done
   head "native trace of refund-after-release, by action name" "sh tools/trace.sh demo/refund-after-release.patch"
   sh tools/trace.sh demo/refund-after-release.patch 2>&1; echo "exit status: $?"
 } > evidence/transcript-trace-refund-after-release.txt
-echo "wrote evidence/transcript-pass.txt and evidence/transcript-trace-refund-after-release.txt"
+{
+  head "native trace of vault-execute-early, by action name" "sh tools/trace.sh demo/vault-execute-early.patch"
+  sh tools/trace.sh demo/vault-execute-early.patch 2>&1; echo "exit status: $?"
+} > evidence/transcript-trace-vault-execute-early.txt
+
+# The test runs (the counts the evidence cites), on a fresh temp copy.
+d=$(copy)
+{
+  head "tests: fe test (Sonatina / EVM) and fe test --backend native" "fe --color never test; fe --color never test --backend native"
+  (cd "$d" && fe --color never test > t1.out 2>&1); rc=$?
+  grep -E '^(PASS|FAIL)|test result' "$d/t1.out"; echo "exit status (sonatina): $rc"
+  echo
+  (cd "$d" && fe --color never test --backend native > t2.out 2>&1); rc=$?
+  grep -E '^(PASS|FAIL)|test result' "$d/t2.out"; echo "exit status (native): $rc"
+} > evidence/transcript-tests.txt
+echo "wrote evidence/transcript-pass.txt, evidence/transcript-tests.txt and the two trace transcripts"

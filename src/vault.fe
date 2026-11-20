@@ -1,8 +1,8 @@
 //! Protocol 2: a 2-of-3 approval + timelock vault.
 //!
 //! One pending withdrawal of 1 unit at a time. Three signers (A, B, C) approve it; once two distinct signers have
-//! approved, the withdrawal is queued and a timelock of `t` ticks must pass before anyone can execute it. The
-//! owner can cancel a pending withdrawal at any point before it executes.
+//! approved, the withdrawal is queued and a timelock of `t` ticks must pass before anyone can execute it. A pending
+//! withdrawal can be cancelled at any point before it executes (the contract lets any of the three signers do it).
 //!
 //! State = (phase, mask, count, clock, bal, paid):
 //!   mask  = which signers approved (bit 0 = A, bit 1 = B, bit 2 = C)
@@ -335,10 +335,14 @@ pub const V_CONSERVED: u8 = 3
 pub const V_IDLE_CLEAN: u8 = 4
 /// `queued means quorum`: a Queued withdrawal has at least K distinct approvals.
 pub const V_QUEUED_QUORUM: u8 = 5
+/// `proposed below quorum`: a Proposed withdrawal has fewer than K approvals and a clock that has not started.
+pub const V_PROPOSED_BELOW_QUORUM: u8 = 6
 /// `two distinct approvals`: Execute only runs with at least two distinct signers in the mask (transition).
-pub const V_TWO_DISTINCT: u8 = 6
+pub const V_TWO_DISTINCT: u8 = 7
 /// `timelock respected`: Execute only runs once the clock has reached the timelock (transition).
-pub const V_TIMELOCK: u8 = 7
+pub const V_TIMELOCK: u8 = 8
+/// `pays one unit`: Execute pays out exactly one unit (transition).
+pub const V_PAYS_ONE: u8 = 9
 
 /// First state invariant that `n` breaks (vault of `b` units), or V_OK. Written out in place (no helper calls).
 pub const fn vstate_violation(_ n: VState, _ b: u32) -> u8 {
@@ -368,7 +372,12 @@ pub const fn vstate_violation(_ n: VState, _ b: u32) -> u8 {
                 return V_QUEUED_QUORUM
             }
         },
-        _ => {},
+        VPhase::Proposed => {
+            // proposed below quorum
+            if pop >= K || n.clock != 0 {
+                return V_PROPOSED_BELOW_QUORUM
+            }
+        },
     }
     V_OK
 }
@@ -379,13 +388,17 @@ pub const fn vfirst_violation(_ s: VState, _ a: VAction, _ n: VState, _ b: u32, 
     if v != V_OK { return v }
     match a {
         VAction::Execute => {
-            // two distinct approvals, then timelock respected
+            // two distinct approvals, then timelock respected, then pays one unit
             let pop = (s.mask & 1) + ((s.mask >> 1) & 1) + ((s.mask >> 2) & 1)
             if pop < 2 {
                 return V_TWO_DISTINCT
             }
             if s.clock < t {
                 return V_TIMELOCK
+            }
+            // pays one unit: exactly one unit leaves the vault
+            if n.bal + 1 != s.bal || n.paid != s.paid + 1 {
+                return V_PAYS_ONE
             }
         },
         _ => {},

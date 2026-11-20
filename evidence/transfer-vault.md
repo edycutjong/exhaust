@@ -15,17 +15,16 @@ vault port, 2026-11-21, `fe 26.6.0 (5b3f96a)`. No outreach, no second author: th
 | `src/vault_tests.fe` | 472 | `src/tests.fe` (447) | runtime agreement, scripted run, per-handler suite, differential |
 | `demo/vault-*.patch` | 12 each | `demo/*.patch` | one guard removed each (V1, V2) |
 
-`fe fmt` expands struct literals one field per line, which is where most of the vault's line count comes from. The explorer is a
-copy with four renamed identifiers per function (`explore` → `vexplore`, `step` → `vstep`, `INIT` → `vinit_index(b)`,
-`require` → `vrequire`); it is not generic, by design (panel cut 1).
+`fe fmt` expands struct literals one field per line (about a fifth of `vault.fe`'s lines). The explorer is a copy with every
+identifier `v`-prefixed (`explore` → `vexplore`, `step` → `vstep`, `INIT` → `vinit_index(b)`, `require` → `vrequire`, …) and a `(b, t)`
+signature instead of `cap`; it is not generic, by design (a monomorphic explorer per protocol).
 
 ## Time
 
-The vault model, explorer, contract, tests and both bug patches were written and committed between the `P1c START` line
-(2026-11-21 04:16) and the `P1c CHECKPOINT` line (04:25) of `specs/progress.md` — that clock is the autopilot's, and the writing
-and committing were interleaved with the other P1c work (oracle, bench), so read it as an upper bound of minutes, not hours. The
-first `fe build` after `vault.fe` and `vault_explore.fe` were written compiled and pinned the oracle's count on the first try.
-Each red patch failed `fe build` on the first try, naming its invariant and printing its digits (`evidence/check-bugs.txt`).
+The vault model, explorer, contract, tests and the first two bug patches were committed in five commits (`git log`, 2026-11-21
+04:2x, between the autopilot's `P1c START` 04:16 and its first checkpoint 04:25 on that clock), interleaved with the oracle and bench
+work, so read it as an upper bound of minutes, not hours. Both red patches failed `fe build` naming their invariant and printing their
+digits when first run (`evidence/check-bugs.txt`).
 
 ## Failure points hit
 
@@ -40,6 +39,8 @@ Things that did not work the first time, in the order they came up:
    deployed first, and its answer is used as all three signers. So the three-signer check cannot be tested with distinct callers.
 6. No semicolons, labelled arguments need `_` (`fn f(_ x: ...)`), and a `mut` array argument also needs the `_`.
 
+The compiler messages for 2–4 and the harness limit in 5 are in `FE-NOTES.md`.
+
 ## What the port did not need to change
 
 The encoding scheme, the BFS, the `static_assert` pin pattern, the digit counterexample, the shared `step()` in `recv` handlers,
@@ -52,6 +53,7 @@ because the harness cannot send from a different address. That row is in the REA
 
 `demo/check-bugs.sh` runs the patched vault through the contract tests with the pins removed. With the vault's handler suite
 (`test_vault_handler_*`) and the scripted run (`test_vault_contract_matches_vstep`): V1 `vault-approve-twice` is caught by the handler
-suite (1 of 4) and missed by the scripted run; V2 `vault-execute-early` is missed by both. `test_vault_timelock_holds` (a separate test,
-not in either filter) does fail on V2, and so do `test_vault_differential` and the runtime agreement tests (measured on the stripped patched copy):
+suite (1 of 4) and missed by the scripted run; V2 `vault-execute-early` is missed by both; V3 `vault-pay-twice` is caught by both
+(1 of 4 handler tests, and the scripted run). `test_vault_timelock_holds` (a separate test,
+not in either filter) does fail on V2, and so do `test_vault_differential` and the runtime agreement tests (run by hand on the stripped patched copy; not in `check-bugs.sh`):
 a test written knowing the bug catches it; the search finds it without being told.

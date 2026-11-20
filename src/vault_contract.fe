@@ -3,6 +3,8 @@
 //! accepted. Two things live outside the checked model and are the adapter's job:
 //!   * identity: ApproveA / ApproveB / ApproveC are separate messages that only the stored signer A / B / C can send;
 //!     Propose and Cancel need any signer. The model has the three signers as three distinct actions; it has no `msg.sender`.
+//!   * distinct signers: `init` does not check that the three signer addresses differ. With two equal addresses one key
+//!     can send ApproveA and ApproveB and so satisfy "2 of 3"; the model's "two distinct approvals" assumes distinct signers.
 //!   * time: the model's `Tick` has no handler. `Execute` reads the block time and maps it onto the model's clock:
 //!     `clock = VT` once the lock period has passed since the withdrawal was queued, else the stored clock (0).
 

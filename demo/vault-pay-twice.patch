@@ -1,0 +1,23 @@
+diff --git a/src/vault.fe b/src/vault.fe
+--- a/src/vault.fe
++++ b/src/vault.fe
+@@ -273,7 +273,7 @@
+             // Queued with the quorum and the timelock run out: one unit leaves the vault, back to Idle.
+             match s.phase {
+                 VPhase::Queued => {
+-                    if s.count >= K && s.clock >= t && s.bal > 0 {
++                    if s.count >= K && s.clock >= t && s.bal > 1 {
+                         return VNext {
+                             ok: true,
+                             s: VState {
+@@ -281,8 +281,8 @@
+                                 mask: 0,
+                                 count: 0,
+                                 clock: 0,
+-                                bal: s.bal - 1,
+-                                paid: s.paid + 1,
++                                bal: s.bal - 2,
++                                paid: s.paid + 2,
+                             },
+                         }
+                     }

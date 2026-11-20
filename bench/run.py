@@ -59,9 +59,9 @@ def check(d, body, runs=RUNS):
         s = "pass" if rc == 0 else "step-limit" if "step limit" in out else "mismatch" if "left:" in out else "error"
         if status not in (None, s):
             status = "unstable"
-        else:
-            status = s
-        if s != "pass" and runs > 1:
+            break
+        status = s
+        if s != "pass":
             break
     return status, round(statistics.median(times), 3)
 
@@ -147,8 +147,8 @@ def main():
 
     # (4) runtime search: gas on the EVM backend, time on the native backend
     runtime = {}
-    for name, flt, nat in (("escrow C=17", "test_runtime_search_gas", "test_runtime_explore_agrees"),
-                           ("vault B=10 T=3", "test_vault_runtime_search_gas", "test_vault_runtime_agrees")):
+    for name, flt, nat in (("escrow C=17 (gas) / C=17 + C=21 (native)", "test_runtime_search_gas", "test_runtime_explore_agrees"),
+                           ("vault B=10 T=3 (gas) / four configurations (native)", "test_vault_runtime_search_gas", "test_vault_runtime_agrees")):
         rc, o, wall = run_test(flt)
         g = gas_of(o)
         rc2, o2, wall2 = run_test(nat, "native")
@@ -180,7 +180,7 @@ def main():
          "Counts are exact (Python oracle `tools/ref_model.py`); a `pass` row means the Fe compile-time search returned the same count.",
          f"Wall times are the median of {RUNS} `fe check` runs of the whole ingot, which includes compiling everything else:",
          f"the gate-stripped ingot with no probe takes **{out['baseline_fe_check_s']} s** on its own. Times vary by machine; counts do not.",
-         "At these sizes the search itself costs less than the run-to-run noise on top of that baseline (the evaluator runs a 736-state",
+         "At these sizes the search itself is within the spread of the medians on top of that baseline (every row is about 0.5-0.7 s; the evaluator runs a 736-state",
          "search in well under a second); the step budget in section 2 is the cost that decides what fits, not the wall time.", "",
          "## 1. Escrow capacity sweep (`explore(C)`, one static_assert each; the attack printer `counterexample(C)` is one run)", "",
          "| C | states | edges | attempts | diameter | `explore(C)` | fe check median (s) | `counterexample(C)` |", "|---:|---:|---:|---:|---:|---|---:|---|"]
@@ -200,12 +200,17 @@ def main():
           "| shards | states per shard | largest shard | status | fe check median (s) |", "|---:|---|---:|---|---:|"]
     for r in shards:
         L.append(f"| {r['shards']} | {', '.join(map(str, r['states_per_shard']))} | {r['largest_shard_states']} | {r['status']} | {r['fe_check_median_s']} |")
-    L += ["", "Independent asserts each get their own 1,000,000-step budget, so the largest shard is what has to fit; the compiler runs them one after another, so the wall time does not fall with more shards.", "",
+    L += ["", "714 = the locked-amount seeds only; the 22 Open states bring the escrow to 736, so this table is about shard sizes, not coverage. The wall column is",
+          "indistinguishable from the no-probe baseline: read the largest-shard column.", "",
+          "Independent asserts each get their own 1,000,000-step budget, so the largest shard is what has to fit; the compiler runs them one after another, so the wall time does not fall with more shards.", "",
           "## 4. Runtime search (the same explorer, run at runtime)", "",
-          "| model | EVM gas (Sonatina, `fe test`) | states | EVM test ok | native `fe test` wall (s, incl. compile) | native test ok |", "|---|---:|---:|---|---:|---|"]
+          "| model | EVM gas of one search (Sonatina, `fe test`) | states | EVM test ok | native agreement test, `fe test` wall (s) | native test ok |", "|---|---:|---:|---|---:|---|"]
     for k, r in runtime.items():
         L.append(f"| {k} | {r['evm_gas']:,} | {r['states']} | {r['evm_test_ok']} | {r['native_fe_test_wall_s']} | {r['native_test_ok']} |")
-    L += ["", "## 5. Vault (2-of-3 approval + timelock)", "",
+    L += ["", "The native column is the wall time of the whole `fe test --backend native --filter <agreement test>` command: it includes compiling the ingot",
+          "and runs every search that test makes (escrow `test_runtime_explore_agrees`: C = 17 and C = 21; vault `test_vault_runtime_agrees`: four configurations),",
+          "so it is not the time of the single search whose gas is in the column to its left.", "",
+          "## 5. Vault (2-of-3 approval + timelock)", "",
           "| B | T | states | edges | attempts | diameter | `vexplore(B, T)` | fe check median (s) | `vcounterexample` |", "|---:|---:|---:|---:|---:|---:|---|---:|---|"]
     for r in vault:
         if "note" in r:

@@ -207,7 +207,7 @@ IDLE, PROPOSED, QUEUED = 0, 1, 2
 VPHASES = ["Idle", "Proposed", "Queued"]
 VACTIONS = ["Propose", "ApproveA", "ApproveB", "ApproveC", "Tick", "Execute", "Cancel"]  # digit = index + 1
 VINVARIANTS = ["in bounds", "counted once", "conserved", "idle clean", "queued means quorum",
-               "two distinct approvals", "timelock respected"]  # check order, ids 1..7
+               "proposed below quorum", "two distinct approvals", "timelock respected", "pays one unit"]  # check order, ids 1..9
 K = 2
 MAX_B, MAX_T = 10, 3
 RB, RT = MAX_B + 1, MAX_T + 1
@@ -215,6 +215,7 @@ VSIZE = 3 * 8 * 4 * RT * RB * RB
 VBUGS = {
     "vault-approve-twice": "an approver's bit is not checked before counting the approval (count still += 1)",
     "vault-execute-early": "Execute no longer requires clock >= T",
+    "vault-pay-twice": "Execute pays out two units (bal - 2, paid + 2) instead of one",
 }
 
 
@@ -247,6 +248,8 @@ def vstep(s, a, t, bug=None):
             return None
         if clock < t and bug != "vault-execute-early":
             return None
+        if bug == "vault-pay-twice":
+            return (IDLE, 0, 0, 0, bal - 2, paid + 2) if bal >= 2 else None
         return (IDLE, 0, 0, 0, bal - 1, paid + 1)
     return None if ph == IDLE else (IDLE, 0, 0, 0, bal, paid)  # Cancel
 
@@ -263,6 +266,8 @@ def vstate_violation(s, b):
         return 4
     if ph == QUEUED and popcount(mask) < K:
         return 5
+    if ph == PROPOSED and (popcount(mask) >= K or clock != 0):
+        return 6
     return 0
 
 
@@ -272,9 +277,11 @@ def vviolation(s, a, n, b, t):
         return v
     if a == 5:
         if popcount(s[1]) < 2:
-            return 6
-        if s[3] < t:
             return 7
+        if s[3] < t:
+            return 8
+        if n[4] + 1 != s[4] or n[5] != s[5] + 1:
+            return 9
     return 0
 
 
