@@ -1,5 +1,5 @@
-# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-20 20:44 UTC
-commit: e1530cee8bc17a4b2e4b0d967b7fed4abef7ae0f
+# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-20 20:47 UTC
+commit: 213eb435e560171adcb1d83d43bcb92c707f1299
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -12,9 +12,14 @@ PASS  demo/refund-after-release.patch | exit 1 | 'paid once': yes | 11234: yes |
 PASS  demo/settle-early.patch | exit 1 | 'settled empty': yes | 1123: yes | caught (1 of 5 fail) | caught
       = assertion message: invariant 'settled empty' broken: settled with units still in escrow
       = left: `1123`
-PASS  demo/cap-off-by-one.patch | exit 1 | 'within capacity': yes | 111111111111111111111: yes | missed | missed
+      = left: `946`
+      = left: `649063484112972613`
+PASS  demo/cap-off-by-one.patch | exit 1 | 'within capacity': yes | 11111111111111111111: yes | missed | missed
       = assertion message: invariant 'within capacity' broken: more units than the capacity
-      = left: `111111111111111111111`
+      = left: `11111111111111111111`
+      = left: `968`
+      = left: `1770024059661220277`
 PASS  demo/mint-release.patch | exit 1 | 'conserved': yes | 123: yes | caught (1 of 5 fail) | caught
       = assertion message: invariant 'conserved' broken: units created or lost by a non-deposit action
       = left: `123`
+      = left: `1197`

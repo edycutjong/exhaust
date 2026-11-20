@@ -24,14 +24,18 @@ SEARCHES = [
     ("explore(0): array setup only", "explore(0)", 1, 1, "1 state, no successors: two 42,592-element tables initialised"),
     ("explore(17)", "explore(17)", 494, 494, "spike capacity"),
     ("explore(CAP), C_model = 21", "explore(CAP)", 736, 736, "the headline assert"),
-    ("counterexample(20), C' = 20", "counterexample(20)", 0, 671, "green: full search; it sets up 4 tables, not 2, so its per-state column is overstated by ≈ 86k / 671"),
+    ("counterexample(19), C' = 19", "counterexample(19)", 0, 609,
+     "green: full search; it sets up 4 tables, not 2, so its per-state column is overstated by ≈ 86k / 609"),
+    ("counterexample(20)", "counterexample(20)", 0, 671, "fits, but too close to the limit for edits to step() (K2 exceeds it); not pinned"),
+    ("edge count, C_hash = 21", "fingerprint(CAP, false)", 966, 736, "no invariant checks"),
+    ("labeled-edge hash, C_hash = 21", "fingerprint(CAP, true)", 1194004490208706542, 736, "u128 arithmetic"),
     ("shard A, k = 1..7", "explore_seeds(LOCKED_BASE + LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)", 91, 91, ""),
     ("shard B, k = 8..14", "explore_seeds(LOCKED_BASE + 8 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)", 238, 238, ""),
     ("shard C, k = 15..21", "explore_seeds(LOCKED_BASE + 15 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)", 385, 385, ""),
 ]
 
 HEADER = """use ingot::escrow::CAP
-use ingot::escrow_explore::{explore, explore_seeds, counterexample, LOCKED_BASE, LOCKED_STRIDE}
+use ingot::escrow_explore::{explore, explore_seeds, counterexample, fingerprint, LOCKED_BASE, LOCKED_STRIDE}
 
 const fn burn(_ n: u32) -> u32 {
     var i: u32 = 0
@@ -84,7 +88,7 @@ def main():
     per = LIMIT / n0
     rows = []
     for label, expr, pin, states, note in SEARCHES:
-        cast = "as u256" if expr.startswith("counterexample") else "as usize"
+        cast = "as u256" if expr.startswith("counterexample") else "as u128" if expr.startswith("fingerprint") else "as usize"
         n = largest(d, lambda k: f"static_assert({expr} + (burn({k}) {cast}) == {pin} + {k})", n0)
         steps = None if n is None else round((n0 - n) * per)
         rows.append({"search": label, "expr": expr, "pin": pin, "states": states, "steps": steps,

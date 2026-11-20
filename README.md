@@ -3,7 +3,7 @@
 **The Fe compiler is the model checker.** A `const fn` explores every reachable state of a small protocol state machine
 inside `fe build`, at a stated capacity: the escrow at C = 21 units, all 736 reachable states and every accepted transition
 checked against five named invariants. When an invariant breaks, `static_assert` fails the build: the compiler error names
-the invariant, and a second diagnostic prints a shortest counterexample as action digits (searched at C′ = 20, one unit below
+the invariant, and a second diagnostic prints a shortest counterexample as action digits (searched at C′ = 19, two units below
 the main check). The transition function that was checked, `step()`, is the same one the contract's `recv` handlers call, and
 an exhaustive-edge differential test replays every reachable transition attempt through the deployed contract.
 

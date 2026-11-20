@@ -6,8 +6,8 @@
   "limit": 1000000,
   "burn_iterations_that_fit": 43476,
   "steps_per_burn_iteration": 23.0012,
-  "probe_wall_time_s": 38.4,
-  "date_utc": "2026-11-20 20:43"
+  "probe_wall_time_s": 66.5,
+  "date_utc": "2026-11-20 20:50"
  },
  "rows": [
   {
@@ -41,14 +41,44 @@
    "steps_per_state_after_setup": 1160
   },
   {
-   "search": "counterexample(20), C' = 20",
+   "search": "counterexample(19), C' = 19",
+   "expr": "counterexample(19)",
+   "pin": 0,
+   "states": 609,
+   "steps": 908455,
+   "share_of_limit": 0.9085,
+   "note": "green: full search; it sets up 4 tables, not 2, so its per-state column is overstated by \u2248 86k / 609",
+   "steps_per_state_after_setup": 1350
+  },
+  {
+   "search": "counterexample(20)",
    "expr": "counterexample(20)",
    "pin": 0,
    "states": 671,
    "steps": 983899,
    "share_of_limit": 0.9839,
-   "note": "green: full search; it sets up 4 tables, not 2, so its per-state column is overstated by \u2248 86k / 671",
+   "note": "fits, but too close to the limit for edits to step() (K2 exceeds it); not pinned",
    "steps_per_state_after_setup": 1338
+  },
+  {
+   "search": "edge count, C_hash = 21",
+   "expr": "fingerprint(CAP, false)",
+   "pin": 966,
+   "states": 736,
+   "steps": 763387,
+   "share_of_limit": 0.7634,
+   "note": "no invariant checks",
+   "steps_per_state_after_setup": 920
+  },
+  {
+   "search": "labeled-edge hash, C_hash = 21",
+   "expr": "fingerprint(CAP, true)",
+   "pin": 1194004490208706542,
+   "states": 736,
+   "steps": 802052,
+   "share_of_limit": 0.8021,
+   "note": "u128 arithmetic",
+   "steps_per_state_after_setup": 972
   },
   {
    "search": "shard A, k = 1..7",

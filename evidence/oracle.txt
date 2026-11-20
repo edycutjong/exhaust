@@ -1,4 +1,4 @@
-# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 20:40 UTC, Darwin arm64
+# python3 tools/ref_model.py --check --json evidence/oracle.json, 2026-11-20 20:50 UTC, Darwin arm64
 # oracle: tools/ref_model.py, python 3.11.1
 cap  states  edges  attempts  diameter  edge_hash
   2      14     16        70         5  1524000005756973351
@@ -21,8 +21,10 @@ differential workload at cap 21: 1008 deployments, 25646 action calls, 25646 raw
 shards at cap 21: k=1..7 91, k=8..14 238, k=15..21 385, Open 22; disjoint True, union == reachable set True
 check explore(17) == 494: oracle 494 -> AGREE
 check explore(21) == 736: oracle 736 -> AGREE
-check counterexample(20) == 0: oracle 0 -> AGREE
+check counterexample(19) == 0: oracle 0 -> AGREE
 check shard(1) == 91: oracle 91 -> AGREE
 check shard(8) == 238: oracle 238 -> AGREE
 check shard(15) == 385: oracle 385 -> AGREE
+check edges(21) == 966: oracle 966 -> AGREE
+check edge_hash(21) == 1194004490208706542: oracle 1194004490208706542 -> AGREE
 RESULT: oracle agrees with every Fe pin
