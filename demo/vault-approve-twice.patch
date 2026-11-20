@@ -1,0 +1,12 @@
+diff --git a/src/vault.fe b/src/vault.fe
+--- a/src/vault.fe
++++ b/src/vault.fe
+@@ -175,7 +175,7 @@
+             match s.phase {
+                 VPhase::Idle => {},
+                 _ => {
+-                    if s.mask & 1 == 0 {
++                    if true {
+                         let c = s.count + 1
+                         let queue = match s.phase {
+                             VPhase::Proposed => c >= K,

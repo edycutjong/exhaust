@@ -28,6 +28,7 @@ copy() {
       # Gate-stripped: drop the compile-time pins (everything from the "---- pins" marker on) so a patched
       # contract can still be built and run.
       sed -i.bak '/^\/\/ ---- pins/,$d' "$d/src/escrow_explore.fe" && rm "$d/src/escrow_explore.fe.bak"
+      sed -i.bak '/^\/\/ ---- pins/,$d' "$d/src/vault_explore.fe" && rm "$d/src/vault_explore.fe.bak"
       extra=${2#stripped}
       extra=${extra#+}
       [ -n "$extra" ] && cp "$root/$extra" "$d/src/"
@@ -80,8 +81,8 @@ else
     (cd "$d" && fe build > out.txt 2>&1) && echo "PASS  baseline: unpatched fe build exit 0" \
       || { echo "FAIL  baseline: unpatched fe build failed"; echo 1 > "$flag"; }
     echo
-    echo "patch | fe build exit | invariant named | digits printed | per-handler suite (test_handler_*) | spike 8-call script (test_contract_matches_step)"
-    grep -v '^#' demo/bugs.tsv | while IFS="	" read -r patch inv digits; do
+    echo "patch | fe build exit | invariant named | digits printed | per-handler suite (test_handler_* / test_vault_handler_*) | scripted contract run (test_contract_matches_step / test_vault_contract_matches_vstep)"
+    grep -v '^#' demo/bugs.tsv | while IFS="	" read -r patch inv digits kind; do
       d=$(copy "$patch" full)
       (cd "$d" && fe build > out.txt 2>&1)
       st=$?
@@ -89,11 +90,14 @@ else
       shown=no; grep -q "left: \`$digits\`" "$d/out.txt" && shown=yes
       # Ablation (measured, not assumed): would the ordinary tests catch the same patch without the search?
       s=$(copy "$patch" stripped)
-      (cd "$s" && fe test --filter test_handler_ > h.txt 2>&1); h=$?
-      (cd "$s" && fe test --filter test_contract_matches_step > c.txt 2>&1); c=$?
+      # The vault rows (4th column "vault") use the vault's own suite.
+      hf_filter=test_handler_; cf_filter=test_contract_matches_step; nh=5
+      if [ "${kind:-}" = vault ]; then hf_filter=test_vault_handler_; cf_filter=test_vault_contract_matches_vstep; nh=4; fi
+      (cd "$s" && fe test --filter "$hf_filter" > h.txt 2>&1); h=$?
+      (cd "$s" && fe test --filter "$cf_filter" > c.txt 2>&1); c=$?
       # "caught" needs a failing test (a compile error in the copy would be a broken check, not a catch).
       hf=$(grep -c '^FAIL' "$s/h.txt"); cf=$(grep -c '^FAIL' "$s/c.txt")
-      hcat=missed; [ "$h" -ne 0 ] && hcat="caught ($hf of 5 fail)"
+      hcat=missed; [ "$h" -ne 0 ] && hcat="caught ($hf of $nh fail)"
       ccat=missed; [ "$c" -ne 0 ] && ccat=caught
       if { [ "$h" -ne 0 ] && [ "$hf" -eq 0 ]; } || { [ "$c" -ne 0 ] && [ "$cf" -eq 0 ]; }; then
         hcat="$hcat (no FAIL line: broken check)"; echo 1 > "$flag"

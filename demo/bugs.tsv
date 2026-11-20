@@ -1,5 +1,7 @@
-# patch	invariant the build must name	digits the build must print (left:)
+# patch	invariant the build must name	digits the build must print (left:)	optional: vault (use the vault suite in the ablation)
 demo/refund-after-release.patch	paid once	11234
 demo/settle-early.patch	settled empty	1123
 demo/cap-off-by-one.patch	within capacity	11111111111111111111
 demo/mint-release.patch	conserved	123
+demo/vault-approve-twice.patch	counted once	122	vault
+demo/vault-execute-early.patch	timelock respected	1236	vault
