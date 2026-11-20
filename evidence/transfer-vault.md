@@ -53,4 +53,5 @@ because the harness cannot send from a different address. That row is in the REA
 `demo/check-bugs.sh` runs the patched vault through the contract tests with the pins removed. With the vault's handler suite
 (`test_vault_handler_*`) and the scripted run (`test_vault_contract_matches_vstep`): V1 `vault-approve-twice` is caught by the handler
 suite (1 of 4) and missed by the scripted run; V2 `vault-execute-early` is missed by both. `test_vault_timelock_holds` (a separate test,
-not in either filter) does fail on V2: a test written knowing the bug catches it; the search finds it without being told.
+not in either filter) does fail on V2, and so do `test_vault_differential` and the runtime agreement tests (measured on the stripped patched copy):
+a test written knowing the bug catches it; the search finds it without being told.
