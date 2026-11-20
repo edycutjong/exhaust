@@ -234,12 +234,13 @@ pub const fn or_deferred(_ got: u128, _ pin: u128) -> u128 {
     if got == DEFERRED { pin } else { got }
 }
 
-// ---- pins: the build fails if the reachable-state count drifts ----
-/// Reachable states at C = CAP (also the bound of the edge-pin searches below).
+/// Reachable states at C = CAP (also the bound of the edge-pin searches).
 pub const STATES: usize = 736
 /// Accepted edges at C = CAP, and their labeled-edge hash (MODEL.md); both values come from tools/ref_model.py.
 pub const EDGES: u128 = 966
 pub const EDGE_HASH: u128 = 1194004490208706542
+
+// ---- pins: the build fails if the reachable-state count drifts ----
 /// C = 17: the capacity of the first pin, carried over from the day-0 spike (494 states).
 static_assert(explore(17) == 494)
 /// C = CAP = 21: the contract's capacity and the largest capacity the encoding holds (MAX_CAP). Every invariant is
