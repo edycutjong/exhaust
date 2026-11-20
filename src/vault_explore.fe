@@ -1,0 +1,173 @@
+//! The explorer for the vault: the same breadth-first search as `escrow_explore.fe`, copied (not generic) and
+//! written as a `const fn` so that `static_assert` runs it inside `fe build`. See that file for the step budget.
+
+use ingot::vault::{
+    vstep,
+    vencode,
+    vdecode,
+    vaction_of,
+    vstate_violation,
+    vfirst_violation,
+    vinit_index,
+    SIZE,
+    ACTIONS,
+    VB,
+    VT,
+    V_OK,
+    V_IN_BOUNDS,
+    V_COUNTED_ONCE,
+    V_CONSERVED,
+    V_IDLE_CLEAN,
+    V_QUEUED_QUORUM,
+    V_TWO_DISTINCT,
+    V_TIMELOCK,
+}
+
+/// Turns an invariant id into a compile error that names the invariant (called only when `v != V_OK`).
+const fn vrequire(_ v: u8) {
+    assert!(
+        v != V_IN_BOUNDS,
+        "invariant 'in bounds' broken: vault state outside the encoding",
+    )
+    assert!(
+        v != V_COUNTED_ONCE,
+        "invariant 'counted once' broken: approval count differs from the signers in the mask",
+    )
+    assert!(
+        v != V_CONSERVED,
+        "invariant 'conserved' broken: vault balance plus paid is not the starting balance",
+    )
+    assert!(
+        v != V_IDLE_CLEAN,
+        "invariant 'idle clean' broken: idle with approvals or a running clock",
+    )
+    assert!(
+        v != V_QUEUED_QUORUM,
+        "invariant 'queued means quorum' broken: queued without two distinct approvals",
+    )
+    assert!(
+        v != V_TWO_DISTINCT,
+        "invariant 'two distinct approvals' broken: executed without two distinct signers",
+    )
+    assert!(
+        v != V_TIMELOCK,
+        "invariant 'timelock respected' broken: executed before the timelock ran out",
+    )
+}
+
+/// Number of states reachable from the initial state of a vault of `b` units with a timelock of `t` ticks. Fails the
+/// evaluation, naming the invariant, if any reachable state or edge breaks one.
+pub const fn vexplore(_ b: u32, _ t: u32) -> usize {
+    let init = vinit_index(b)
+    if vstate_violation(vdecode(init), b) != V_OK {
+        vrequire(vstate_violation(vdecode(init), b))
+    }
+    var visited: [bool; SIZE] = [false; SIZE]
+    // Each index is enqueued only when it is first marked visited, so the queue never holds more than SIZE.
+    var queue: [u32; SIZE] = [0; SIZE]
+    var head: usize = 0
+    var tail: usize = 1
+    queue[0] = init
+    visited[init as usize] = true
+    while head < tail {
+        let x = queue[head]
+        head += 1
+        let cur = vdecode(x)
+        var a: u32 = 0
+        while a < ACTIONS {
+            let act = vaction_of(a)
+            let n = vstep(cur, act, t)
+            if n.ok {
+                // Every invariant is checked before `vencode`, so an out-of-box successor fails by name.
+                let v = vfirst_violation(cur, act, n.s, b, t)
+                if v != V_OK { vrequire(v) }
+                let y = vencode(n.s)
+                if !visited[y as usize] {
+                    visited[y as usize] = true
+                    queue[tail] = y
+                    tail += 1
+                }
+            }
+            a += 1
+        }
+    }
+    tail
+}
+
+/// Code returned when the start state itself breaks an invariant (no action uses the digit 9).
+pub const V_START_VIOLATES: u256 = 9
+
+/// The same search, recording each state's parent and the action that reached it. Returns the first shortest
+/// counterexample under the declared action order, across all checked invariants, as decimal digits (earliest
+/// action first; legend in `vault.fe`), or 0 when no reachable state or edge breaks an invariant.
+pub const fn vcounterexample(_ b: u32, _ t: u32) -> u256 {
+    let init = vinit_index(b)
+    if vstate_violation(vdecode(init), b) != V_OK {
+        return V_START_VIOLATES
+    }
+    var visited: [bool; SIZE] = [false; SIZE]
+    var parent: [u32; SIZE] = [0; SIZE]
+    var via: [u8; SIZE] = [0; SIZE]
+    var queue: [u32; SIZE] = [0; SIZE]
+    var head: usize = 0
+    var tail: usize = 1
+    queue[0] = init
+    visited[init as usize] = true
+    while head < tail {
+        let x = queue[head]
+        head += 1
+        let cur = vdecode(x)
+        var a: u32 = 0
+        while a < ACTIONS {
+            let act = vaction_of(a)
+            let n = vstep(cur, act, t)
+            if n.ok {
+                if vfirst_violation(cur, act, n.s, b, t) != V_OK {
+                    // BFS order: this edge ends the shortest path to a violation. Walk back from the current state.
+                    var code: u256 = (a + 1) as u256
+                    var mul: u256 = 10
+                    var len: u32 = 1
+                    var p = x
+                    while p != init {
+                        len += 1
+                        // A u256 holds every decimal number of at most 77 digits; stop before the multiplication overflows.
+                        assert!(
+                            len <= 76,
+                            "trace longer than 76 actions: shrink the configuration to print it",
+                        )
+                        code += (via[p as usize] as u256) * mul
+                        mul *= 10
+                        p = parent[p as usize]
+                    }
+                    return code
+                }
+                let y = vencode(n.s)
+                if !visited[y as usize] {
+                    visited[y as usize] = true
+                    parent[y as usize] = x
+                    via[y as usize] = (a + 1).downcast_truncate()
+                    queue[tail] = y
+                    tail += 1
+                }
+            }
+            a += 1
+        }
+    }
+    0
+}
+
+/// Reachable states at B = VB, T = VT (value from tools/ref_model.py, evidence/oracle.json).
+pub const VSTATES: usize = 211
+
+// ---- pins: the build fails if the reachable-state count drifts ----
+static_assert(vexplore(VB, VT) == VSTATES)
+/// The attack printer: green it is a full search with parent/action writes (four tables). Same configuration.
+static_assert(vcounterexample(VB, VT) == 0)
+
+// ---- independent configurations: each timelock is its own model with its own budget (never a chained const) ----
+// A different T is a different step function and a different reachable set, not a part of the headline's set, so these
+// are separate checks of separate models (not extra coverage of B = 10, T = 3). tools/ref_model.py pins the same counts.
+static_assert(vexplore(VB, 1) == 131)
+static_assert(vexplore(VB, 2) == 171)
+/// The baseline configuration of the spec (B = 8, T = 2): hand-checkable.
+static_assert(vexplore(8, 2) == 137)
