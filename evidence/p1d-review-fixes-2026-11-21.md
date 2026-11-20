@@ -14,14 +14,17 @@ checked claim by claim against this tree; these are the changes that held up.
 | `tools/ref_model.py --check` also compares `src/oracle_edges.fe` with the table the oracle emits now | A stale generated table would otherwise go unnoticed after an edit | `evidence/oracle.txt` (last check line) |
 | Wording: escrow `conserved` bounds the total only; `two distinct approvals` is defence in depth; the counterexample digits need the bug to be reachable within C′ = 19; the step-budget resolution is one burn iteration (≈ 23 steps); the T = 1 / T = 2 vault runs are separate models, not shards; the bench wall-time spread is computed, with the load average | Each earlier sentence said more than the code or the data showed | `README.md` Limitations, `src/escrow.fe`, `MODEL.md`, `evidence/budget.md`, `evidence/bench-2026-11-20.md` |
 | Test helpers `send()` / `vsend()` assert on an unknown action id | They fell through to Dispute / Cancel | `src/tests.fe`, `src/vault_tests.fe` |
+| Bug V5 `demo/vault-execute-unguarded.patch`: Execute without its phase, quorum and timelock guards | Shows that `two distinct approvals`, which no single-guard bug reaches first, does fire: `fe build` names it and prints `6` | `evidence/check-bugs.txt`, `evidence/transcript-fail-vault-execute-unguarded.txt`, `evidence/oracle.txt` |
+| `require()` / `vrequire()` end with an assert only an unknown invariant id reaches; `two distinct approvals` compares with `K`, not a literal 2 | An id without a message used to fall through and let the search continue; the literal would drift if `K` changed | `src/escrow_explore.fe`, `src/vault_explore.fe`, `src/vault.fe` |
+| README: the vault's caller checks are adapter code (approvals per signer, Propose / Cancel by any signer, Execute by anyone), one signer can censor; the real timelock is adapter code (`now >= queued_at + lock`); the equality side of `>=` is exercised at lock 0 (a `>` there fails three tests) | The README said the contract had no access control (true for the escrow only) and called the whole lock boundary untested | `README.md` Limitations, `src/vault_contract.fe` |
 
 ## Numbers after the change
 
 | Check | Result | Where |
 |---|---|---|
-| Vault step budget | `vexplore(VB, VT)` 586,761 steps (58.7%); `vcounterexample` 667,380 (66.7%); edge count 582,482 (58.2%); edge hash 613,833 (61.4%). Escrow rows unchanged (`explore(CAP)` 940,335) | `evidence/budget.md` |
+| Vault step budget | `vexplore(VB, VT)` 586,715 steps (58.7%); `vcounterexample` 667,334 (66.7%); edge count 582,459 (58.2%); edge hash 613,810 (61.4%). Escrow rows unchanged (`explore(CAP)` 940,335) | `evidence/budget.md` |
 | Oracle | agrees with all 8 escrow and 7 vault pins, and with the generated edge table | `evidence/oracle.txt` |
-| Bug zoo / conformance | 8 of 8 patches fail `fe build` naming their invariant and printing their digits; 12 of 12 conformance rows as expected | `evidence/check-bugs.txt`, `evidence/conformance.txt` |
+| Bug zoo / conformance | 9 of 9 patches fail `fe build` naming their invariant and printing their digits; 12 of 12 conformance rows as expected | `evidence/check-bugs.txt`, `evidence/conformance.txt` |
 | Tests | `fe test` 28 passed (Sonatina); `fe test --backend native` 10 passed | `evidence/transcript-tests.txt` |
 | Differential | green at C = 21 | `evidence/differential.txt` |
 

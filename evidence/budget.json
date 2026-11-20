@@ -6,8 +6,8 @@
   "limit": 1000000,
   "burn_iterations_that_fit": 43476,
   "steps_per_burn_iteration": 23.0012,
-  "probe_wall_time_s": 154.2,
-  "date_utc": "2026-11-20 22:41"
+  "probe_wall_time_s": 148.9,
+  "date_utc": "2026-11-20 23:17"
  },
  "rows": [
   {
@@ -115,7 +115,7 @@
    "expr": "vexplore(0, 0)",
    "pin": 1,
    "states": 1,
-   "steps": 94581,
+   "steps": 94604,
    "share_of_limit": 0.0946,
    "note": "B = 0: no unit to propose, one state; two 46,464-element tables initialised",
    "steps_per_state_after_setup": null
@@ -125,37 +125,37 @@
    "expr": "vexplore(8, 2)",
    "pin": 137,
    "states": 137,
-   "steps": 414160,
-   "share_of_limit": 0.4142,
+   "steps": 414137,
+   "share_of_limit": 0.4141,
    "note": "the baseline configuration (B = 8, T = 2)",
-   "steps_per_state_after_setup": 2333
+   "steps_per_state_after_setup": 2332
   },
   {
    "search": "vexplore(VB, VT), B = 10, T = 3",
    "expr": "vexplore(VB, VT)",
    "pin": 211,
    "states": 211,
-   "steps": 586761,
-   "share_of_limit": 0.5868,
+   "steps": 586715,
+   "share_of_limit": 0.5867,
    "note": "the vault's headline assert",
-   "steps_per_state_after_setup": 2333
+   "steps_per_state_after_setup": 2332
   },
   {
    "search": "vcounterexample(VB, VT)",
    "expr": "vcounterexample(VB, VT)",
    "pin": 0,
    "states": 211,
-   "steps": 667380,
-   "share_of_limit": 0.6674,
+   "steps": 667334,
+   "share_of_limit": 0.6673,
    "note": "green: full search; four tables, so its per-state column is overstated",
-   "steps_per_state_after_setup": 2715
+   "steps_per_state_after_setup": 2714
   },
   {
    "search": "vsearch(VB, VT, V_COUNT_EDGES)",
    "expr": "vsearch(VB, VT, V_COUNT_EDGES)",
    "pin": 580,
    "states": 211,
-   "steps": 582482,
+   "steps": 582459,
    "share_of_limit": 0.5825,
    "note": "the vault's edge-count pin: the same checked search, counting edges",
    "steps_per_state_after_setup": 2312
@@ -165,7 +165,7 @@
    "expr": "vsearch(VB, VT, V_HASH_EDGES)",
    "pin": 1115689132712769016,
    "states": 211,
-   "steps": 613833,
+   "steps": 613810,
    "share_of_limit": 0.6138,
    "note": "the vault's edge-hash pin: the same checked search, u128 hash",
    "steps_per_state_after_setup": 2461
@@ -175,17 +175,17 @@
    "expr": "vexplore(10, 1)",
    "pin": 131,
    "states": 131,
-   "steps": 401325,
+   "steps": 401302,
    "share_of_limit": 0.4013,
    "note": "separate model (T = 1), not a part of the headline",
-   "steps_per_state_after_setup": 2342
+   "steps_per_state_after_setup": 2341
   },
   {
    "search": "vexplore(10, 2)",
    "expr": "vexplore(10, 2)",
    "pin": 171,
    "states": 171,
-   "steps": 494043,
+   "steps": 494020,
    "share_of_limit": 0.494,
    "note": "separate model (T = 2), not a part of the headline",
    "steps_per_state_after_setup": 2336

@@ -1,0 +1,26 @@
+# fail: vault-execute-unguarded (names 'two distinct approvals', prints 6)
+# 2026-11-20 23:19 UTC · commit de43ffc · fe 26.6.0 (5b3f96a) · Darwin arm64
+# $ patch -p1 < demo/vault-execute-unguarded.patch && fe --color never build
+
+error[3-0036]: assertion failed in const context
+   ┌─ src/vault_explore.fe:56:5
+   │  
+56 │ ╭     assert!(
+57 │ │         v != V_TWO_DISTINCT,
+58 │ │         "invariant 'two distinct approvals' broken: executed without two distinct signers",
+59 │ │     )
+   │ ╰─────^ `assert!` evaluated to `false`
+   │  
+   = assertion message: invariant 'two distinct approvals' broken: executed without two distinct signers
+
+error[8-0081]: static assertion failed
+    ┌─ src/vault_explore.fe:223:15
+    │
+223 │ static_assert(vcounterexample(VB, VT) == 0)
+    │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `static_assert` evaluated to `false`
+    │
+    = left: `6`
+    = right: `0`
+    = operator: `==`
+
+exit status: 1

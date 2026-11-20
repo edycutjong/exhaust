@@ -427,6 +427,13 @@
    "digits": "1236"
   },
   {
+   "bug": "vault-execute-unguarded",
+   "b": 10,
+   "t": 3,
+   "invariant": "two distinct approvals",
+   "digits": "6"
+  },
+  {
    "bug": "vault-pay-twice",
    "b": 10,
    "t": 3,
