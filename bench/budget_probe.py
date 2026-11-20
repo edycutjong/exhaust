@@ -32,10 +32,18 @@ SEARCHES = [
     ("shard A, k = 1..7", "explore_seeds(LOCKED_BASE + LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)", 91, 91, ""),
     ("shard B, k = 8..14", "explore_seeds(LOCKED_BASE + 8 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)", 238, 238, ""),
     ("shard C, k = 15..21", "explore_seeds(LOCKED_BASE + 15 * LOCKED_STRIDE, 7, LOCKED_STRIDE, CAP)", 385, 385, ""),
+    ("vexplore(0, 0): vault array setup only", "vexplore(0, 0)", 1, 1, "B = 0: no unit to propose, one state; two 46,464-element tables initialised"),
+    ("vexplore(8, 2): baseline", "vexplore(8, 2)", 137, 137, "the baseline configuration of the spec"),
+    ("vexplore(VB, VT), B = 10, T = 3", "vexplore(VB, VT)", 211, 211, "the vault's headline assert"),
+    ("vcounterexample(VB, VT)", "vcounterexample(VB, VT)", 0, 211, "green: full search; four tables, so its per-state column is overstated"),
+    ("vexplore(10, 1)", "vexplore(10, 1)", 131, 131, "T = 1 shard"),
+    ("vexplore(10, 2)", "vexplore(10, 2)", 171, 171, "T = 2 shard"),
 ]
 
 HEADER = """use ingot::escrow::CAP
 use ingot::escrow_explore::{explore, explore_seeds, counterexample, fingerprint, STATES, LOCKED_BASE, LOCKED_STRIDE}
+use ingot::vault::{VB, VT}
+use ingot::vault_explore::{vexplore, vcounterexample}
 
 const fn burn(_ n: u32) -> u32 {
     var i: u32 = 0
@@ -54,6 +62,9 @@ def make_copy():
     ex = d / "src" / "escrow_explore.fe"
     text = ex.read_text()
     ex.write_text(text[: text.index("// ---- pins")])  # gate-stripped: only the probe's assert runs
+    vx = d / "src" / "vault_explore.fe"
+    vtext = vx.read_text()
+    vx.write_text(vtext[: vtext.index("// ---- pins")])
     return d
 
 
@@ -88,13 +99,14 @@ def main():
     per = LIMIT / n0
     rows = []
     for label, expr, pin, states, note in SEARCHES:
-        cast = "as u256" if expr.startswith("counterexample") else "as u128" if expr.startswith("fingerprint") else "as usize"
+        cast = "as u256" if expr.startswith(("counterexample", "vcounterexample")) else "as u128" if expr.startswith("fingerprint") else "as usize"
         n = largest(d, lambda k: f"static_assert({expr} + (burn({k}) {cast}) == {pin} + {k})", n0)
         steps = None if n is None else round((n0 - n) * per)
         rows.append({"search": label, "expr": expr, "pin": pin, "states": states, "steps": steps,
                      "share_of_limit": None if steps is None else round(steps / LIMIT, 4), "note": note})
-    setup = rows[0]["steps"]
+    setups = {"e": rows[0]["steps"], "v": next(r["steps"] for r in rows if r["expr"] == "vexplore(0, 0)")}
     for r in rows:
+        setup = setups["v" if r["expr"].startswith("vexplore") or r["expr"].startswith("vcounter") else "e"]
         r["steps_per_state_after_setup"] = (None if r["steps"] is None or r["states"] <= 1
                                             else round((r["steps"] - setup) / r["states"]))
     fe = subprocess.run(["fe", "--version"], capture_output=True, text=True).stdout.strip()
