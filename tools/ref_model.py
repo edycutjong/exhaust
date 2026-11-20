@@ -8,6 +8,8 @@ Standard library only. Usage:
   python3 tools/ref_model.py --check         compare with the pins in src/escrow_explore.fe; exit 1 on any mismatch
   python3 tools/ref_model.py --json FILE     write every number above as JSON
   python3 tools/ref_model.py --graph FILE --cap N   write the reachable graph (nodes + labeled edges) as JSON
+  python3 tools/ref_model.py --graph FILE --model vault --b 10 --t 3   the same for the vault
+  python3 tools/ref_model.py --bug vault-approve-twice   expected invariant + digits for a vault bug (B=10, T=3)
 """
 import argparse
 import json
@@ -197,6 +199,154 @@ def fmt(s):
     return f"({PHASES[s[0]]}, {s[1]}, {s[2]}, {s[3]})"
 
 
+# ---- Protocol 2: the 2-of-3 approval + timelock vault (MODEL.md "Vault"), same independence rules as the escrow ----
+IDLE, PROPOSED, QUEUED = 0, 1, 2
+VPHASES = ["Idle", "Proposed", "Queued"]
+VACTIONS = ["Propose", "ApproveA", "ApproveB", "ApproveC", "Tick", "Execute", "Cancel"]  # digit = index + 1
+VINVARIANTS = ["in bounds", "counted once", "conserved", "idle clean", "queued means quorum",
+               "two distinct approvals", "timelock respected"]  # check order, ids 1..7
+K = 2
+MAX_B, MAX_T = 10, 3
+RB, RT = MAX_B + 1, MAX_T + 1
+VSIZE = 3 * 8 * 4 * RT * RB * RB
+VBUGS = {
+    "vault-approve-twice": "an approver's bit is not checked before counting the approval (count still += 1)",
+    "vault-execute-early": "Execute no longer requires clock >= T",
+}
+
+
+def popcount(m):
+    return bin(m).count("1")
+
+
+def venc(s):
+    ph, mask, count, clock, bal, paid = s
+    return ((((ph * 8 + mask) * 4 + count) * RT + clock) * RB + bal) * RB + paid
+
+
+def vstep(s, a, t, bug=None):
+    """One transition attempt: the next state tuple, or None when the guard rejects it."""
+    ph, mask, count, clock, bal, paid = s
+    if a == 0:  # Propose
+        return (PROPOSED, 0, 0, 0, bal, paid) if ph == IDLE and bal > 0 else None
+    if a in (1, 2, 3):  # Approve{A,B,C}
+        bit = 1 << (a - 1)
+        if ph == IDLE:
+            return None
+        if mask & bit and bug != "vault-approve-twice":
+            return None
+        queue = ph == PROPOSED and count + 1 >= K
+        return (QUEUED if queue else ph, mask | bit, count + 1, 0 if queue else clock, bal, paid)
+    if a == 4:  # Tick
+        return (QUEUED, mask, count, clock + 1, bal, paid) if ph == QUEUED and clock < t else None
+    if a == 5:  # Execute
+        if ph != QUEUED or count < K or bal <= 0:
+            return None
+        if clock < t and bug != "vault-execute-early":
+            return None
+        return (IDLE, 0, 0, 0, bal - 1, paid + 1)
+    return None if ph == IDLE else (IDLE, 0, 0, 0, bal, paid)  # Cancel
+
+
+def vstate_violation(s, b):
+    ph, mask, count, clock, bal, paid = s
+    if mask >= 8 or count >= 4 or clock >= RT or bal >= RB or paid >= RB:
+        return 1
+    if count != popcount(mask):
+        return 2
+    if bal + paid != b:
+        return 3
+    if ph == IDLE and (mask != 0 or clock != 0):
+        return 4
+    if ph == QUEUED and popcount(mask) < K:
+        return 5
+    return 0
+
+
+def vviolation(s, a, n, b, t):
+    v = vstate_violation(n, b)
+    if v:
+        return v
+    if a == 5:
+        if popcount(s[1]) < 2:
+            return 6
+        if s[3] < t:
+            return 7
+    return 0
+
+
+def vsearch(b, t, bug=None):
+    """BFS in the vault's action order. Stops at the first violating edge (returns its trace)."""
+    start = (IDLE, 0, 0, 0, b, 0)
+    if vstate_violation(start, b):
+        return {"violation": vstate_violation(start, b), "digits": "9"}
+    order = [start]
+    depth = {start: 0}
+    parent = {start: None}
+    edges = []
+    q = deque([start])
+    while q:
+        s = q.popleft()
+        for a in range(7):
+            n = vstep(s, a, t, bug)
+            if n is None:
+                continue
+            v = vviolation(s, a, n, b, t)
+            if v:
+                digits = [a + 1]
+                p = s
+                while parent[p] is not None:
+                    prev, act = parent[p]
+                    digits.append(act + 1)
+                    p = prev
+                return {"violation": v, "digits": "".join(str(d) for d in reversed(digits))}
+            edges.append((s, a, n))
+            if n not in depth:
+                depth[n] = depth[s] + 1
+                parent[n] = (s, a)
+                order.append(n)
+                q.append(n)
+    return {"b": b, "t": t, "states": len(order), "edges": len(edges), "attempts": 7 * len(order),
+            "diameter": max(depth.values()), "order": order, "edge_list": edges, "parent": parent}
+
+
+CONTRACT_ACTIONS = [0, 1, 2, 3, 5, 6]  # the vault contract has no Tick handler
+
+
+def vcontract_graph(b, t, ready):
+    """The graph the deployed vault can walk: six handlers (no Tick), the clock only ever 0 or, for Execute after the
+    lock period (`ready`), t. Returns states, accepted edges and attempts; the same two counts the EVM differential prints."""
+    start = (IDLE, 0, 0, 0, b, 0)
+    seen = {start}
+    q = deque([start])
+    edges = 0
+    while q:
+        s = q.popleft()
+        for a in CONTRACT_ACTIONS:
+            cur = (s[0], s[1], s[2], t if (a == 5 and ready) else s[3], s[4], s[5])
+            n = vstep(cur, a, t)
+            if n is None:
+                continue
+            edges += 1
+            if n not in seen:
+                seen.add(n)
+                q.append(n)
+    return {"states": len(seen), "edges": edges, "attempts": len(CONTRACT_ACTIONS) * len(seen)}
+
+
+def vfe_pins(root):
+    """Pins grepped from src/vault_explore.fe: (kind, b, t, expected value)."""
+    src = (root / "src" / "vault_explore.fe").read_text()
+    consts = {k: int(v) for k, v in re.findall(r"pub const (V[BT]): u32 = (\d+)", (root / "src" / "vault.fe").read_text())}
+    val = lambda x: consts[x] if x in consts else int(x)
+    pins = []
+    for kind, b, t, n in re.findall(r"static_assert\((vexplore|vcounterexample)\((\w+), (\w+)\) == (\d+)\)", src):
+        pins.append((kind, val(b), val(t), int(n)))
+    for name in re.findall(r"static_assert\(vexplore\(VB, VT\) == (VSTATES)\)", src):
+        pins.append(("vexplore", consts["VB"], consts["VT"], int(re.search(r"VSTATES: usize = (\d+)", src).group(1))))
+    return pins, src[src.index("// ---- pins"):].count("static_assert(")
+
+
 def fe_pins(root):
     """Pins grepped from the Fe source: (kind, capacity, expected value)."""
     src = (root / "src" / "escrow_explore.fe").read_text()
@@ -220,14 +370,25 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cap", type=int)
     ap.add_argument("--list", action="store_true")
-    ap.add_argument("--bug", choices=sorted(BUGS))
+    ap.add_argument("--bug", choices=sorted(BUGS) + sorted(VBUGS))
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--json")
     ap.add_argument("--graph")
+    ap.add_argument("--model", choices=["escrow", "vault"], default="escrow", help="which protocol --graph writes")
+    ap.add_argument("--b", type=int, default=10)
+    ap.add_argument("--t", type=int, default=3)
     ap.add_argument("--emit-fe", dest="emit_fe", metavar="FILE",
                     help="write the labeled-edge table (every attempt at --cap, default 21) as a Fe test module")
     args = ap.parse_args()
     root = Path(__file__).resolve().parent.parent
+
+    if args.bug in VBUGS:
+        r = vsearch(args.b, args.t, args.bug)
+        if "digits" not in r:
+            print(f"{args.bug} at B={args.b}, T={args.t}: no violation found")
+            return 1
+        print(f"{args.bug} at B={args.b}, T={args.t}: invariant '{VINVARIANTS[r['violation'] - 1]}', digits {r['digits']}")
+        return 0
 
     if args.bug:
         cap = args.cap if args.cap is not None else 19
@@ -278,6 +439,20 @@ def main():
         print(f"wrote {args.emit_fe}: {rows} rows, {r['edges']} accepted, cap {cap}")
         return 0
 
+    if args.graph and args.model == "vault":
+        r = vsearch(args.b, args.t)
+        idx = {st: i for i, st in enumerate(r["order"])}
+        g = {
+            "model": "vault", "b": args.b, "t": args.t, "k": K, "source": "tools/ref_model.py (Python oracle following MODEL.md)",
+            "legend": {str(i + 1): name for i, name in enumerate(VACTIONS)},
+            "nodes": [{"id": i, "phase": VPHASES[st[0]], "mask": st[1], "count": st[2], "clock": st[3], "bal": st[4],
+                       "paid": st[5], "enc": venc(st)} for i, st in enumerate(r["order"])],
+            "edges": [{"from": idx[st], "to": idx[n], "digit": a + 1} for st, a, n in r["edge_list"]],
+        }
+        Path(args.graph).write_text(json.dumps(g, indent=1) + "\n")
+        print(f"wrote {args.graph}: {len(g['nodes'])} nodes, {len(g['edges'])} edges")
+        return 0
+
     if args.graph:
         cap = args.cap if args.cap is not None else 19
         r = search(cap)
@@ -317,6 +492,24 @@ def main():
             bugs.append({"bug": name, "cap": cap, "invariant": INVARIANTS[b["violation"] - 1], "digits": b["digits"]})
             print(f"bug {name:22s} cap {cap}: '{bugs[-1]['invariant']}' {b['digits']}")
 
+    print()
+    print("# vault (2-of-3 + timelock)")
+    print("   B  T  states  edges  attempts  diameter")
+    vrows = []
+    for b, t in [(8, 2), (10, 1), (10, 2), (10, 3)]:
+        r = vsearch(b, t)
+        vrows.append({k: r[k] for k in ("b", "t", "states", "edges", "attempts", "diameter")})
+        print(f"{b:4d} {t:2d}  {r['states']:6d}  {r['edges']:5d}  {r['attempts']:8d}  {r['diameter']:8d}")
+    vbugs = []
+    for name in sorted(VBUGS):
+        r = vsearch(10, 3, name)
+        vbugs.append({"bug": name, "b": 10, "t": 3, "invariant": VINVARIANTS[r["violation"] - 1], "digits": r["digits"]})
+        print(f"bug {name:22s} B=10 T=3: '{vbugs[-1]['invariant']}' {r['digits']}")
+
+    vcg = {m: vcontract_graph(10, 3, m == "ready") for m in ("ready", "locked")}
+    for m, g in vcg.items():
+        print(f"vault contract graph B=10 T=3 lock {m}: {g['states']} states, {g['edges']} edges, {g['attempts']} attempts")
+
     w = diff_workload(max(c for c in caps if c <= MAX_CAP))
     print(f"differential workload at cap {w['cap']}: {w['deployments']} deployments, {w['action_calls']} action calls, "
           f"{w['reads']} raw_state() reads, {w['calls']} calls")
@@ -351,10 +544,25 @@ def main():
             ok = got == val
             status |= 0 if ok else 1
             print(f"check {kind}({cap}) == {val}: oracle {got} -> {'AGREE' if ok else 'MISMATCH'}")
+        vpins, vasserts = vfe_pins(root)
+        if len(vpins) != vasserts:
+            print(f"check: parsed {len(vpins)} vault pins but the pins section has {vasserts} static_asserts -> MISMATCH")
+            status = 1
+        else:
+            print(f"check: all {vasserts} pins in src/vault_explore.fe parsed")
+        for kind, b, t, val in vpins:
+            if kind == "vexplore":
+                got = vsearch(b, t)["states"]
+            else:
+                r = vsearch(b, t)
+                got = int(r["digits"]) if "digits" in r else 0
+            ok = got == val
+            status |= 0 if ok else 1
+            print(f"check {kind}({b}, {t}) == {val}: oracle {got} -> {'AGREE' if ok else 'MISMATCH'}")
         print("RESULT: oracle agrees with every Fe pin" if status == 0 else "RESULT: MISMATCH")
 
     if args.json:
-        Path(args.json).write_text(json.dumps({"python": platform.python_version(), "escrow": rows, "bugs": bugs, "differential": w, "shards": sh}, indent=1) + "\n")
+        Path(args.json).write_text(json.dumps({"python": platform.python_version(), "escrow": rows, "bugs": bugs, "vault": vrows, "vault_bugs": vbugs, "vault_contract_graph": vcg, "differential": w, "shards": sh}, indent=1) + "\n")
     return status
 
 
