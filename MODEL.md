@@ -186,7 +186,7 @@ where the harness is signer A only, or no signer, and checks that ApproveB / App
 refused with nothing stored changed (each would be accepted by `vstep`). Untested: an accepted approval from a second address; a
 refused non-signer Cancel; where the lock period starts (`queued_at`, set when a withdrawal is queued) and the `lock − 1` side of
 the `>=` lock check — every Execute run uses a lock of zero or one that never passes, so only the equality side is exercised (a `>`
-there fails three tests) — and signer distinctness: `init` does
+there fails three tests: conformance K8) — and signer distinctness: `init` does
 not require the three signer addresses to differ, so with two equal addresses one key could supply both approvals. `Propose` and `Cancel`
 need any one signer (the model has no owner), so a single signer can cancel a queued withdrawal. The harness limits are recorded in
 `FE-NOTES.md`.

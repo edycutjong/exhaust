@@ -70,7 +70,7 @@ python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early   # d
   `init` does not require the three signer addresses to differ.
 - The vault's real timelock is adapter code, not the checked model: Execute sets the model's clock to T once
   `now >= queued_at + lock`, so `timelock respected` holds for the contract only as far as that line is right, and a deployer's
-  `lock` of zero makes it vacuous. Tests use a lock of zero (the equality side of `>=` is exercised: a `>` there fails three tests)
+  `lock` of zero makes it vacuous. Tests use a lock of zero (the equality side of `>=` is exercised: a `>` there fails three tests, conformance K8)
   or one that never passes; where `queued_at` is set and the `lock − 1` side are untested, and `init` does not bound `lock`.
 - `in bounds` cannot fire first for this escrow (`within capacity` implies it); it guards the encoding for future edits. The vault's
   `two distinct approvals` is defence in depth the same way: it fires first only if Execute loses its phase, quorum and timelock

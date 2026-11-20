@@ -9,11 +9,11 @@ vault port, 2026-11-21, `fe 26.6.0 (5b3f96a)`. No outreach, no second author: th
 
 | File | Lines | Escrow counterpart (lines) | What it is |
 |---|---:|---|---|
-| `src/vault.fe` | 407 | `src/escrow.fe` (286) | state, actions, encoding, `vstep()`, nine invariants |
-| `src/vault_explore.fe` | 183 | `src/escrow_explore.fe` (269) | `vexplore()`, `vcounterexample()`, five pins (no edge hash, no shards) |
+| `src/vault.fe` | 415 | `src/escrow.fe` (287) | state, actions, encoding, `vstep()`, ten invariants (nine at the port; `only execute pays` added after review) |
+| `src/vault_explore.fe` | 231 | `src/escrow_explore.fe` (274) | `vsearch()` (states / edges / edge hash from one checked search), `vexplore()`, `vcounterexample()`, seven pins (no shards); five at the port, no edge pins |
 | `src/vault_contract.fe` | 158 | `src/escrow_contract.fe` (87) | `recv` handlers over `vstep()`; adds the caller → signer and block time → clock adapter |
-| `src/vault_tests.fe` | 472 | `src/tests.fe` (447) | runtime agreement, scripted run, per-handler suite, differential |
-| `demo/vault-*.patch` | 12, 12, 23 | `demo/*.patch` | V1, V2: one guard removed; V3: Execute pays two units (a guard and two effects changed) |
+| `src/vault_tests.fe` | 538 | `src/tests.fe` (449) | runtime agreement (incl. the edge pins), scripted run, per-handler suite, identity guards, differential |
+| `demo/vault-*.patch` | 12, 12, 23, 14, 22 | `demo/*.patch` | V1, V2: one guard removed; V3: Execute pays two units (a guard and two effects changed); V4: Cancel pays out (two effects); V5: Execute loses its phase, quorum and timelock guards |
 
 `fe fmt` expands struct literals one field per line (about a fifth of `vault.fe`'s lines). The explorer is a copy in which every
 function, and every constant with an escrow counterpart, is `v`/`V_`-prefixed (`explore` → `vexplore`, `step` → `vstep`, `INIT` → `vinit_index(b)`,
@@ -37,7 +37,9 @@ Things that did not work the first time, in the order they came up:
 3. **`usize` → `u32` with `as` is rejected**; `.downcast_truncate()` is the truncating spelling used elsewhere in the repo (`src/escrow_explore.fe`).
 4. **`Timestamp` is not a `u256`**: no `.seconds`, no cast. Block time stays a `Timestamp`, compared as `now >= queued_at + lock`.
 5. **`evm.caller()` in a test is not the address contracts see as `msg.sender`.** A helper contract that returns `ctx.caller()` is
-   deployed first, and its answer is used as all three signers. So the three-signer check cannot be tested with distinct callers.
+   deployed first, and its answer is used as all three signers in the differential. With one caller, the signer checks can be
+   tested only from the refusing side (other contracts' addresses as signers B and C, or as all three: `test_vault_identity_guards`);
+   an accepted approval from a second address is untested.
 6. No semicolons, labelled arguments need `_` (`fn f(_ x: ...)`), and a `mut` array argument also needs the `_`.
 
 The compiler messages for 2–4 and the harness limit in 5 are in `FE-NOTES.md`.

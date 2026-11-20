@@ -11,3 +11,4 @@ K5	conformance/adapter-corruption.patch	full	fe test --filter test_differential_
 K5	conformance/adapter-corruption.patch	full	fe test --filter test_runtime_explore_agrees	0	^PASS .*test_runtime_explore_agrees
 K6	conformance/bad-init.patch	full	fe build	1	invariant 'settled empty';;left: `9`
 K7	conformance/vault-skip-cancel.patch	full	fe build	1	left: `380`;;!invariant '
+K8	conformance/lock-boundary-gt.patch	full	fe test	1	^FAIL .*test_vault_contract_matches_vstep;;^FAIL .*test_vault_handler_execute;;^FAIL .*test_vault_differential;;test result: FAILED. 25 passed; 3 failed

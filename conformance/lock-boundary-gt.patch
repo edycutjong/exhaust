@@ -1,0 +1,12 @@
+diff --git a/src/vault_contract.fe b/src/vault_contract.fe
+--- a/src/vault_contract.fe
++++ b/src/vault_contract.fe
+@@ -142,7 +142,7 @@ pub contract Vault {
+         }
+         Execute -> bool uses (ctx: Ctx, mut store) {
+             let now = ctx.timestamp()
+-            let ready = now >= store.queued_at + store.lock
++            let ready = now > store.queued_at + store.lock
+             apply(mut store, VAction::Execute, ready, now)
+         }
+         Cancel -> bool uses (ctx: Ctx, mut store) {

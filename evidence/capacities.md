@@ -25,7 +25,9 @@ radix box 46,464). Both searches share the 1,000,000-step budget with their own 
 |---|---|---|---|
 | B_model | (10, 3) | `static_assert(vexplore(VB, VT) == VSTATES)`, VSTATES = 211, every invariant on every reachable state and edge | `budget.md` (`bench/budget_probe.py`) |
 | B′ (trace) | (10, 3) | `static_assert(vcounterexample(VB, VT) == 0)` | `budget.md` |
-| T shards | (10, 1), (10, 2) | `vexplore(VB, 1) == 131`, `vexplore(VB, 2) == 171`: different models (a different `T` is a different step function), each its own assert and its own budget | not extra coverage of (10, 3) |
+| B_edges | (10, 3) | `static_assert(vsearch(VB, VT, V_COUNT_EDGES) == VEDGES)`, VEDGES = 580, the same checked search counting accepted edges | `budget.md` (582,459 steps) |
+| B_hash | (10, 3) | `static_assert(vsearch(VB, VT, V_HASH_EDGES) == VEDGE_HASH)`, the labeled-edge hash (value from `tools/ref_model.py`) | `budget.md` (613,810 steps) |
+| other timelocks | (10, 1), (10, 2) | `vexplore(VB, 1) == 131`, `vexplore(VB, 2) == 171`: different models (a different `T` is a different step function), each its own assert and its own budget | not extra coverage of (10, 3) |
 | baseline | (8, 2) | `vexplore(8, 2) == 137` | the baseline configuration, hand-checkable |
 | B_diff | (10, 3) | `test_vault_differential` (EVM): 91 + 9 states over the six handlers | see MODEL.md, "The deployed vault is a smaller graph" |
 
