@@ -1,0 +1,62 @@
+//! Copied into a gate-stripped temp copy of the ingot by demo/run.sh only (never part of src/): the compile-time
+//! search is removed there so the patched contract can be built and run. It replays the printed counterexample
+//! 1 1 2 3 4 (Deposit, Deposit, Lock, Release, Refund) on the PATCHED contract: all five calls are accepted and the
+//! seller and the buyer both end up paid, the double payment the compiler refused to build.
+use std::evm::Evm
+use ingot::escrow_contract::{Escrow, EscrowMsg}
+
+#[test]
+fn test_attack_patched_replay() uses (evm: mut Evm) {
+    let addr = evm.create2<Escrow>(value: Wei::zero(), args: (), salt: 301)
+    assert!(
+        evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Deposit {},
+        ),
+    )
+    assert!(
+        evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Deposit {},
+        ),
+    )
+    assert!(
+        evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Lock {},
+        ),
+    )
+    assert!(
+        evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Release {},
+        ),
+    )
+    assert!(
+        evm.call(
+            addr: addr,
+            gas: 200000,
+            value: Wei::zero(),
+            message: EscrowMsg::Refund {},
+        ),
+    )
+    let raw: u256 = evm
+        .call(
+            addr: addr,
+            gas: 100000,
+            value: Wei::zero(),
+            message: EscrowMsg::RawState {},
+        )
+    let mask: u256 = (1 << 64) - 1
+    let seller = (raw >> 128) & mask
+    let buyer = raw >> 192
+    assert!(seller >= 1 && buyer >= 1)
+}
