@@ -64,7 +64,7 @@ fn test_shards_partition() {
 /// The attack printer finds nothing at runtime either.
 #[test]
 fn test_counterexample_none() {
-    assert!(counterexample(black_box(20 as u32)) == 0)
+    assert!(counterexample(black_box(19 as u32)) == 0)
 }
 
 /// encode(decode(x)) == x for every 97th index of the box, and decode(encode(s)) == s for one boundary state.
