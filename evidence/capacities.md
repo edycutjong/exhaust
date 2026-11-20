@@ -15,3 +15,19 @@ Each search is exhaustive only at the capacity named in its row. Step counts: `b
 
 History: P1a (2026-11-15) had C_model = 19 (609) and C′ = 18; P1b leaned `step()` and the predicate (no helper calls on the
 hot path), which moved them to 21 and 20; C′ was then set to 19 for headroom (see the C′ row).
+
+## The vault (P1c)
+
+The vault's configuration is a pair (B, T): balance and timelock. The encoding holds any `B ≤ 10`, `T ≤ 3` (`MAX_B`, `MAX_T`,
+radix box 46,464). Both searches share the 1,000,000-step budget with their own table setup (4 tables for the attack printer).
+
+| Name | (B, T) | What runs there | Limit measured |
+|---|---|---|---|
+| B_model | (10, 3) | `static_assert(vexplore(VB, VT) == VSTATES)`, VSTATES = 211, every invariant on every reachable state and edge | `budget.md` (`bench/budget_probe.py`) |
+| B′ (trace) | (10, 3) | `static_assert(vcounterexample(VB, VT) == 0)` | `budget.md` |
+| T shards | (10, 1), (10, 2) | `vexplore(VB, 1) == 131`, `vexplore(VB, 2) == 171`: different models (a different `T` is a different step function), each its own assert and its own budget | not extra coverage of (10, 3) |
+| baseline | (8, 2) | `vexplore(8, 2) == 137` | the baseline of the spec, hand-checkable |
+| B_diff | (10, 3) | `test_vault_differential` (EVM): 91 + 9 states over the six handlers | see MODEL.md, "The deployed vault is a smaller graph" |
+
+A first try at (16, 3) (337 states, box 110,976) fit one assert with 95% of the budget and its attack printer did not fit
+(measured by `budget_probe.py` before the box was cut), so the box was cut to `B_MAX = 10`: the headline assert uses 54.9% of the budget and the attack printer 65.2% (`budget.md`), margins of 45% and 35%, above the 20% the spec asked for.
