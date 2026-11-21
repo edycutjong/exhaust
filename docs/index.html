@@ -4,19 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>exhaust · the Fe compiler is the model checker</title>
-<meta name="description" content="A const fn explores every reachable state of an escrow model inside fe build, at capacity 21: 736 states, five named invariants. Break one line and the build fails with the route.">
+<meta name="description" content="A const fn explores all 736 reachable states of an escrow model inside fe build, at capacity 21. Break one line and the build fails with the route.">
 <link rel="canonical" href="https://exhaust.edycu.dev/">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#EEEADF">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="exhaust">
 <meta property="og:title" content="exhaust · your compiler refuses the sequence nobody wrote a test for">
-<meta property="og:description" content="Every reachable state of an escrow model at capacity 21 (736 states) explored inside fe build. One wrong line and the build names the invariant and prints the route.">
+<meta property="og:description" content="736 reachable escrow states at capacity 21, explored inside fe build. One wrong line and the build prints the route.">
 <meta property="og:url" content="https://exhaust.edycu.dev/">
 <meta property="og:image" content="https://exhaust.edycu.dev/assets/og-1200.png?v=30717ca9de">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="exhaust: 736 reachable escrow states lit as lamps on a mimic panel, and the red route Deposit, Deposit, Lock, Release, Refund">
+<meta name="author" content="Edy Cu">
+<meta name="twitter:creator" content="@edycutjong">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="exhaust · your compiler refuses the sequence nobody wrote a test for">
 <meta name="twitter:description" content="736 reachable escrow states explored inside fe build at capacity 21. One wrong line and the build prints the route.">
@@ -315,8 +317,8 @@ section.sec{padding:96px 0 0}
 .vlevers .lever .arm:before{left:6px;top:8px;height:42px}
 .vlevers .lever .arm:after{width:16px;height:16px}
 .vlevers .lever b{font-size:18px} .vlevers .lever span span{font-size:12px}
-.vlevers .lever .no{position:absolute;right:12px;top:10px;font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1;color:var(--rule)}
-.vlevers .lever[aria-pressed=true] .no{color:#5a5650}
+.vlevers .lever .no{position:absolute;right:12px;top:10px;font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1;color:var(--muted)}
+.vlevers .lever[aria-pressed=true] .no{color:var(--ink)}
 #vlt-board .atk.off{display:none}
 section.room{margin-top:96px;padding:84px 0 88px;background:var(--panel);color:var(--before);
   background-image:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(242,232,204,.07),transparent 70%)}

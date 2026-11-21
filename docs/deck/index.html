@@ -12,6 +12,7 @@
 <meta property="og:description" content="Your compiler refuses the sequence nobody wrote a test for: 736 reachable escrow states explored inside fe build.">
 <meta property="og:url" content="https://exhaust.edycu.dev/deck/">
 <meta property="og:image" content="https://exhaust.edycu.dev/assets/og-1200.png?v=30717ca9de"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="author" content="Edy Cu"><meta name="twitter:creator" content="@edycutjong">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://exhaust.edycu.dev/assets/og-1200.png?v=30717ca9de">
 <link rel="preload" href="../assets/fonts/saira-800.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -246,7 +247,8 @@ code{font-family:var(--font-data);font-size:.86em}
 .ctl button{all:unset;cursor:pointer;width:38px;height:38px;border-radius:6px;background:#2B322E;color:var(--before);display:grid;place-items:center;font-size:18px;
   border:1px solid #47514B;transition:background .2s,color .2s}
 .ctl button:hover{background:var(--frontier);color:var(--ink)}
-.ctl button:focus-visible{outline:3px solid var(--frontier);outline-offset:2px}
+.ctl .home{all:unset;box-sizing:border-box;cursor:pointer;width:38px;height:38px;border-radius:6px;background:#2B322E;color:var(--before);display:grid;place-items:center;border:1px solid #47514B}
+.ctl button:focus-visible,.ctl .home:focus-visible{outline:3px solid var(--frontier);outline-offset:2px}
 .prog{position:fixed;left:0;bottom:0;height:4px;background:var(--after);z-index:5;transition:width .3s}
 .shownotes .notes.cur{display:block;position:fixed;left:18px;bottom:66px;max-width:640px;background:#111;color:#eee;font:15px/1.5 var(--font-body);padding:14px 16px;border-radius:8px;z-index:6}
 @media print{
@@ -746,7 +748,7 @@ fe test &amp;&amp; fe test --backend native</pre>
 
 </div></div>
 <div class="prog" id="prog"></div>
-<div class="ctl"><span id="cnt">1 / 10</span><button type="button" id="prev" aria-label="Previous slide">‹</button><button type="button" id="next" aria-label="Next slide">›</button><button type="button" id="ntg" aria-label="Toggle speaker notes">N</button><a href="../" style="all:unset;cursor:pointer;width:38px;height:38px;border-radius:6px;background:#2B322E;color:var(--before);display:grid;place-items:center;border:1px solid #47514B" aria-label="Back to the landing page">⌂</a></div>
+<div class="ctl"><span id="cnt">1 / 10</span><button type="button" id="prev" aria-label="Previous slide">‹</button><button type="button" id="next" aria-label="Next slide">›</button><button type="button" id="ntg" aria-label="Toggle speaker notes">N</button><a href="../" class="home" aria-label="Back to the landing page">⌂</a></div>
 <script>
 (function(){
   var st=document.getElementById('stage'),S=[].slice.call(document.querySelectorAll('.slide')),i=0,N=S.length;
