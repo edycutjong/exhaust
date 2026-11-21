@@ -1,0 +1,22 @@
+# Small-scope check (oracle tools/ref_model.py), 2026-11-21 02:19 UTC
+commit: 1fc3b8019c9918eb6723f4fced8cf258280a54d7
+python: Python 3.11.1
+uname: Darwin arm64
+
+## Escrow: smallest capacity at which each bug's invariant breaks (checked capacity C = 21)
+refund-after-release at cap 2: invariant 'paid once', digits 11234
+settle-early at cap 2: invariant 'settled empty', digits 1123
+mint-release at cap 1: invariant 'within capacity', digits 123
+cap-off-by-one at cap 1: invariant 'within capacity', digits 11
+
+## Vault: smallest balance B at the checked timelock T = 3, then smallest T at B = 10 (checked: B = 10, T = 3)
+vault-approve-twice at B=1, T=3: invariant 'counted once', digits 122
+vault-approve-twice at B=10, T=1: invariant 'counted once', digits 122
+vault-execute-early at B=1, T=3: invariant 'timelock respected', digits 1236
+vault-execute-early at B=10, T=1: invariant 'timelock respected', digits 1236
+vault-pay-twice at B=2, T=3: invariant 'pays one unit', digits 1235556
+vault-pay-twice at B=10, T=1: invariant 'pays one unit', digits 12356
+vault-cancel-pays at B=1, T=3: invariant 'only execute pays', digits 17
+vault-cancel-pays at B=10, T=1: invariant 'only execute pays', digits 17
+vault-execute-unguarded at B=1, T=3: invariant 'two distinct approvals', digits 6
+vault-execute-unguarded at B=10, T=1: invariant 'two distinct approvals', digits 6
