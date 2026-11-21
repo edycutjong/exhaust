@@ -1,5 +1,5 @@
-# CI steps run locally, 2026-11-21 00:36 UTC
-commit: adcff70d6604c9eec5419ffe85b78bebfcbb9107
+# CI steps run locally, 2026-11-21 00:40 UTC
+commit: b7b405b5b54a2d4ebb1fcce819120aae22c9560e
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 cpu: Apple M1 Max
@@ -11,55 +11,55 @@ cpu: Apple M1 Max
 -> PASS (1.59 s wall)
 
 ## fe build
--> PASS (1.81 s wall)
+-> PASS (1.68 s wall)
 
 ## fe test
-PASS  [0.0024s] test_action_ids_distinct
-PASS  [0.0024s] test_handler_deposit
-PASS  [0.0024s] test_handler_dispute
-PASS  [0.0024s] test_contract_matches_step
-PASS  [0.0024s] test_contract_rejects_attack
+PASS  [0.0002s] test_action_ids_distinct
+PASS  [0.0002s] test_handler_deposit
+PASS  [0.0002s] test_handler_dispute
 PASS  [0.0001s] test_handler_lock
 PASS  [0.0001s] test_handler_refund
 PASS  [0.0001s] test_handler_release
-PASS  [0.0003s] test_vault_action_ids_distinct
-PASS  [0.0002s] test_vault_contract_matches_vstep
-PASS  [0.0077s] test_counterexample_none
-PASS  [0.0049s] test_vault_counterexample_none
-PASS  [0.0057s] test_runtime_search_gas
+PASS  [0.0004s] test_contract_rejects_attack
+PASS  [0.0005s] test_contract_matches_step
+PASS  [0.0000s] test_vault_action_ids_distinct
+PASS  [0.0027s] test_vault_contract_matches_vstep
+PASS  [0.0030s] test_runtime_search_gas
+PASS  [0.0034s] test_counterexample_none
+PASS  [0.0028s] test_vault_counterexample_none
 PASS  [0.0001s] test_vault_handler_approve
 PASS  [0.0001s] test_vault_handler_cancel
 PASS  [0.0001s] test_vault_handler_execute
-PASS  [0.0003s] test_vault_handler_propose
+PASS  [0.0001s] test_vault_handler_propose
 PASS  [0.0001s] test_vault_identity_guards
-PASS  [0.0106s] test_oracle_edges
-PASS  [0.0119s] test_runtime_explore_agrees
+PASS  [0.0064s] test_runtime_explore_agrees
+PASS  [0.0075s] test_oracle_edges
 PASS  [0.0001s] test_vault_timelock_holds
-PASS  [0.0153s] test_encode_roundtrip
-PASS  [0.0032s] test_vault_runtime_search_gas
-PASS  [0.0144s] test_shards_partition
-PASS  [0.0153s] test_vault_runtime_agrees
-PASS  [0.0504s] test_vault_differential
-PASS  [0.0519s] test_vault_encode_roundtrip
-PASS  [0.1598s] test_differential_all_edges
+PASS  [0.0028s] test_vault_runtime_search_gas
+PASS  [0.0091s] test_shards_partition
+PASS  [0.0112s] test_encode_roundtrip
+PASS  [0.0125s] test_vault_runtime_agrees
+PASS  [0.0480s] test_vault_differential
+PASS  [0.0482s] test_vault_encode_roundtrip
+PASS  [0.1442s] test_differential_all_edges
 
 test result: ok. 28 passed; 0 failed
--> PASS (7.72 s wall)
+-> PASS (7.39 s wall)
 
 ## fe test --backend native
-PASS  [0.1131s] test_encode_roundtrip
-PASS  [0.1132s] test_oracle_edges
-PASS  [0.1131s] test_vault_counterexample_none
-PASS  [0.1132s] test_counterexample_none
-PASS  [0.1133s] test_action_ids_distinct
-PASS  [0.1140s] test_shards_partition
-PASS  [0.1141s] test_vault_runtime_agrees
-PASS  [0.1144s] test_runtime_explore_agrees
-PASS  [0.0062s] test_vault_encode_roundtrip
-PASS  [0.0083s] test_vault_action_ids_distinct
+PASS  [0.1009s] test_runtime_explore_agrees
+PASS  [0.1009s] test_counterexample_none
+PASS  [0.1011s] test_vault_counterexample_none
+PASS  [0.1016s] test_vault_runtime_agrees
+PASS  [0.1116s] test_action_ids_distinct
+PASS  [0.1117s] test_oracle_edges
+PASS  [0.1119s] test_encode_roundtrip
+PASS  [0.1120s] test_shards_partition
+PASS  [0.0156s] test_vault_encode_roundtrip
+PASS  [0.0173s] test_vault_action_ids_distinct
 
 test result: ok. 10 passed; 0 failed
--> PASS (3.24 s wall)
+-> PASS (3.16 s wall)
 
 ## sh demo/run.sh
 == 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)
@@ -84,11 +84,11 @@ test result: ok. 10 passed; 0 failed
    real contract, fe test --filter attack:
      PASS  [0.0002s] test_contract_rejects_attack
      -> the first four calls accepted, the Refund refused, storage unchanged
--> PASS (5.18 s wall)
+-> PASS (5.13 s wall)
 
 ## sh demo/check-bugs.sh
-# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-21 00:36 UTC
-commit: adcff70d6604c9eec5419ffe85b78bebfcbb9107
+# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-21 00:40 UTC
+commit: b7b405b5b54a2d4ebb1fcce819120aae22c9560e
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -125,11 +125,11 @@ PASS  demo/vault-execute-unguarded.patch | exit 1 | 'two distinct approvals': ye
       = assertion message: invariant 'two distinct approvals' broken: executed without two distinct signers
       = left: `6`
 RESULT: all rows as expected
--> PASS (26.57 s wall)
+-> PASS (25.42 s wall)
 
 ## sh demo/check-bugs.sh --conformance
-# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-21 00:37 UTC
-commit: adcff70d6604c9eec5419ffe85b78bebfcbb9107
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-21 00:41 UTC
+commit: b7b405b5b54a2d4ebb1fcce819120aae22c9560e
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -147,7 +147,7 @@ PASS  K6  conformance/bad-init.patch  [full]  `fe build` exit 1 (want 1)  expect
 PASS  K7  conformance/vault-skip-cancel.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `380`;;!invariant '
 PASS  K8  conformance/lock-boundary-gt.patch  [full]  `fe test` exit 1 (want 1)  expect: ^FAIL .*test_vault_contract_matches_vstep;;^FAIL .*test_vault_handler_execute;;^FAIL .*test_vault_differential;;test result: FAILED. 25 passed; 3 failed
 RESULT: all rows as expected
--> PASS (23.27 s wall)
+-> PASS (23.30 s wall)
 
 ## python3 -I tools/ref_model.py --check
 # oracle: tools/ref_model.py, python 3.11.1
@@ -203,28 +203,28 @@ check vedges(10, 3) == 580: oracle 580 -> AGREE
 check vedge_hash(10, 3) == 1115689132712769016: oracle 1115689132712769016 -> AGREE
 check src/oracle_edges.fe (cap 21, 3680 rows) == oracle's table now: AGREE
 RESULT: oracle agrees with every Fe pin
--> PASS (0.32 s wall)
+-> PASS (0.34 s wall)
 
 ## sh bench/run.sh --quick --date ci
 # Bench smoke (ci) — bench/run.py --quick
 
-2026-11-21 00:37 UTC · `fe 26.6.0 (5b3f96a)` · `Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64 arm` · Apple M1 Max
+2026-11-21 00:41 UTC · `fe 26.6.0 (5b3f96a)` · `Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64 arm` · Apple M1 Max
 
 Single `fe check` per row (wall times are one run, not a median). Gate: every explore row `pass`; the attack printer `pass` at C = 8 / 19 and `step-limit` at C = 21.
 
 | model | size | states | explore | printer (want) |
 |---|---|---:|---|---|
-| escrow | C=8 | 125 | pass (0.607 s) | pass (pass) |
-| escrow | C=19 | 609 | pass (0.669 s) | pass (pass) |
-| escrow | C=21 | 736 | pass (0.707 s) | step-limit (step-limit) |
-| vault | B=10 T=3 | 211 | pass (0.644 s) | — |
+| escrow | C=8 | 125 | pass (0.634 s) | pass (pass) |
+| escrow | C=19 | 609 | pass (0.668 s) | pass (pass) |
+| escrow | C=21 | 736 | pass (0.718 s) | step-limit (step-limit) |
+| vault | B=10 T=3 | 211 | pass (0.709 s) | — |
 
 RESULT: PASS
--> PASS (4.68 s wall)
+-> PASS (4.79 s wall)
 
 ## sh tools/transition_coverage.sh
-# Transition coverage, 2026-11-21 00:37 UTC
-commit: adcff70d6604c9eec5419ffe85b78bebfcbb9107
+# Transition coverage, 2026-11-21 00:41 UTC
+commit: b7b405b5b54a2d4ebb1fcce819120aae22c9560e
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -248,7 +248,7 @@ the model-level vault search is exercised by the compile-time and runtime explor
 are the oracle's contract-graph counts, so a vault match shows the replay reached everything the oracle says is reachable there.
 
 RESULT: every transition the oracle says is reachable was replayed (escrow: its full model graph; vault: the deployed handlers' contract graph)
--> PASS (6.79 s wall)
+-> PASS (6.88 s wall)
 
 ## sh tools/leak_scan.sh
 
@@ -258,14 +258,14 @@ RESULT: every transition the oracle says is reachable was replayed (escrow: its 
     ○ ░
     ░    gitleaks
 
-[90m7:37AM[0m [32mINF[0m [1m100 commits scanned.[0m
-[90m7:37AM[0m [32mINF[0m [1mscanned ~1132964 bytes (1.13 MB) in 316ms[0m
-[90m7:37AM[0m [32mINF[0m [1mno leaks found[0m
+[90m7:41AM[0m [32mINF[0m [1m102 commits scanned.[0m
+[90m7:41AM[0m [32mINF[0m [1mscanned ~1137294 bytes (1.14 MB) in 358ms[0m
+[90m7:41AM[0m [32mINF[0m [1mno leaks found[0m
 gitleaks: no leaks found
 kitchen-file pattern: no tracked file matches
--> PASS (0.51 s wall)
+-> PASS (0.58 s wall)
 
 ## actionlint .github/workflows/ci.yml .github/workflows/security.yml .github/workflows/release.yml
--> PASS (0.39 s wall)
+-> PASS (0.38 s wall)
 
 RESULT: all steps passed

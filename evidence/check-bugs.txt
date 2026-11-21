@@ -1,5 +1,5 @@
-# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-21 00:36 UTC
-commit: adcff70d6604c9eec5419ffe85b78bebfcbb9107
+# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-21 00:40 UTC
+commit: b7b405b5b54a2d4ebb1fcce819120aae22c9560e
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
