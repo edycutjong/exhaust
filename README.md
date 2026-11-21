@@ -281,6 +281,7 @@ sh tools/differential.sh              # the exhaustive-edge differential report 
 sh tools/transition_coverage.sh       # replayed edges vs the oracle's reachable edges (no line-coverage tool exists in Fe 26.6.0)
 sh demo/check-bugs.sh                 # every bug patch must fail fe build naming its invariant and printing its digits
 sh demo/check-bugs.sh --conformance   # the checker's own negative tests
+sh tools/test_gates.sh                # the gates fail when they should (empty bug table, oracle crash)
 python3 tools/ref_model.py --check    # the Python oracle against every pin
 sh bench/run.sh --quick               # bench smoke: gated on the step-limit rows
 sh tools/leak_scan.sh                 # gitleaks over the whole history + no kitchen file tracked
@@ -290,7 +291,8 @@ sh tools/ci_local.sh                  # the CI workflow's steps, run locally
 `.github/workflows/ci.yml` defines the same steps on a pinned Fe (every action pinned to a commit SHA) as parallel jobs: **Quality** (`fe fmt --check`, `fe check`),
 **Build** (`fe build`, artifacts listed and uploaded), **Test** (`fe test` on Sonatina and `fe test --backend native`, as a
 matrix), **Must-fail** (`demo/check-bugs.sh`: the job passes only when every patched build fails naming its invariant and
-printing its digits, and `--conformance` does the same for the checker's own mutants; a table that runs no rows fails), **Oracle** (the Python model against
+printing its digits, and `--conformance` does the same for the checker's own mutants; a table that runs no rows fails, and
+`tools/test_gates.sh` checks that it does), **Oracle** (the Python model against
 every pin), **Bench smoke** (`bench/run.sh --quick`, gated on the step-limit rows) and **Transition coverage**.
 `security.yml` runs gitleaks (tarball checksum-verified) over the full history and CodeQL for what it supports here (the workflow files and the Python
 under `tools/` and `bench/`; CodeQL has no Fe extractor). `release.yml` derives the next version from Angular-style commit
@@ -312,7 +314,7 @@ workflow step has run on GitHub yet; the CI evidence is that local transcript un
 ```text
 src/        model, explorer, contracts, tests (.fe)
 demo/       bug patches, run.sh, check-bugs.sh, bugs.tsv
-tools/      ref_model.py oracle, differential.sh, transition_coverage.sh, leak_scan.sh, trace.sh, decode-trace, ci_local.sh
+tools/      ref_model.py oracle, differential.sh, transition_coverage.sh, small_scope.sh, test_gates.sh, leak_scan.sh, trace.sh, decode-trace, ci_local.sh
 bench/      benchmark and step-budget probes
 evidence/   raw output of every number on this page
 docs/       images and the architecture diagram
