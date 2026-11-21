@@ -1,7 +1,7 @@
 <div align="center">
   <img src="docs/assets/icon.svg" alt="exhaust icon" width="144">
   <h1>exhaust 🔦</h1>
-  <p><em>The Fe compiler is the model checker: every reachable state of a protocol model, up to a stated capacity, explored inside <code>fe build</code>.</em></p>
+  <p><em>The Fe compiler is the model checker: every reachable state of a protocol model, up to a stated capacity, explored inside <code>fe build</code>. The escrow: 736 states at capacity 21, in 940,335 of the 1,000,000 steps one assert may spend.</em></p>
   <img src="docs/assets/readme-hero-animated.svg" alt="exhaust: the Fe compiler explores every reachable state of an escrow inside fe build: 736 lamps lit at capacity 21, all held. One line changes. A new red lamp: Deposit, Deposit, Lock, Release, Refund." width="100%">
 
   <br/>
@@ -34,7 +34,10 @@ recursion limit of 64, with no CLI or config override. The C = 21 search uses **
 then about 1,160 per state; `evidence/bench-2026-11-20.md`). Consts that reference other consts share one budget, so a
 larger model is split into independent asserts, never chained (`evidence/budget.md`).
 
-This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification.
+This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification. For the
+nine bugs planted here the hypothesis held: the oracle already finds each one at escrow capacity 1 or 2, or vault balance
+1 or 2, and the demo route `11234` is the same at capacity 2 as at 21 (`evidence/small-scope.txt`). C = 21 is how far one
+assert can count, not what the demo bug needs.
 
 ## 📸 See it in Action
 
@@ -45,10 +48,10 @@ git clone https://github.com/edycutjong/exhaust && cd exhaust
 curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path
 export PATH=$HOME/.fe/bin:$PATH
 fe --version                  # fe 26.6.0 (5b3f96a)
-fe test                       # Sonatina (EVM) backend
-fe test --backend native      # native backend
-fe build                      # the compile-time search: green
+fe build                      # the compile-time search: green (736 states at C = 21)
 sh demo/run.sh                # one-line bug in the Refund guard: red, with the invariant and the digits
+fe test                       # Sonatina (EVM) backend: 28 tests
+fe test --backend native      # native backend: 10 tests (Linux needs a C linker: apt-get install gcc libc6-dev)
 ```
 
 `demo/run.sh` (transcript: `evidence/demo-run.txt`) builds the escrow green, applies a one-line bug to the Refund guard,
@@ -62,7 +65,9 @@ error[8-0081]: static assertion failed
 ```
 
 It then replays that attack on the patched contract (all five calls accepted: seller and buyer both paid) and on the real
-one (the Refund is refused, storage unchanged).
+one (the Refund is refused, storage unchanged). It works on temporary copies, so your checkout is never patched. To break
+it by hand: delete `&& s.seller == 0` from the Refund guard in `src/escrow.fe`, run `fe build`, then
+`git restore src/escrow.fe`.
 
 ## 💡 The Problem & Solution
 
@@ -128,6 +133,28 @@ static_assert(explore(CAP) == STATES)       // CAP = 21, STATES = 736
 **How Fe is used here.** The model is a `const fn` with a loop and array writes, evaluated by the compiler under
 `static_assert`, and the very same function is called from `recv` handlers and tests on two backends. We did not
 compare this against other contract languages or model checkers: this describes what this build does, not how it ranks.
+
+**Neighbours, for orientation (we did not benchmark against any of them).** Solidity's compiler ships a checker,
+[SMTChecker](https://docs.soliditylang.org/en/latest/smtchecker.html), that reasons symbolically with SMT and Horn
+solvers; [Foundry invariant tests](https://www.getfoundry.sh/guides/invariant-testing) and
+[Echidna](https://github.com/crytic/echidna) run random call sequences and check invariants after each call;
+[halmos](https://github.com/a16z/halmos) tests EVM contracts symbolically. exhaust is an explicit-state search written in
+ordinary Fe (no solver, no annotation language, no random sampling): the compiler's const evaluator enumerates every
+reachable state at a stated capacity, over the same `step()` the contract calls, and the bound is part of the claim.
+
+### Use the pattern on your own model
+
+1. Write the protocol as one `step(state, action)` over an `impl Copy` state struct and an action enum, with invariants
+   as `assert!` messages (`src/escrow.fe`, explained in `MODEL.md`).
+2. Copy the explorer (`src/escrow_explore.fe`): an encoding into a table index, a breadth-first `while` loop, and
+   `static_assert` pins on the reachable count. Take the first count from an outside model you trust (ours:
+   `tools/ref_model.py`), never from the explorer itself.
+3. Size it before you trust it: `bench/budget_probe.py` measures how many of the 1,000,000 steps each search here uses (by
+   bisecting a burn loop); point it at yours. If it does not fit, split by independent start states into separate asserts; never chain consts (they share one budget).
+4. Point the contract's `recv` handlers at the same `step()`, and replay every reachable edge through the deployed contract
+   (`src/tests.fe`, `test_differential_all_edges`).
+5. Plant bugs as one-line patches in `demo/` and list them in `demo/bugs.tsv`; `sh demo/check-bugs.sh` passes only when
+   every patched build fails. The vault took this route: `evidence/transfer-vault.md` records what changed and what did not.
 
 ## 📊 Engineering Rigor
 
@@ -198,7 +225,7 @@ git, curl, patch; python3 only for the oracle and the decoder. On Linux the nati
 
 ### Installation
 
-See the 60-second block under "See it in Action". `fe build` is the proof; `sh demo/run.sh` is the demo.
+See the 60-second block under "See it in Action". `fe build` is the check; `sh demo/run.sh` is the demo.
 
 ## 🧪 Testing & CI
 
