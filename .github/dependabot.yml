@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Fe has no Dependabot ecosystem and the ingot has no third-party dependencies (fe.toml pins none); tools/ and bench/
+  # are standard-library Python with no manifest. The only moving parts are the GitHub Actions the workflows use.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns: ["*"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
