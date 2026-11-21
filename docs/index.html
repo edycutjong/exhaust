@@ -448,7 +448,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <body>
 <header class="top"><div class="wrap">
   <a class="brand" href="#top" aria-label="exhaust, back to top"><img src="assets/icon.svg" alt="" width="30" height="30">exhaust</a>
-  <nav aria-label="Sections"><a href="#proof">The proof</a><a href="#how">How it works</a><a href="#ceiling">The ceiling</a><a href="#vault">Second protocol</a><a href="#faq">FAQ</a></nav>
+  <nav aria-label="Sections"><a href="#proof">The check</a><a href="#how">How it works</a><a href="#ceiling">The ceiling</a><a href="#vault">Second protocol</a><a href="#faq">FAQ</a></nav>
   <a class="btn sm" href="deck/">Pitch deck</a>
   <a class="btn sm solid" href="https://github.com/edycutjong/exhaust">GitHub</a>
 </div></header>
@@ -456,7 +456,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <main id="top">
 <section class="hero" aria-labelledby="h1"><div class="wrap">
   <div class="hero-copy">
-    <div class="lab"><b>Rethink a protocol</b> · Fe Builders Challenge 2026</div>
+    <div class="lab"><b>Build for the next builder</b> · Fe Builders Challenge 2026</div>
     <h1 id="h1" class="disp">Your compiler refuses the sequence <em>nobody wrote a test for.</em></h1>
     <p class="sub">Deposit, Deposit, Lock, Release, Refund: drop one condition and the escrow pays both sides. exhaust explores all <b>736</b> reachable states inside <code>fe build</code>, at capacity 21, in <b>940<span class="p">,</span>335</b> of the compiler's 1,000,000 steps. Then the build names the broken invariant.</p>
     <div class="cta">
@@ -701,8 +701,8 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 </div></section>
 
 <section class="sec" id="how" aria-labelledby="how-h"><div class="wrap">
-  <h2 class="disp h2" id="how-h">Six parts, one build, <em class="k">no second tool.</em></h2>
-  <p class="lede">The model is ordinary Fe. The checker is the compiler you already run. The contract calls the function that was checked.</p>
+  <h2 class="disp h2" id="how-h">Six parts. <em class="k">The build is the checker.</em></h2>
+  <p class="lede">The model is ordinary Fe, the checker is the compiler you already run, and the contract calls the function that was checked. A Python oracle, written separately, re-counts every pin.</p>
   <div class="bento">
     <article class="card a"><h3>A const fn walks the graph</h3>
       <p>Breadth-first search with <code>while</code> loops, mutable locals and array writes, evaluated by the compiler. Each successor is checked before it is encoded.</p>
@@ -759,7 +759,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <section class="sec room" id="vault" aria-labelledby="vault-h"><div class="wrap">
   <div class="lab">Lever frame · <b>second protocol</b></div>
   <h2 class="disp h2" id="vault-h">A 2-of-3 timelock vault. <em class="k">Pull any lever.</em></h2>
-  <p class="lede">211 reachable states in one <code>static_assert</code> and 580 transitions in another, at balance 10 and lock period 3 (depth 0 to 70). The track repeats once per unit paid out. Each lever is a small patch from <code>demo/</code> (one to three changed lines); each build fails with its own invariant and route.</p>
+  <p class="lede">211 reachable states in one <code>static_assert</code> and 580 transitions in another, at balance 10 and lock period 3 (depth 0 to 70). The track repeats once per unit paid out. Each lever shows one small patch from <code>demo/</code> (one to three changed lines) and that patch's committed build output: each build fails with its own invariant and route.</p>
   <div class="vframe signal">
     <div class="board" id="vlt-board" data-state="exhausted" data-cum='[]'>
       <div class="bhead"><span>Vault · reachable states · B = 10 · T = 3</span><span class="read">211 states · 580 wires</span></div>
@@ -953,10 +953,11 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <section class="sec" id="faq" aria-labelledby="faq-h"><div class="wrap faq">
   <div><h2 class="disp h2" id="faq-h">Questions a judge would ask.</h2></div>
   <div>
-    <details open><summary>Is this formal verification?</summary><div class="ans"><p>No. It is bounded-exhaustive checking: every reachable state of the model at the stated capacity (escrow C = 21, vault B = 10 with T = 3) is explored at compile time. Above the bound nothing is checked; the bet is the small-scope hypothesis, that most protocol bugs already show at small sizes.</p></div></details>
+    <details open><summary>Is this formal verification?</summary><div class="ans"><p>No. It is bounded-exhaustive checking: every reachable state of the model at the stated capacity (escrow C = 21, vault B = 10 with T = 3) is explored at compile time. Above the bound nothing is checked; the bet is the small-scope hypothesis, that most protocol bugs already show at small sizes. For the nine bugs planted here it held: the oracle finds each one at escrow capacity 1 or 2, or vault balance 1 or 2, and the demo route <code>11234</code> is the same at capacity 2 as at 21 (<code>evidence/small-scope<span class="p">.</span>txt</code>). C = 21 is how far one assert can count, not what the demo bug needs.</p></div></details>
     <details><summary>Why stop at capacity 21?</summary><div class="ans"><p>The state encoding holds at most 21 units (<code>MAX_CAP = 21</code>), and the C = 21 search already uses 940,335 of the 1,000,000 steps one assert may spend. The route printer runs at C′ = 19 (90.8%); C′ = 20 would still fit at 98.4%.</p></div></details>
     <details><summary>Can I raise the step budget?</summary><div class="ans"><p>Not in Fe 26.6.0: the limit is a constant in the compiler, with no flag or config. What works is splitting the search into independent asserts, each with its own million. Chaining consts does not help, because consts that reference other consts share one budget.</p></div></details>
     <details><summary>Is the deployed contract the code that was checked?</summary><div class="ans"><p>For the escrow, yes: its <code>recv</code> handlers call the same <code>step()</code>, and a differential test replays every reachable transition through deployed contracts (1,008 deployments, 25,646 handler calls), comparing <code>ok</code> and the stored state each time. The vault's caller and timelock checks are adapter code outside the compile-time check; the README lists exactly what is untested.</p></div></details>
+    <details><summary>How does this relate to SMTChecker, Foundry, Echidna or halmos?</summary><div class="ans"><p>We did not benchmark against any of them. Solidity's compiler ships <a href="https://docs.soliditylang.org/en/latest/smtchecker.html">SMTChecker</a>, which reasons symbolically with SMT and Horn solvers; <a href="https://www.getfoundry.sh/guides/invariant-testing">Foundry invariant tests</a> and <a href="https://github.com/crytic/echidna">Echidna</a> run random call sequences and check invariants after each call; <a href="https://github.com/a16z/halmos">halmos</a> tests EVM contracts symbolically. exhaust is an explicit-state search in ordinary Fe: no solver, no annotation language, no random sampling. The compiler enumerates every reachable state at a stated capacity, over the same <code>step()</code> the contract calls.</p></div></details>
     <details><summary>Who checks the checker?</summary><div class="ans"><p>An independent reference model in plain Python (<code>tools/ref_model<span class="p">.</span>py</code>, stdlib only) recomputes every count; it agrees with all 15 Fe pins and the 3,680-row escrow edge table. It shares the author and one reading of the protocol, which the limitations say plainly.</p></div></details>
     <details><summary>How do I reproduce it?</summary><div class="ans"><p>Install fe 26.6.0 (5b3f96a), then <code>fe build</code>, <code>sh demo/run<span class="p">.</span>sh</code>, <code>fe test</code> and <code>fe test --backend native</code>. <a href="https://github.com/edycutjong/exhaust/blob/main/DEMO.md">DEMO.md</a> maps every number to its command; a clean clone on Linux x86-64 reproduces the build and both test runs; the native backend needs a C linker such as <code>gcc</code> with <code>libc6-dev</code> (<code>evidence/repro-linux-2026-11-21<span class="p">.</span>txt</code>).</p></div></details>
   </div>
@@ -974,7 +975,7 @@ fe test &amp;&amp; fe test --backend native</pre>
 </main>
 
 <footer><div class="wrap">
-  <span>exhaust · Apache-2.0 · fe 26<span class="p">.</span>6<span class="p">.</span>0 (5b3f96a) · page built from evidence at 9077bad</span>
+  <span>exhaust · Apache-2.0 · fe 26<span class="p">.</span>6<span class="p">.</span>0 (5b3f96a) · page built from evidence at 44630b8</span>
   <nav aria-label="Footer"><a href="https://github.com/edycutjong/exhaust">GitHub</a><a href="deck/">Pitch deck</a><a href="pitch-deck.pdf">Deck PDF</a><a href="https://github.com/edycutjong/exhaust/blob/main/DEMO.md">DEMO.md</a><a href="https://github.com/edycutjong/exhaust/blob/main/MODEL.md">MODEL.md</a><a href="https://github.com/edycutjong/exhaust/blob/main/DECLARATION.md">Declaration</a></nav>
 </div></footer>
 <script>
