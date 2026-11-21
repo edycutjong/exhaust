@@ -243,7 +243,7 @@ sh tools/leak_scan.sh                 # gitleaks over the whole history + no kit
 sh tools/ci_local.sh                  # the CI workflow's steps, run locally
 ```
 
-`.github/workflows/ci.yml` runs the same steps on a pinned Fe as parallel jobs: **Quality** (`fe fmt --check`, `fe check`),
+`.github/workflows/ci.yml` defines the same steps on a pinned Fe as parallel jobs: **Quality** (`fe fmt --check`, `fe check`),
 **Build** (`fe build`, artifacts listed and uploaded), **Test** (`fe test` on Sonatina and `fe test --backend native`, as a
 matrix), **Must-fail** (`demo/check-bugs.sh`: the job passes only when every patched build fails naming its invariant and
 printing its digits, and `--conformance` does the same for the checker's own mutants), **Oracle** (the Python model against
