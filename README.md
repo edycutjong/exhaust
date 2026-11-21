@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/readme-hero-animated.svg" alt="exhaust — the Fe compiler explores every reachable state of an escrow inside fe build: 736 lamps lit at capacity 21, all held. One line changes. A new red lamp: Deposit, Deposit, Lock, Release, Refund." width="100%">
+</p>
+
 # exhaust
 
 **The Fe compiler is the model checker.** A `const fn` explores every reachable state of a small protocol state machine
