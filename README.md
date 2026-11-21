@@ -37,8 +37,8 @@ larger model is split into independent asserts, never chained (`evidence/budget.
 This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification; what it
 does not cover is listed under [Limitations](#limitations-what-this-does-not-prove). For the nine bugs we planted, an
 independent Python re-count of the model (`tools/ref_model.py`) shows each one already breaking an invariant at escrow
-capacity 1 or 2, or vault balance 1 or 2, and the demo route `11234` is the same at capacity 2 as at 21
-(`evidence/small-scope.txt`): an illustration of the hypothesis on this zoo, not evidence about bugs nobody planted. C = 21 is how far one assert can count, not what the demo bug needs.
+capacity 1 or 2, or vault balance 1 or 2 (`evidence/small-scope.txt`), and the demo route `11234` the oracle prints at
+capacity 2 is the one the C = 21 build prints (`evidence/check-bugs.txt`): an illustration of the hypothesis on this zoo, not evidence about bugs nobody planted. C = 21 is how far one assert can count, not what the demo bug needs.
 
 ## 📸 See it in Action
 
