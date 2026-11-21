@@ -7,14 +7,21 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   FE_VERSION: v26.6.0
 
 jobs:
-  build-and-test:
+  quality:
+    name: Quality (fmt, check)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Install Fe (pinned)
         run: |
           curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
@@ -22,15 +29,111 @@ jobs:
       - run: fe --version
       - run: fe fmt --check
       - run: fe check
-      - name: fe build (runs the compile-time exhaustive search)
+
+  build:
+    name: Build (compile-time exhaustive search)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Install Fe (pinned)
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
+          echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+      - name: fe build (static_assert(explore(CAP) == STATES) runs here)
         run: fe build
-      - run: fe test
-      - run: fe test --backend native
-      - name: Demo (build green, bug patch red with invariant + digits, replays)
+      - name: List build artifacts
+        run: find out -type f | sort
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fe-build-out
+          path: out/
+          if-no-files-found: error
+
+  test:
+    name: Test (${{ matrix.backend }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [sonatina, native]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Install Fe (pinned)
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
+          echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+      - name: fe test (EVM, Sonatina backend)
+        if: matrix.backend == 'sonatina'
+        run: fe test
+      - name: fe test --backend native
+        if: matrix.backend == 'native'
+        run: fe test --backend native
+      - name: Demo (build green, bug patch red with invariant and digits, replays)
+        if: matrix.backend == 'sonatina'
         run: sh demo/run.sh
-      - name: Bug zoo (every patch must fail fe build naming its invariant and printing its digits)
+
+  must-fail:
+    name: Must-fail (every bug patch breaks the build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Install Fe (pinned)
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
+          echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+      - name: Bug zoo (each patched build must FAIL naming its invariant and printing its digits)
         run: sh demo/check-bugs.sh
-      - name: Conformance (the checker's own negative tests)
+      - name: Conformance (the checker's own negative tests; the job passes only when each mutant is caught)
         run: sh demo/check-bugs.sh --conformance
-      - name: Independent oracle agrees with every pin
-        run: python3 tools/ref_model.py --check
+
+  oracle:
+    name: Oracle (independent Python model vs the Fe pins)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 -I tools/ref_model.py --check
+
+  bench-smoke:
+    name: Bench smoke (step-limit rows gate; the rest is uploaded)
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Install Fe (pinned)
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
+          echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+      - name: bench/run.sh --quick
+        run: sh bench/run.sh --quick --date ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bench-smoke
+          path: evidence/bench-ci.*
+          if-no-files-found: warn
+
+  transition-coverage:
+    name: Transition coverage (every oracle-reachable edge replayed on the EVM)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Install Fe (pinned)
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
+          echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+      - name: Replayed edges vs the oracle's reachable edges (fails on any gap)
+        run: sh tools/transition_coverage.sh | tee transition-coverage.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: transition-coverage
+          path: transition-coverage.txt
