@@ -1,9 +1,10 @@
-# Small-scope check (oracle tools/ref_model.py), 2026-11-21 04:08 UTC
-commit: fac3fd23a11cf0acd8ae788ceb7015782c1a48f4
+# Small-scope check (oracle tools/ref_model.py), 2026-11-21 04:18 UTC
+commit: f69960e89664c9f725963501bddd1bc64c97e291
 python: Python 3.11.1
 uname: Darwin arm64
 
-## Escrow: smallest capacity at which each bug's invariant breaks (checked capacity C = 21)
+## Escrow: smallest capacity at which each bug breaks an invariant (checked capacity C = 21)
+(at a small capacity the first invariant broken can differ from the one the C = 21 build names, as for mint-release)
 refund-after-release at cap 2: invariant 'paid once', digits 11234
 settle-early at cap 2: invariant 'settled empty', digits 1123
 cap-off-by-one at cap 1: invariant 'within capacity', digits 11
