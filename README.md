@@ -9,6 +9,8 @@
   [![Fe Builders Challenge 2026](https://img.shields.io/badge/Fe_Builders-Challenge_2026-8b5cf6?style=for-the-badge)](https://fe-lang.org/contest/)
   [![Reproduce every number](https://img.shields.io/badge/📋_Reproduce-DEMO.md-06b6d4?style=for-the-badge)](DEMO.md)
   [![Raw evidence](https://img.shields.io/badge/🧾_Raw-Evidence-f59e0b?style=for-the-badge)](evidence/)
+  [![Landing page](https://img.shields.io/badge/🔦_Landing-exhaust.edycu.dev-A8261C?style=for-the-badge)](https://exhaust.edycu.dev/)
+  [![Pitch deck](https://img.shields.io/badge/🎞️_Pitch-Deck-23221E?style=for-the-badge)](https://exhaust.edycu.dev/deck/)
 
   <br/>
 
@@ -246,6 +248,8 @@ MODEL.md  FE-NOTES.md  DECLARATION.md  DEMO.md
 ```
 
 ## 📽️ Demo Materials
+
+**Landing + deck:** [exhaust.edycu.dev](https://exhaust.edycu.dev/) · [pitch deck](https://exhaust.edycu.dev/deck/) · [deck PDF](docs/pitch-deck.pdf) (GitHub Pages from `docs/`; live once the repo is public).
 
 `DEMO.md` has the exact command behind every number here. The demo is reproducible from a fresh clone
 (a Linux x86-64 container run of a clean clone at 7b5e404: `evidence/repro-linux-2026-11-21.txt`, 28 + 10 tests; `evidence/repro-clone-2026-11-21.txt` is an earlier fresh-clone run that predates the vault).
