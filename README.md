@@ -23,7 +23,7 @@
 
 ---
 
-**Fe contract authors and auditors miss the sequence nobody wrote a test for** (Deposit, Deposit, Lock, Release, Refund pays
+**Fe contract authors and auditors can miss the sequence nobody wrote a test for** (Deposit, Deposit, Lock, Release, Refund pays
 both sides); `exhaust` finds it inside the build they already run. A `const fn` explores every reachable state of the
 model inside `fe build`, at a stated capacity: the escrow at C = 21 units, **all 736 reachable states and every accepted
 transition checked against five named invariants**. Break the model and the build fails: the compiler names the invariant
@@ -34,10 +34,11 @@ recursion limit of 64, with no CLI or config override. The C = 21 search uses **
 then about 1,160 per state; `evidence/bench-2026-11-20.md`). Consts that reference other consts share one budget, so a
 larger model is split into independent asserts, never chained (`evidence/budget.md`).
 
-This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification. For the
-nine bugs planted here the hypothesis held: the oracle already finds each one at escrow capacity 1 or 2, or vault balance
-1 or 2, and the demo route `11234` is the same at capacity 2 as at 21 (`evidence/small-scope.txt`). C = 21 is how far one
-assert can count, not what the demo bug needs.
+This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification; what it
+does not cover is listed under [Limitations](#limitations-what-this-does-not-prove). For the nine bugs we planted, the
+Python oracle already finds each one at escrow capacity 1 or 2, or vault balance 1 or 2, and the demo route `11234` is the
+same at capacity 2 as at 21 (`evidence/small-scope.txt`): an illustration of the hypothesis on this zoo, not evidence about
+bugs nobody planted. C = 21 is how far one assert can count, not what the demo bug needs.
 
 ## 📸 See it in Action
 
@@ -136,8 +137,9 @@ compare this against other contract languages or model checkers: this describes 
 
 **Neighbours, for orientation (we did not benchmark against any of them).** Solidity's compiler ships a checker,
 [SMTChecker](https://docs.soliditylang.org/en/latest/smtchecker.html), that reasons symbolically with SMT and Horn
-solvers; [Foundry invariant tests](https://www.getfoundry.sh/guides/invariant-testing) and
-[Echidna](https://github.com/crytic/echidna) run random call sequences and check invariants after each call;
+solvers; [Foundry invariant tests](https://www.getfoundry.sh/guides/invariant-testing) run random call sequences and check
+invariants after each call; [Echidna](https://github.com/crytic/echidna) generates random call sequences and checks that
+each invariant holds;
 [halmos](https://github.com/a16z/halmos) tests EVM contracts symbolically. exhaust is an explicit-state search written in
 ordinary Fe (no solver, no annotation language, no random sampling): the compiler's const evaluator enumerates every
 reachable state at a stated capacity, over the same `step()` the contract calls, and the bound is part of the claim.
@@ -156,17 +158,19 @@ reachable state at a stated capacity, over the same `step()` the contract calls,
 
 ### Use the pattern on your own model
 
-1. Write the protocol as one `step(state, action)` over an `impl Copy` state struct and an action enum, with invariants
-   as `assert!` messages (`src/escrow.fe`, explained in `MODEL.md`).
+1. Write the protocol as one `step(state, action)` over an `impl Copy` state struct and an action enum, with the
+   invariants as one predicate in `src/escrow.fe` (explained in `MODEL.md`) and their `assert!` messages in
+   `src/escrow_explore.fe`.
 2. Copy the explorer (`src/escrow_explore.fe`): an encoding into a table index, a breadth-first `while` loop, and
-   `static_assert` pins on the reachable count. Take the first count from an outside model you trust (ours:
-   `tools/ref_model.py`), never from the explorer itself.
+   `static_assert` pins on the reachable count. Cross-check every pin with a model written outside Fe (ours:
+   `tools/ref_model.py` re-counts all of them and supplied the edge pins), so the explorer never vouches for itself.
 3. Size it before you trust it: `bench/budget_probe.py` measures how many of the 1,000,000 steps each search here uses (by
-   bisecting a burn loop); point it at yours. If it does not fit, split by independent start states into separate asserts; never chain consts (they share one budget).
+   bisecting a burn loop); edit its `SEARCHES` list and `HEADER` to point it at yours. If it does not fit, split by
+   independent start states into separate asserts.
 4. Point the contract's `recv` handlers at the same `step()`, and replay every reachable edge through the deployed contract
    (`src/tests.fe`, `test_differential_all_edges`).
-5. Plant bugs as one-line patches in `demo/` and list them in `demo/bugs.tsv`; `sh demo/check-bugs.sh` passes only when
-   every patched build fails. The vault took this route: `evidence/transfer-vault.md` records what changed and what did not.
+5. Plant bugs as small patches in `demo/` (six of our nine are one line) and list them in `demo/bugs.tsv`;
+   `sh demo/check-bugs.sh` passes only when every patched build fails. The vault took this route: `evidence/transfer-vault.md` records what changed and what did not.
 
 ## 📊 Engineering Rigor
 
@@ -189,7 +193,6 @@ that decides what fits.
 
 In short: only the stated capacities are explored; no liveness; the escrow model has no caller identity and moves no value; the
 model, the Fe code and the oracle share one author. Details:
-
 
 - Everything is measured on Fe 26.6.0 (`fe 26.6.0 (5b3f96a)`), the version this entry pins. Fe 26.7.0 (2026-11-18) was not re-measured; its
   CTFE budget in the source is the same 1,000,000 steps and recursion 64.
@@ -223,7 +226,6 @@ model, the Fe code and the oracle share one author. Details:
   `two distinct approvals` is defence in depth the same way: it fires first only if Execute loses its phase, quorum and timelock
   guards together (`demo/vault-execute-unguarded.patch`: the build names it and prints `6`).
 - The escrow's `conserved` bounds the total only: it does not catch a Release or Refund that moves two units at once. The vault checks the size of each payout (`pays one unit`) and that nothing but Execute pays (`only execute pays`).
-
 
 Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute (vault: 1 Propose · 2 ApproveA · 3 ApproveB · 4 ApproveC ·
 5 Tick · 6 Execute · 7 Cancel). A printed `9` means the start state itself breaks an invariant (no action). The model in words: `MODEL.md`. Numbers: `evidence/`.

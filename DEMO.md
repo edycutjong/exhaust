@@ -5,7 +5,8 @@ container run is `evidence/repro-linux-2026-11-21.txt`). The raw output is commi
 commit, the Fe version and the machine in their header. The source (`src/`, `fe.toml`, `demo/`) last changed at `de43ffc`;
 every transcript this table cites ran at that commit or a later one (only docs, tools and evidence changed since), and
 `git diff --stat de43ffc HEAD -- src fe.toml demo` prints nothing at the submitted commit. Older runs kept for history are
-named as such. Install Fe first (pinned):
+named as such (the one this table still cites is `evidence/repro-clone-2026-11-21.txt`, labelled below). The project page
+and deck footers name the same source commit. Install Fe first (pinned):
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path
