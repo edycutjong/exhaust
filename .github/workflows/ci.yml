@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
@@ -131,6 +132,7 @@ jobs:
           curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
           echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
       - name: Replayed edges vs the oracle's reachable edges (fails on any gap)
+        shell: bash # bash -eo pipefail: a failing script must fail the step even though its output is piped to tee
         run: sh tools/transition_coverage.sh | tee transition-coverage.txt
       - uses: actions/upload-artifact@v4
         with:

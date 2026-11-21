@@ -3,7 +3,7 @@ name: release
 # Semantic versioning from Angular-style commit prefixes (fix:/perf: patch, feat: minor, feat!: or BREAKING CHANGE: major;
 # docs/chore/test/refactor/style/ci: no release). The first release, v0.1.0, was tagged by hand at the end of the harden
 # phase; every later release is read from that tag on. It runs only after the CI workflow succeeded on main, so a red
-# commit is never tagged.
+# commit is never tagged (a CI run cancelled by a newer push is covered by the next run: the version comes from the tag range).
 
 on:
   workflow_run:
@@ -21,7 +21,11 @@ concurrency:
 
 jobs:
   release:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
