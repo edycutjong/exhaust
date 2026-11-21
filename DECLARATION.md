@@ -19,15 +19,14 @@ Required by the Fe Builders Challenge 2026 rules. This file is updated as the pr
 - **The Fe Builders Challenge starter repository** (`fe-lang/builders-challenge-starter`, Apache-2.0): the CI workflow
   pattern (install Fe with `feup`, then `fe fmt --check` / `fe test` / `fe build`) and the license choice.
 - **LICENSE**: the unmodified Apache License 2.0 text.
-- **Fonts** (SIL OFL 1.1, self-hosted in `docs/assets/` for the project page and deck): Saira Extra Condensed, Literata and B612 Mono.
-- No JavaScript library is used; the page and deck are hand-written HTML, CSS and a few lines of vanilla JS.
+- **Fonts** (SIL OFL 1.1, self-hosted in `docs/assets/` for the project page and deck): Saira Extra Condensed, Literata and B612 Mono; their OFL texts are in `docs/assets/fonts/OFL-*.txt`.
+- No JavaScript library is used; the page and deck are hand-written HTML, CSS and vanilla JS (about 190 lines in all).
 
 ## AI assistance
 
 - **Claude Code** (Anthropic; Claude Opus 5.5 and Claude Sonnet 5.5) wrote most of the code and documentation under the
   author's direction: design, Fe source, tests, scripts and prose.
-- **Outside models reviewed the specification** before any code was written, and the architecture and code afterwards: OpenAI Codex, xAI Grok and Alibaba Qwen
-  (two review rounds each time; Codex was usage-limited in the second pair). Their accepted suggestions changed the design (for example the transition form of the `conserved`
+- **Outside models reviewed the specification** before any code of this repository was written (the scratch spike above predates the review): OpenAI Codex, xAI Grok and Alibaba Qwen (two rounds). Grok and Qwen then reviewed the architecture and code (two rounds); Codex was usage-limited in both of those rounds and did not review them. Their accepted suggestions changed the design (for example the transition form of the `conserved`
   invariant); they did not write repository code.
 - The author is responsible for every line and can explain it. **The tests and the compile-time checks are the check**:
   `fe build` runs the search, exhaustive at the capacities stated in `evidence/capacities.md`, and `fe test` runs it again
