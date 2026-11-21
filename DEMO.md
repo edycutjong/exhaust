@@ -42,7 +42,7 @@ Output: `evidence/demo-run.txt` (green run: `evidence/transcript-pass.txt`; the 
 | Differential: 1,008 deployments, 25,646 calls, 736 states, 966 edges | `sh tools/differential.sh` | `evidence/differential.txt` |
 | 16,394,182 gas for the runtime search (C = 17, 494 states) | `fe test --filter test_runtime_search_gas --show-logs` | `evidence/gas.txt` |
 | 9 of 9 bug patches fail `fe build` naming the invariant and printing the digits | `sh demo/check-bugs.sh` | `evidence/check-bugs.txt`, one transcript per patch: `evidence/transcript-fail-<patch>.txt` |
-| Every planted bug already breaks an invariant at escrow capacity 1 or 2, or vault balance 1 or 2 (T = 3) and timelock 1 (B = 10); `11234` is the same route at capacity 2 and 21 | `sh tools/small_scope.sh` (the oracle, `tools/ref_model.py --bug`); the C = 21 route from `sh demo/check-bugs.sh` | `evidence/small-scope.txt`, `evidence/check-bugs.txt` |
+| Every planted bug already breaks an invariant at escrow capacity 1 or 2, or vault balance 1 or 2 (T = 3) and timelock 1 (B = 10); `11234` is the same route at capacity 2 and at the trace printer's capacity C′ = 19 | `sh tools/small_scope.sh` (the oracle, `tools/ref_model.py --bug`); the C′ = 19 route from `sh demo/check-bugs.sh` | `evidence/small-scope.txt`, `evidence/check-bugs.txt` |
 | The checker's own negative tests | `sh demo/check-bugs.sh --conformance` | `evidence/conformance.txt` |
 | Native trace by action name | `sh tools/trace.sh demo/refund-after-release.patch` (macOS arm64) | `evidence/transcript-trace-<patch>.txt` |
 | Digits to action names | `python3 tools/decode-trace 11234 --bug refund-after-release` (vault: `--protocol vault --bug vault-execute-early`) | stdout |
