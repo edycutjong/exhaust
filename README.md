@@ -26,7 +26,7 @@
 **Fe contract authors and auditors can miss the sequence nobody wrote a test for** (Deposit, Deposit, Lock, Release, Refund pays
 both sides); `exhaust` finds it inside the build they already run. A `const fn` explores every reachable state of the
 model inside `fe build`, at a stated capacity: the escrow at C = 21 units, **all 736 reachable states and every accepted
-transition checked against five named invariants**. Break the model and the build fails: the C = 21 search names the invariant,
+transition checked against five named invariants** (four on states, one on transitions). Break the model and the build fails: the C = 21 search names the invariant,
 and a second search at C′ = 19 prints a shortest counterexample as action digits.
 
 **The ceiling, on the first screen.** Fe 26.6.0 gives each `static_assert` evaluation 1,000,000 evaluator steps and a
@@ -37,9 +37,10 @@ larger model is split into independent asserts, never chained (`evidence/budget.
 This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification; what it
 does not cover is listed under [Limitations](#limitations-what-this-does-not-prove). For the nine bugs we planted, an
 independent Python re-count of the model (`tools/ref_model.py`) shows each one already breaking an invariant at escrow
-capacity 1 or 2, or vault balance 1 or 2 (T = 3) and timelock 1 (B = 10) (`evidence/small-scope.txt`; at a small capacity the first invariant broken can
-differ from the table's, as for `mint-release`), and the demo route `11234` the oracle prints at capacity 2 is the one the
-build's trace printer prints at C′ = 19 (`evidence/check-bugs.txt`): an illustration of the hypothesis on this zoo, not evidence about bugs nobody planted. C = 21 is how far one assert can count, not what the demo bug needs.
+capacity 1 or 2, at vault balance 1 or 2 with T = 3, and at timelock 1 with B = 10 (`evidence/small-scope.txt`). The demo
+route `11234` appears at capacity 2, the same digits the build's trace printer prints at C′ = 19 (`evidence/check-bugs.txt`).
+That illustrates the hypothesis on this zoo; it is not evidence about bugs nobody planted. C = 21 is how far one assert can
+count, not what the demo bug needs.
 
 ## 📸 See it in Action
 
@@ -89,8 +90,9 @@ every state it reaches and `static_assert`s the reachable count and the invarian
 invariant, `fe build` fails and prints the attack. The same `step()` runs in the contract's `recv` handlers, so for the escrow the function
 that was checked is the function that is deployed (the vault's caller and timelock checks are adapter code, see below).
 
-The digits come from the trace search at C′ = 19 (the state count runs at C = 21), so `cap-off-by-one`'s twenty Deposits are
-one more than C′.
+Note on the table: the digits come from the trace search at C′ = 19 (the state count runs at C = 21), so `cap-off-by-one`'s
+twenty Deposits are one more than C′. At a smaller capacity the oracle can name a different first invariant for the same
+digits: `mint-release` breaks `within capacity` at capacity 1 (`evidence/small-scope.txt`).
 
 | Bug patch (`demo/`) | Invariant named | Counterexample (`left:`) | Decoded |
 |---|---|---|---|
