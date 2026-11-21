@@ -26,8 +26,9 @@
 **Fe contract authors and auditors can miss the sequence nobody wrote a test for** (Deposit, Deposit, Lock, Release, Refund pays
 both sides); `exhaust` finds it inside the build they already run. A `const fn` explores every reachable state of the
 model inside `fe build`, at a stated capacity: the escrow at C = 21 units, **all 736 reachable states and every accepted
-transition checked against five named invariants** (four on states, one on transitions). Break the model and the build fails: the C = 21 search names the invariant,
-and a second search at C′ = 19 prints a shortest counterexample as action digits.
+transition checked against five named invariants** (four on states, one on transitions). Break the model and the build
+fails: the C = 21 search names the invariant, and a second search at C′ = 19 (it also records each state's parent, so
+at C = 21 it would exceed the step budget) prints a shortest counterexample as action digits.
 
 **The ceiling, on the first screen.** Fe 26.6.0 gives each `static_assert` evaluation 1,000,000 evaluator steps and a
 recursion limit of 64, with no CLI or config override. The C = 21 search uses **940,335** of them (86,323 to set up its tables,
