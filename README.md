@@ -158,9 +158,10 @@ static_assert(explore(17) == 494)
 static_assert(explore(CAP) == STATES)       // CAP = 21, STATES = 736
 ```
 
-**How Fe is used here.** The model is a `const fn` with a loop and array writes, evaluated by the compiler under
-`static_assert`, and the very same function is called from `recv` handlers and tests on two backends. We did not
-compare this against other contract languages or model checkers: this describes what this build does, not how it ranks.
+**How Fe is used here.** The explorer is a `const fn` with loops and array writes, evaluated by the compiler under
+`static_assert`; the transition function it calls, `step()`, is the very same function the `recv` handlers and the tests
+call on two backends. We did not compare this against other contract languages or model checkers: this describes what
+this build does, not how it ranks.
 
 **Neighbours, for orientation (we did not benchmark against any of them).** Solidity's compiler ships a checker,
 [SMTChecker](https://docs.soliditylang.org/en/latest/smtchecker.html), that reasons symbolically with SMT and Horn
@@ -263,6 +264,8 @@ Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute (vault:
 
 git, curl, patch; python3 only for the oracle and the decoder. On Linux the native backend also needs a C linker
 (`apt-get install gcc libc6-dev`). Fe is installed by the pinned line above; nothing is added to your shell profile.
+The full local CI run (`sh tools/ci_local.sh`) also needs `gitleaks` (for `tools/leak_scan.sh`) and `actionlint`; without
+`actionlint` it reports that step as skipped and exits 3.
 
 ### Installation
 
