@@ -1,54 +1,152 @@
-<p align="center">
-  <img src="docs/assets/readme-hero-animated.svg" alt="exhaust — the Fe compiler explores every reachable state of an escrow inside fe build: 736 lamps lit at capacity 21, all held. One line changes. A new red lamp: Deposit, Deposit, Lock, Release, Refund." width="100%">
-</p>
+<div align="center">
+  <img src="docs/assets/icon.svg" alt="exhaust icon" width="144">
+  <h1>exhaust 🔦</h1>
+  <p><em>The Fe compiler is the model checker: every reachable state of a protocol, explored inside <code>fe build</code>.</em></p>
+  <img src="docs/assets/readme-hero-animated.svg" alt="exhaust: the Fe compiler explores every reachable state of an escrow inside fe build: 736 lamps lit at capacity 21, all held. One line changes. A new red lamp: Deposit, Deposit, Lock, Release, Refund." width="100%">
 
-# exhaust
+  <br/>
 
-**The Fe compiler is the model checker.** A `const fn` explores every reachable state of a small protocol state machine
-inside `fe build`, at a stated capacity: the escrow at C = 21 units, all 736 reachable states and every accepted transition
-checked against five named invariants. When an invariant breaks, `static_assert` fails the build: the compiler error names
-the invariant and, when the bug is reachable within C′ = 19 units, a second diagnostic prints a shortest counterexample as action
-digits (C′ = 19 is two units below the main check: C′ = 20 fits at 98.4% of the budget but leaves no room to edit `step()`, see `evidence/capacities.md`). The transition function that was checked, `step()`, is the same one the contract's `recv` handlers call, and
-an exhaustive-edge differential test replays every reachable transition attempt through the deployed escrow contract (the vault's
-contract graph is smaller than its model, see Limitations).
+  [![Fe Builders Challenge 2026](https://img.shields.io/badge/Fe_Builders-Challenge_2026-8b5cf6?style=for-the-badge)](https://fe-lang.org/contest/)
+  [![Reproduce every number](https://img.shields.io/badge/📋_Reproduce-DEMO.md-06b6d4?style=for-the-badge)](DEMO.md)
+  [![Raw evidence](https://img.shields.io/badge/🧾_Raw-Evidence-f59e0b?style=for-the-badge)](evidence/)
+
+  <br/>
+
+  ![Fe](https://img.shields.io/badge/Fe-26.6.0-23221E?style=flat)
+  ![Backends](https://img.shields.io/badge/backends-Sonatina_EVM_+_native-A8261C?style=flat)
+  ![Tests](https://img.shields.io/badge/fe_test-28_+_10_pass-6FB27E?style=flat)
+  [![License](https://img.shields.io/badge/License-Apache_2.0-yellow)](LICENSE)
+
+</div>
+
+---
+
+**Fe contract authors and auditors get a checker that runs where they already work.** Reviewing a state machine means
+hoping the test you did not write was not the one that mattered. Here a `const fn` explores every reachable state of the
+model inside `fe build`, at a stated capacity: the escrow at C = 21 units, **all 736 reachable states and every accepted
+transition checked against five named invariants**. Break the model and the build fails: the compiler names the invariant
+and prints a shortest counterexample as action digits.
+
+**The ceiling, on the first screen.** Fe 26.6.0 gives each `static_assert` evaluation 1,000,000 evaluator steps and a
+recursion limit of 64, with no CLI or config override. The C = 21 search uses **940,335** of them (86,323 to set up its tables,
+then about 1,160 per state; `evidence/bench-2026-11-20.md`). Consts that reference other consts share one budget, so a
+larger model is split into independent asserts, never chained (`evidence/budget.md`).
 
 This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification.
 
-**The ceiling.** Fe 26.6.0 gives each `static_assert` evaluation 1,000,000 evaluator steps and a recursion limit of 64, with
-no CLI or config override. The C = 21 search uses 940,335 of them (≈ 86k to set up its two tables, then ≈ 1,160 steps per state); consts that reference other
-consts share one budget, so a bigger model is split into independent asserts, never chained (`evidence/budget.md`).
+## 📸 See it in Action
 
-> Fe Builders Challenge 2026. The core and its evidence are in place; this README is a stub that a fuller write-up replaces.
-
-## Try it (macOS Apple Silicon or Linux x86-64; git, curl and patch; python3 not needed for this)
-
-<!-- The Linux run (evidence/repro-linux-2026-11-21.txt) is a clean clone of commit 7b5e404: fe fmt --check, fe build, fe test,
-     fe test --backend native (after installing gcc), demo/run.sh and the bug flip. The native trace printer was not run on Linux. -->
-
-1. `git clone https://github.com/edycutjong/exhaust && cd exhaust`
-2. `curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path`
-   then `export PATH=$HOME/.fe/bin:$PATH` and `fe --version` → `fe 26.6.0 (5b3f96a)`
-3. `fe build && sh demo/run.sh`
-
-`demo/run.sh` works on temp copies: it builds the escrow (green), applies a one-line bug to the Refund guard, builds again
-(red: `invariant 'paid once' broken`, `left: 11234` = Deposit, Deposit, Lock, Release, Refund), replays that attack on the
-patched contract (it pays twice) and on the real one (the Refund is refused).
-
-## Build and test
+Try it in 60 seconds (macOS Apple Silicon or Linux x86-64; git, curl and patch):
 
 ```sh
-fe build                              # the compile-time search (exhaustive at the stated capacities)
-fe test                               # Sonatina (EVM) backend
-fe test --backend native              # native backend (on Linux this needs a C linker, `cc`: apt-get install gcc libc6-dev)
-sh tools/differential.sh              # the exhaustive-edge differential report (also part of fe test)
-sh demo/check-bugs.sh                 # every bug patch must fail fe build naming its invariant and printing its digits
-sh demo/check-bugs.sh --conformance   # the checker's own negative tests
-python3 tools/ref_model.py --check    # the Python oracle (follows MODEL.md) against every pin
-sh tools/trace.sh demo/vault-execute-early.patch   # native trace of a bug by action name (macOS arm64; see tools/trace.sh)
-python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early   # digits from the compile error -> names
+git clone https://github.com/edycutjong/exhaust && cd exhaust
+curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path
+export PATH=$HOME/.fe/bin:$PATH
+fe --version                  # fe 26.6.0 (5b3f96a)
+fe test                       # Sonatina (EVM) backend
+fe test --backend native      # native backend
+fe build                      # the compile-time search: green
+sh demo/run.sh                # one-line bug in the Refund guard: red, with the invariant and the digits
 ```
 
-## Limitations: what this does not prove
+`demo/run.sh` (transcript: `evidence/demo-run.txt`) builds the escrow green, applies a one-line bug to the Refund guard,
+builds again and fails:
+
+```text
+error[3-0036]: assertion failed in const context
+= assertion message: invariant 'paid once' broken: buyer and seller both paid
+error[8-0081]: static assertion failed
+= left: `11234`        # 1 Deposit . 1 Deposit . 2 Lock . 3 Release . 4 Refund
+```
+
+It then replays that attack on the patched contract (all five calls accepted: seller and buyer both paid) and on the real
+one (the Refund is refused, storage unchanged).
+
+## 💡 The Problem & Solution
+
+### The Problem
+
+A protocol state machine (escrow, vault, timelock) fails in the sequences nobody wrote a test for: Deposit, Deposit, Lock,
+Release, then Refund pays both sides. Unit tests check the paths an author imagined; a model checker explores all of them,
+but it is a separate tool, a separate language and a separate step that the contract's own build never runs.
+
+### The Solution
+
+`exhaust` moves the search into the compiler. The model is ordinary Fe: a `const fn` breadth-first search calls `step()` on
+every state it reaches and `static_assert`s the reachable count and the invariants. If a patch to `step()` breaks an
+invariant, `fe build` fails and prints the attack. The same `step()` runs in the contract's `recv` handlers, so the thing that
+was checked is the thing that is deployed.
+
+| Bug patch (`demo/`) | Invariant named | Counterexample (`left:`) | Decoded |
+|---|---|---|---|
+| `refund-after-release` | `paid once` | `11234` | Deposit, Deposit, Lock, Release, Refund |
+| `settle-early` | `settled empty` | `1123` | Deposit, Deposit, Lock, Release |
+| `mint-release` | `conserved` | `123` | Deposit, Lock, Release |
+| `cap-off-by-one` | `within capacity` | `11111111111111111111` | twenty Deposits |
+| `vault-approve-twice` | `counted once` | `122` | Propose, ApproveA, ApproveA |
+| `vault-execute-early` | `timelock respected` | `1236` | Propose, ApproveA, ApproveB, Execute |
+| `vault-pay-twice` | `pays one unit` | `1235556` | Propose, ApproveA, ApproveB, Tick, Tick, Tick, Execute |
+| `vault-cancel-pays` | `only execute pays` | `17` | Propose, Cancel |
+| `vault-execute-unguarded` | `two distinct approvals` | `6` | Execute |
+
+All nine are checked by `sh demo/check-bugs.sh` (transcript: `evidence/check-bugs.txt`); a native trace by action name is
+`sh tools/trace.sh demo/refund-after-release.patch`, and `python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early`
+decodes digits.
+
+## 🏗️ Architecture & Tech Stack
+
+<p align="center"><img src="docs/architecture.svg" alt="src/escrow.fe holds step() and the invariants. The compile-time explorer runs it under static_assert in fe build; the contract's recv handlers call the same step() on two backends; tests replay every reachable edge through the deployed contract. A Python oracle outside Fe checks the pinned counts." width="100%"></p>
+
+| Layer | What |
+|---|---|
+| Language | Fe 26.6.0 (`fe 26.6.0 (5b3f96a)`), one ingot (`fe.toml`) |
+| Model | `src/escrow.fe`, `src/vault.fe`: state, actions, `step()`, invariants (`MODEL.md` says it in words) |
+| Search | `src/escrow_explore.fe`, `src/vault_explore.fe`: `const fn` BFS, `static_assert` pins, shards |
+| Contract | `src/escrow_contract.fe`, `src/vault_contract.fe`: `recv` handlers calling `step()` |
+| Backends | Sonatina (EVM) and native, both via `fe test` |
+| Oracle | `tools/ref_model.py`, stdlib Python, written outside Fe |
+
+Two protocols: the escrow (Deposit, Lock, Release, Refund, Dispute) and a 2-of-3 approval vault with a timelock (B = 10,
+T = 3: 211 states, ten invariants including `only execute pays`). Liveness is not checked.
+
+## 🏆 Fe Integration
+
+Remove Fe and nothing is left. The core flow uses: `const fn` with `while` loops, mutable locals and array index writes
+(since Fe 26.1.0) evaluated under `static_assert`; `static_assert` as the build gate, sharded across independent asserts;
+const-context `assert!` messages as named invariants; enums with `match`, `impl Copy` structs; `contract` with `msg` / `recv`
+handlers calling the shared `step()`; `fe test` on both backends with `black_box` and a gas event; `#[cfg(target = "evm")]`;
+a proper ingot and `fe fmt --check`.
+
+```fe
+// src/escrow_explore.fe: the build fails if the reachable-state count drifts, or any invariant breaks on the way
+static_assert(explore(17) == 494)
+static_assert(explore(CAP) == STATES)       // CAP = 21, STATES = 736
+```
+
+**What only Fe lets me do here.** The model is a `const fn` with a loop and array writes, evaluated by the compiler under
+`static_assert`, and the very same function is called from `recv` handlers and tests on two backends. We know of no
+equivalent in another contract language that runs the checked function in the deployed contract's own build; this is not a
+claim about any tool we did not test.
+
+## 📊 Engineering Rigor
+
+| What | Number | Evidence |
+|---|---|---|
+| Escrow reachable states (C = 21) | 736, 966 accepted edges, 3,680 attempts, depth 43 | `evidence/bench-2026-11-20.md` §1 |
+| Compile-time step budget (C = 21) | 940,335 of 1,000,000 (94.0%) | `evidence/budget.md` |
+| Attack printer (C′ = 19) | 908,455 steps (90.8%); C′ = 20 fits at 98.4% | `evidence/capacities.md` |
+| Vault (B = 10, T = 3) | 211 states, 580 edges, 586,715 steps (58.7%) | `evidence/bench-2026-11-20.md` §5 |
+| Independent oracle | agrees with all 8 Fe pins | `evidence/oracle.txt` |
+| Differential (C = 21) | 1,008 deployments, 25,646 calls, every ok + state matched against `step()` | `evidence/differential.txt` |
+| Runtime search gas, same explorer (C = 17) | 16,394,182 (494 states) | `evidence/gas.txt` |
+| Bug zoo | 9 of 9 patches fail `fe build` naming the invariant | `evidence/check-bugs.txt` |
+
+C = 21 is the largest capacity the encoding holds; the largest independent shard at C = 21 is 385 states. Wall times are in
+the benchmark file with the machine and load noted: at these sizes they carry little signal, the step budget is the cost
+that decides what fits.
+
+### What this does not prove
+
 
 - Only the stated capacities are explored (C = 21 for the state count, C′ = 19 for the printed trace); behaviour above them is
   not checked. Liveness is not checked, only safety invariants.
@@ -81,7 +179,60 @@ python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early   # d
   guards together (`demo/vault-execute-unguarded.patch`: the build names it and prints `6`).
 - The escrow's `conserved` bounds the total only: it does not catch a Release or Refund that moves two units at once. The vault checks the size of each payout (`pays one unit`) and that nothing but Execute pays (`only execute pays`).
 
+
 Action legend: 1 Deposit · 2 Lock · 3 Release · 4 Refund · 5 Dispute (vault: 1 Propose · 2 ApproveA · 3 ApproveB · 4 ApproveC ·
 5 Tick · 6 Execute · 7 Cancel). A printed `9` means the start state itself breaks an invariant (no action). The model in words: `MODEL.md`. Numbers: `evidence/`.
 
-License: Apache-2.0. See `DECLARATION.md` for pre-existing work, reused code and AI assistance.
+## 🚀 Getting Started
+
+### Prerequisites
+
+git, curl, patch; python3 only for the oracle and the decoder. On Linux the native backend also needs a C linker
+(`apt-get install gcc libc6-dev`). Fe is installed by the pinned line above; nothing is added to your shell profile.
+
+### Installation
+
+See the 60-second block under "See it in Action". `fe build` is the proof; `sh demo/run.sh` is the demo.
+
+## 🧪 Testing & CI
+
+```sh
+fe fmt --check
+fe test                               # 28 tests, Sonatina (EVM) backend
+fe test --backend native              # 10 tests, native backend
+sh tools/differential.sh              # the exhaustive-edge differential report (also part of fe test)
+sh demo/check-bugs.sh                 # every bug patch must fail fe build naming its invariant and printing its digits
+sh demo/check-bugs.sh --conformance   # the checker's own negative tests
+python3 tools/ref_model.py --check    # the Python oracle against every pin
+sh tools/ci_local.sh                  # the CI workflow's steps, run locally
+```
+
+`.github/workflows/ci.yml` runs the same steps on a pinned Fe, including a job that must see the bug patches fail the build.
+Transcripts of the runs are in `evidence/` (`transcript-tests.txt`: 28 passed on Sonatina, 10 passed on native;
+`ci-local-2026-11-20.txt`).
+
+## 📁 Project Structure
+
+```text
+src/        model, explorer, contracts, tests (.fe)
+demo/       bug patches, run.sh, check-bugs.sh, bugs.tsv
+tools/      ref_model.py oracle, differential.sh, trace.sh, decode-trace, ci_local.sh
+bench/      benchmark and step-budget probes
+evidence/   raw output of every number on this page
+docs/       images and the architecture diagram
+MODEL.md  FE-NOTES.md  DECLARATION.md  DEMO.md
+```
+
+## 📽️ Demo Materials
+
+`DEMO.md` has the exact command behind every number here. The demo is reproducible from a fresh clone
+(`evidence/repro-clone-2026-11-21.txt`; a Linux x86-64 container run: `evidence/repro-linux-2026-11-21.txt`).
+
+## 📄 License
+
+Apache-2.0 (`LICENSE`). Built during the contest window: first commit 2026-11-15, solo author. `DECLARATION.md` covers
+pre-existing work, reused code and AI assistance (Claude Code wrote most of the code and prose under the author's direction).
+
+## 🙏 Acknowledgments
+
+The Fe team and the Fe Builders Challenge starter repository (Apache-2.0) for the CI pattern.
