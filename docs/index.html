@@ -13,14 +13,14 @@
 <meta property="og:title" content="exhaust · your compiler refuses the sequence nobody wrote a test for">
 <meta property="og:description" content="Every reachable state of an escrow model at capacity 21 (736 states) explored inside fe build. One wrong line and the build names the invariant and prints the route.">
 <meta property="og:url" content="https://exhaust.edycu.dev/">
-<meta property="og:image" content="https://exhaust.edycu.dev/assets/og-1200.png?v=9077bad">
+<meta property="og:image" content="https://exhaust.edycu.dev/assets/og-1200.png?v=30717ca9de">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="exhaust: 736 reachable escrow states lit as lamps on a mimic panel, and the red route Deposit, Deposit, Lock, Release, Refund">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="exhaust · your compiler refuses the sequence nobody wrote a test for">
 <meta name="twitter:description" content="736 reachable escrow states explored inside fe build at capacity 21. One wrong line and the build prints the route.">
-<meta name="twitter:image" content="https://exhaust.edycu.dev/assets/og-1200.png?v=9077bad">
+<meta name="twitter:image" content="https://exhaust.edycu.dev/assets/og-1200.png?v=30717ca9de">
 <link rel="preload" href="assets/fonts/saira-800.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -72,13 +72,17 @@
 .board[data-state=attack] .lat .l0 circle.l{fill:var(--before)}
 .board[data-state=attack] .atk{opacity:1}
 .atk .rt{fill:none;stroke:var(--after-lamp);stroke-linecap:round;stroke-linejoin:round}
-.atk .rt.glow{stroke-opacity:.3}
+.atk .rt.glow{stroke-opacity:.32}
 .atk .rl{fill:var(--after-lamp)}
 .atk .rl.start{fill:var(--before)}
 .atk .ring{fill:none;stroke:var(--after-lamp)}
 .atk .nl{fill:var(--after-lamp);stroke:#FFD2CB}
 .atk .tag{font-family:var(--font-data);fill:var(--after-lamp-text);font-size:15px;letter-spacing:0}
-@media (max-width:640px){.atk .tag{display:none}}
+.atk .tagc rect{fill:rgba(18,22,20,.9);stroke:var(--after-lamp);stroke-width:1}
+.atk .pulse{fill:none;stroke:var(--after-lamp);stroke-width:1.5;transform-box:fill-box;transform-origin:center;animation:pulse 2.4s ease-out infinite}
+@keyframes pulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(3.2)}}
+.atk .nl{filter:drop-shadow(0 0 6px var(--after-lamp))}
+@media (max-width:640px){.atk .tag,.atk .tagc{display:none}}
 .board.play .atk .rt{stroke-dasharray:100;stroke-dashoffset:100;animation:draw var(--rt,1.8s) cubic-bezier(.45,0,.2,1) forwards}
 .board.play .atk .rl,.board.play .atk .nlg{opacity:0;animation:pop .35s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--at,0s)}
 @keyframes draw{to{stroke-dashoffset:0}}
@@ -90,7 +94,7 @@
 .stamp.bad{border-color:var(--after-lamp-text);color:var(--after-lamp-text)}
 .board[data-state=attack] .stamp.bad{opacity:1;transform:none}
 .stamps{position:relative;display:grid}
-.stamps > *{grid-area:1/1}
+.stamps > *{grid-area:1/1;justify-self:start}
 
 /* ---------- route plate + train describer (paper, directly beneath the panel) ---------- */
 .plate{background:var(--bg);border:2px solid var(--ink);border-top:0;border-radius:0 0 8px 8px;margin:0 10px;padding:10px 14px 12px;
@@ -143,7 +147,7 @@
 .term .tb button:focus-visible{outline:2px solid var(--frontier);outline-offset:2px}
 .term pre{margin:0;padding:14px 16px 16px;white-space:pre-wrap;overflow-wrap:anywhere;min-height:var(--th,0)}
 .term .ln{display:block}
-.term .c{color:#9C988A} .term .g{color:#8FD19E} .term .r{color:var(--after-lamp-text)} .term .y{color:var(--frontier)} .term .h{color:#fff;font-weight:700}
+.term .c{color:#9C988A} .term .g{color:#8FD19E} .term .r{color:var(--after-lamp-text)} .term .y{color:#F2E8CC;font-weight:700} .term .h{color:#fff;font-weight:700}
 .term.typing .ln{visibility:hidden} .term.typing .ln.on{visibility:visible}
 .term .caret{display:inline-block;width:.6em;height:1.1em;background:var(--frontier);vertical-align:-2px;animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{opacity:0}}
@@ -168,7 +172,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opac
 main,header,footer{position:relative;z-index:1}
 a{color:inherit}
 p a,li a,dd a,.src a{text-decoration-color:var(--rule);text-underline-offset:3px;text-decoration-thickness:1.5px;transition:text-decoration-color .2s,color .2s}
-p a:hover,li a:hover,dd a:hover,.src a:hover{text-decoration-color:var(--after);color:var(--after)}
+p a:hover,li a:hover,dd a:hover,.src a:hover{text-decoration-color:var(--ink);text-decoration-thickness:2.5px}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--frontier);outline-offset:3px;border-radius:2px}
 .wrap{max-width:1320px;margin:0 auto;padding:0 40px}
 .disp{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.01em;font-weight:800;line-height:.92}
@@ -184,7 +188,7 @@ code{font-family:var(--font-data);font-size:.86em}
 .top nav{display:flex;gap:22px;margin-left:auto}
 .top nav a{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:14px;text-decoration:none;color:var(--muted);
   padding:4px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
-.top nav a:hover{color:var(--ink);border-color:var(--after)}
+.top nav a:hover{color:var(--ink);border-color:var(--ink)}
 .btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:800;text-transform:uppercase;letter-spacing:.09em;font-size:15px;
   padding:12px 18px;border:2px solid var(--ink);border-radius:4px;text-decoration:none;color:var(--ink);background:var(--bg);
   transition:background .2s,color .2s,transform .12s,box-shadow .2s;box-shadow:0 3px 0 var(--ink)}
@@ -207,7 +211,7 @@ h1 em{font-style:normal;color:var(--after)}
 .cmd{all:unset;cursor:pointer;display:inline-flex;gap:10px;align-items:center;font-family:var(--font-data);font-size:13px;color:var(--bg);background:var(--ink);
   padding:6px 10px;border-radius:3px;transition:background .2s}
 .cmd:hover{background:#3a3833}
-.cmd .cl{font-family:var(--font-display);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:11px;color:var(--frontier)}
+.cmd .cl{font-family:var(--font-display);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:11px;color:#B9B6A6}
 .signal{min-width:0}
 .signal .bhead .r-bad,.signal.is-attack .bhead .r-ok{display:none}
 .signal.is-attack .bhead .r-bad{display:inline}
@@ -216,7 +220,7 @@ h1 em{font-style:normal;color:var(--after)}
 .lv-row .note code{font-size:12px}
 .linkbtn{all:unset;cursor:pointer;font-family:var(--font-display);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:13px;
   border-bottom:2px solid var(--rule);padding:2px 0;transition:border-color .2s,color .2s;white-space:nowrap}
-.linkbtn:hover{border-color:var(--after);color:var(--after)}
+.linkbtn:hover{border-color:var(--ink)}
 /* receipts */
 .receipts{border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);background:var(--bg)}
 .receipts .wrap{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -230,6 +234,7 @@ h1 em{font-style:normal;color:var(--after)}
 section.sec{padding:96px 0 0}
 .h2{font-size:clamp(40px,4.4vw,64px);margin:12px 0 16px;max-width:15em}
 .h2 em{font-style:normal;color:var(--after)}
+.h2 em.k,h1 em.k{color:inherit;background:linear-gradient(transparent 60%,rgba(200,192,172,.75) 60%,rgba(200,192,172,.75) 90%,transparent 90%);box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .lede{font-size:18px;max-width:38em;margin:0 0 34px;color:#3b3934}
 .proof{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:36px;align-items:start}
 .notice{border:2px solid var(--ink);background:var(--bg);border-radius:6px;overflow:hidden}
@@ -277,7 +282,7 @@ section.sec{padding:96px 0 0}
 .mrow .who code{font-size:12px;color:var(--muted);display:block}
 .bar{position:relative;height:22px;background:repeating-linear-gradient(90deg,var(--paper-2) 0 calc(10% - 1px),var(--rule) calc(10% - 1px) 10%);border-radius:2px;overflow:hidden}
 .bar i{position:absolute;left:0;top:0;bottom:0;width:var(--w);background:var(--ink);transform-origin:left;transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
-.bar.hot i{background:var(--frontier)} .bar.vlt i{background:#5E6A63}
+.bar.hot i,.bar.vlt i{background:var(--ink)}
 .meter.armed .bar i{transform:scaleX(0)}
 .mrow .v{font-family:var(--font-data);font-size:13px;text-align:right;white-space:nowrap}
 @media (max-width:640px){.mrow.wall{display:none}}
@@ -301,9 +306,18 @@ section.sec{padding:96px 0 0}
 /* vault */
 .vframe{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 .vlevers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.vlevers .lever{position:relative;grid-template-columns:1fr;align-content:start;justify-items:start;gap:10px;padding:14px 16px 16px;min-height:150px}
+.vlevers .lever .slot{width:46px;height:64px}
+.vlevers .lever .slot:before{left:21px;top:7px;height:50px}
+.vlevers .lever .arm{left:15px;bottom:10px;height:50px;width:16px}
+.vlevers .lever .arm:before{left:6px;top:8px;height:42px}
+.vlevers .lever .arm:after{width:16px;height:16px}
+.vlevers .lever b{font-size:18px} .vlevers .lever span span{font-size:12px}
+.vlevers .lever .no{position:absolute;right:12px;top:10px;font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1;color:var(--rule)}
+.vlevers .lever[aria-pressed=true] .no{color:#5a5650}
 #vlt-board .atk.off{display:none}
 .sheet{margin:22px 0 0;border:1.5px solid var(--ink);border-radius:6px;background:#EEEADF;padding:18px 18px 12px}
-.sheet img{display:block;width:100%;height:auto;max-width:960px;margin:0 auto}
+.sheet img{display:block;width:100%;height:auto}
 .sheet figcaption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--rule);margin-top:10px;padding-top:8px;
   font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:13px;color:var(--muted)}
 .sheet-scroll{overflow-x:auto}
@@ -314,8 +328,14 @@ section.sec{padding:96px 0 0}
 .board[data-state=attack] .cyc,.board[data-state=attack] .cyc-r{opacity:.2}
 @media (max-width:640px){.lat .cyc{display:none}}
 .vrow{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:16px;align-items:start}
-#vlt-term pre{min-height:150px}
+#vlt-term pre{min-height:0}
 /* control table */
+.term .tnote{margin:0;padding:10px 16px 14px;border-top:1px solid #3a3f3c;font-family:var(--font-body);font-size:13.5px;line-height:1.5;color:#B9B6A6}
+.term .tnote code{color:#E9E4D4}
+.why-ev{list-style:none;padding:0;margin:22px 0 0;border-top:1.5px solid var(--ink);max-width:44em}
+.why-ev li{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:15px}
+.why-ev code{color:var(--muted);font-size:12.5px;white-space:nowrap}
+@media (max-width:640px){.why-ev li{flex-direction:column;gap:2px}}
 .ctable{width:100%;border-collapse:collapse;background:var(--bg);border:2px solid var(--ink);font-size:15px}
 .ctable caption{caption-side:bottom;text-align:left;padding-top:10px;font-family:var(--font-data);font-size:11px;color:var(--muted)}
 .ctable th{font-family:var(--font-display);font-weight:800;text-transform:uppercase;letter-spacing:.1em;font-size:13px;text-align:left;
@@ -333,16 +353,14 @@ section.sec{padding:96px 0 0}
 .why p + p{font-size:16px;color:var(--muted);margin-top:16px}
 .ver{display:inline-block;margin-top:16px;font-family:var(--font-data);font-size:13px;border:1.5px solid var(--ink);padding:5px 10px;border-radius:3px}
 /* honest notice */
-.honest{margin-top:96px;background:var(--panel);color:var(--before);padding:72px 0 76px;position:relative}
-.honest:before{content:"";position:absolute;inset:14px;border:1.5px solid #47514B;border-radius:6px;pointer-events:none}
-.honest .h2{color:var(--before)}
-.honest .lab{color:#B9B6A6} .honest .lab b{color:var(--frontier)}
+.honest{margin-top:96px;background:var(--before);color:var(--ink);padding:72px 0 76px;position:relative;border-top:6px double var(--ink);border-bottom:6px double var(--ink)}
+.honest .h2{color:var(--ink)}
+.honest .lab b{color:var(--ink)}
 .hq{list-style:none;padding:0;margin:26px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
-.hq li{padding:4px 26px 0;border-left:1.5px solid #47514B;font-size:17px;line-height:1.55}
+.hq li{padding:4px 26px 0;border-left:1.5px solid var(--rule);font-size:17px;line-height:1.55}
 .hq li:first-child{padding-left:0;border-left:0}
 .hq q{quotes:none}
-.hq cite{display:block;margin-top:12px;font-style:normal;font-family:var(--font-data);font-size:11px;color:#B9B6A6}
-.hq a{color:var(--before)}
+.hq cite{display:block;margin-top:12px;font-style:normal;font-family:var(--font-data);font-size:11px;color:var(--muted)}
 /* faq */
 .faq{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:40px}
 details{border-top:1.5px solid var(--ink)}
@@ -352,7 +370,7 @@ summary{cursor:pointer;list-style:none;display:flex;justify-content:space-betwee
 summary::-webkit-details-marker{display:none}
 summary:after{content:"+";font-family:var(--font-data);font-size:22px;transition:transform .25s;flex:none}
 details[open] summary:after{transform:rotate(45deg)}
-summary:hover{color:var(--after)}
+summary:hover{color:var(--muted)}
 details .ans{padding:0 2px 18px;font-size:16px;line-height:1.6;max-width:44em}
 details .ans p{margin:0 0 10px}
 /* final */
@@ -364,7 +382,7 @@ footer{border-top:1px solid var(--rule);padding:22px 0 40px;font-family:var(--fo
 footer .wrap{display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:space-between}
 footer nav{display:flex;flex-wrap:wrap;gap:16px}
 footer a{text-decoration:none;border-bottom:1px solid var(--rule);transition:border-color .2s,color .2s}
-footer a:hover{color:var(--ink);border-color:var(--after)}
+footer a:hover{color:var(--ink);border-color:var(--ink)}
 /* responsive */
 @media (max-width:1180px){ .top nav{display:none} .mrow{grid-template-columns:minmax(0,11em) minmax(0,1fr) 9.5em}  }
 @media (max-width:1080px){
@@ -376,7 +394,7 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
   .receipts .wrap{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rc:nth-child(3){border-left:0;padding-left:0} .rc{border-top:1px solid var(--rule)} .rc:nth-child(-n+2){border-top:0}
   .bento{grid-template-columns:minmax(0,1fr)} .card.a,.card.b,.card.c,.card.d,.card.e,.card.f{grid-column:auto;grid-row:auto}
-  .hq{grid-template-columns:minmax(0,1fr);gap:22px} .hq li{padding:0 0 0 16px;border-left:1.5px solid #47514B} .hq li:first-child{padding-left:16px;border-left:1.5px solid #47514B}
+  .hq{grid-template-columns:minmax(0,1fr);gap:22px} .hq li{padding:0 0 0 16px;border-left:1.5px solid var(--rule)} .hq li:first-child{padding-left:16px;border-left:1.5px solid var(--rule)}
   .shards{grid-template-columns:repeat(3,minmax(0,1fr))} .shards p{grid-column:1/-1}
   .vlevers{grid-template-columns:minmax(0,1fr)}
 }
@@ -387,6 +405,7 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
   .vscroll .lat{min-width:860px} .vscroll{margin:0 -4px;padding-bottom:4px}
   .card.a pre{font-size:10.5px}
   .sheet-scroll img{min-width:720px}
+  .signal .bhead{flex-direction:column;gap:2px} .signal .bhead .r-bad{font-size:12px}
   .board{padding:12px 10px 10px} .bhead,.bfoot{font-size:11px;padding:0 4px} .bhead .read b{font-size:18px} .bsrc{display:none}
   .plate{margin:0 4px;padding:10px 8px 10px} .desc .st{font-size:9.5px} .desc li{padding:6px 5px 7px} .plate .ph{font-size:13px} .plate .ph code{font-size:13px}
   .desc{grid-template-columns:repeat(3,minmax(0,1fr))} .desc li:nth-child(4){border-left:0} .desc li:nth-child(n+4){border-top:1px solid var(--rule)}
@@ -403,7 +422,7 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
 }
 @media print{
   body:before,.top,.lv-row .linkbtn,.term .tb button,.cmd .cl{display:none}
-  .band,.honest{background:none;color:var(--ink)} .honest .h2,.hq a{color:var(--ink)}
+  .band,.honest{background:none;color:var(--ink)}
   section.sec,.band,.honest,.final{break-inside:avoid-page}
   .meter.armed .bar i{transform:none}
 }
@@ -422,7 +441,7 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
   <div class="hero-copy">
     <div class="lab"><b>Rethink a protocol</b> · Fe Builders Challenge 2026</div>
     <h1 id="h1" class="disp">Your compiler refuses the sequence <em>nobody wrote a test for.</em></h1>
-    <p class="sub">Deposit, Deposit, Lock, Release, Refund: drop one condition from the Refund guard and the escrow pays both sides. exhaust runs a breadth-first search inside <code>fe build</code>. At capacity 21 it visits all <b>736</b> reachable states and checks every accepted transition against five named invariants, in <b>940<span class="p">,</span>335</b> of the compiler's 1,000,000 steps. Break that line and the build names the invariant and prints the route.</p>
+    <p class="sub">Deposit, Deposit, Lock, Release, Refund: drop one condition and the escrow pays both sides. exhaust explores all <b>736</b> reachable states inside <code>fe build</code>, at capacity 21, in <b>940<span class="p">,</span>335</b> of the compiler's 1,000,000 steps. Then the build names the broken invariant.</p>
     <div class="cta">
       <a class="btn solid" href="https://github.com/edycutjong/exhaust"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M5.7 4.3 2 8l3.7 3.7 1-1L4 8l2.7-2.7zm4.6 0-1 1L12 8l-2.7 2.7 1 1L14 8z"/></svg>Source on GitHub</a>
       <a class="btn" href="deck/">Pitch deck</a>
@@ -526,7 +545,7 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
 <g class="lit" data-d="42"><circle class="l" cx="912.9" cy="202.4" r="3.3"/><circle class="l" cx="912.9" cy="215" r="3.3"/><circle class="l" cx="912.9" cy="227.6" r="3.3"/></g>
 <g class="lit" data-d="43"><circle class="l" cx="934" cy="202.4" r="3.3"/><circle class="l" cx="934" cy="215" r="3.3"/><circle class="l" cx="934" cy="227.6" r="3.3"/></g>
 <path class="hull" d="M14.1 215L26 206.4L47.1 206.4L68.2 200.1L89.3 181.3L110.5 181.3L131.6 162.5L152.7 162.5L173.8 143.6L194.9 143.6L216 124.8L237.2 124.8L258.3 105.9L279.4 105.9L300.5 87.1L321.6 87.1L342.7 68.2L363.9 68.2L385 49.4L406.1 49.4L427.2 30.5L448.3 30.5L469.4 11.7L490.6 18L511.7 5.4L532.8 24.3L553.9 24.3L575 43.1L596.1 43.1L617.3 62L638.4 62L659.5 80.8L680.6 80.8L701.7 99.6L722.8 99.6L744 118.5L765.1 118.5L786.2 137.3L807.3 137.3L828.4 156.2L849.5 156.2L870.7 175L891.8 175L912.9 193.9L934 193.9L945.9 215L934 236.1L912.9 236.1L891.8 255L870.7 255L849.5 273.8L828.4 273.8L807.3 292.7L786.2 292.7L765.1 311.5L744 311.5L722.8 330.4L701.7 330.4L680.6 349.2L659.5 349.2L638.4 368L617.3 368L596.1 386.9L575 386.9L553.9 405.7L532.8 405.7L511.7 424.6L490.6 412L469.4 418.3L448.3 399.5L427.2 399.5L406.1 380.6L385 380.6L363.9 361.8L342.7 361.8L321.6 342.9L300.5 342.9L279.4 324.1L258.3 324.1L237.2 305.2L216 305.2L194.9 286.4L173.8 286.4L152.7 267.5L131.6 267.5L110.5 248.7L89.3 248.7L68.2 229.9L47.1 223.6L26 223.6Z"/>
-<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 365.8" stroke-width="9.9"/><path class="rt" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 365.8" stroke-width="2.8"/><circle class="rl start" style="--at:0.00s" cx="26" cy="215" r="4.3"/><circle class="rl" style="--at:0.35s" cx="47.1" cy="215" r="4.3"/><circle class="rl" style="--at:0.70s" cx="68.2" cy="208.7" r="4.3"/><circle class="rl" style="--at:1.05s" cx="89.3" cy="202.4" r="4.3"/><circle class="rl" style="--at:1.40s" cx="110.5" cy="227.6" r="4.3"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="131.6" cy="365.8" r="15.2" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="131.6" cy="365.8" r="10.2" stroke-opacity=".6" stroke-width="1"/><circle class="nl" cx="131.6" cy="365.8" r="6.6" stroke-width="1"/></g><text class="tag" x="125" y="390.5">NEW (Settled, 0, 1, 1)</text><text class="tag" x="125" y="407.5">seller and buyer both paid</text></g>
+<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="9.9"/><path class="rt" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="2.8"/><circle class="rl start" style="--at:0.00s" cx="26" cy="215" r="4.3"/><circle class="rl" style="--at:0.35s" cx="47.1" cy="215" r="4.3"/><circle class="rl" style="--at:0.70s" cx="68.2" cy="208.7" r="4.3"/><circle class="rl" style="--at:1.05s" cx="89.3" cy="202.4" r="4.3"/><circle class="rl" style="--at:1.40s" cx="110.5" cy="227.6" r="4.3"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="131.6" cy="397.2" r="15.2" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="131.6" cy="397.2" r="10.2" stroke-opacity=".6" stroke-width="1"/><circle class="pulse" cx="131.6" cy="397.2" r="10.2"/><circle class="nl" cx="131.6" cy="397.2" r="7.9" stroke-width="1.5"/></g><g class="tagc"><rect x="148.1" y="375.2" width="192.8" height="52" rx="3"/><text class="tag" x="157.1" y="393.2">NEW (Settled,0,1,1)</text><text class="tag" x="157.1" y="411.2">both sides paid</text></g></g>
 </svg>
 <svg class="lat escp" aria-hidden="true" viewBox="0 0 600 470" role="img" aria-labelledby="escp-t"><title id="escp-t">736 reachable states as lamps, columns by breadth-first depth 0 to 43, 966 transitions as wires</title>
 <g class="lit" data-d="0"><path class="w" d="M16 235L29.2 235"/></g>
@@ -618,7 +637,7 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
 <g class="lit" data-d="42"><circle class="l" cx="570.8" cy="221.3" r="3.6"/><circle class="l" cx="570.8" cy="235" r="3.6"/><circle class="l" cx="570.8" cy="248.7" r="3.6"/></g>
 <g class="lit" data-d="43"><circle class="l" cx="584" cy="221.3" r="3.6"/><circle class="l" cx="584" cy="235" r="3.6"/><circle class="l" cx="584" cy="248.7" r="3.6"/></g>
 <path class="hull" d="M3 235L16 225.6L29.2 225.6L42.4 218.8L55.6 198.3L68.8 198.3L82 177.7L95.3 177.7L108.5 157.2L121.7 157.2L134.9 136.7L148.1 136.7L161.3 116.1L174.5 116.1L187.7 95.6L200.9 95.6L214.1 75.1L227.3 75.1L240.6 54.5L253.8 54.5L267 34L280.2 34L293.4 13.5L306.6 20.3L319.8 6.6L333 27.2L346.2 27.2L359.4 47.7L372.7 47.7L385.9 68.2L399.1 68.2L412.3 88.8L425.5 88.8L438.7 109.3L451.9 109.3L465.1 129.8L478.3 129.8L491.5 150.4L504.7 150.4L518 170.9L531.2 170.9L544.4 191.4L557.6 191.4L570.8 212L584 212L597 235L584 258L570.8 258L557.6 278.6L544.4 278.6L531.2 299.1L518 299.1L504.7 319.6L491.5 319.6L478.3 340.2L465.1 340.2L451.9 360.7L438.7 360.7L425.5 381.2L412.3 381.2L399.1 401.8L385.9 401.8L372.7 422.3L359.4 422.3L346.2 442.8L333 442.8L319.8 463.4L306.6 449.7L293.4 456.5L280.2 436L267 436L253.8 415.5L240.6 415.5L227.3 394.9L214.1 394.9L200.9 374.4L187.7 374.4L174.5 353.9L161.3 353.9L148.1 333.3L134.9 333.3L121.7 312.8L108.5 312.8L95.3 292.3L82 292.3L68.8 271.7L55.6 271.7L42.4 251.2L29.2 244.4L16 244.4Z"/>
-<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M16 235L29.2 235L42.4 228.2L55.6 221.3L68.8 248.7L82 385.6" stroke-width="10.8"/><path class="rt" pathLength="100" d="M16 235L29.2 235L42.4 228.2L55.6 221.3L68.8 248.7L82 385.6" stroke-width="3.1"/><circle class="rl start" style="--at:0.00s" cx="16" cy="235" r="4.7"/><circle class="rl" style="--at:0.35s" cx="29.2" cy="235" r="4.7"/><circle class="rl" style="--at:0.70s" cx="42.4" cy="228.2" r="4.7"/><circle class="rl" style="--at:1.05s" cx="55.6" cy="221.3" r="4.7"/><circle class="rl" style="--at:1.40s" cx="68.8" cy="248.7" r="4.7"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="82" cy="385.6" r="16.6" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="82" cy="385.6" r="11.2" stroke-opacity=".6" stroke-width="1"/><circle class="nl" cx="82" cy="385.6" r="7.2" stroke-width="1"/></g></g>
+<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M16 235L29.2 235L42.4 228.2L55.6 221.3L68.8 248.7L82 385.6" stroke-width="10.8"/><path class="rt" pathLength="100" d="M16 235L29.2 235L42.4 228.2L55.6 221.3L68.8 248.7L82 385.6" stroke-width="3.1"/><circle class="rl start" style="--at:0.00s" cx="16" cy="235" r="4.7"/><circle class="rl" style="--at:0.35s" cx="29.2" cy="235" r="4.7"/><circle class="rl" style="--at:0.70s" cx="42.4" cy="228.2" r="4.7"/><circle class="rl" style="--at:1.05s" cx="55.6" cy="221.3" r="4.7"/><circle class="rl" style="--at:1.40s" cx="68.8" cy="248.7" r="4.7"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="82" cy="385.6" r="16.6" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="82" cy="385.6" r="11.2" stroke-opacity=".6" stroke-width="1"/><circle class="pulse" cx="82" cy="385.6" r="11.2"/><circle class="nl" cx="82" cy="385.6" r="8.6" stroke-width="1.5"/></g></g>
 </svg>
       <div class="bfoot"><span class="stamps"><span class="stamp ok">EXHAUSTED 736/736 · C=21</span><span class="stamp bad">BUILD FAILED · 'PAID ONCE'</span></span>
         <span class="bsrc">graph: evidence/state-graph-escrow<span class="p">.</span>json</span></div>
@@ -652,44 +671,24 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
       <div class="notice"><header><span>Change notice · src/escrow.fe</span><span>Refund guard</span></header>
 <pre><span class="minus">-  if s.escrow &gt; 0 &amp;&amp; s.seller == 0 {</span><span class="plus">+  if s.escrow &gt; 0 {</span></pre></div>
       <ol class="steps">
-        <li><span><code>fe build</code> is green: the search held <code>explore(CAP) == STATES</code> with 736 states, every invariant on every state and edge.</span></li>
+        <li><span><code>fe build</code> is green: at C = 21 the search held <code>explore(CAP) == STATES</code> with 736 states, every invariant on every state and edge.</span></li>
         <li><span>Drop the seller check from the Refund guard. Nothing else in the ingot changes.</span></li>
         <li class="red"><span>The build fails. The compiler prints the invariant's message and the shortest route as action digits: <code>11234</code>, Deposit, Deposit, Lock, Release, Refund.</span></li>
       </ol>
     </div>
     <div class="term" data-replay><div class="tb"><span>sh demo/run.sh, 2026-11-20 23:19 UTC, commit de43ffc, fe: fe 26.6.0 (5b3f96a), Darwin arm64</span><button type="button">Replay</button></div>
-<pre><span class="ln h">== 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)</span><span class="ln g">   build OK: static_assert(explore(CAP) == STATES) held, STATES = 736, every invariant held on every reachable state and edge</span><span class="ln"> </span><span class="ln h">== 2. the bug: one line in the Refund guard (demo/refund-after-release.patch)</span><span class="ln c">   - if s.escrow &gt; 0 &amp;&amp; s.seller == 0 {</span><span class="ln r">   + if s.escrow &gt; 0 {</span><span class="ln"> </span><span class="ln h">== 3. fe build again</span><span class="ln r">   error[3-0036]: assertion failed in const context</span><span class="ln r">   = assertion message: invariant 'paid once' broken: buyer and seller both paid</span><span class="ln r">   error[8-0081]: static assertion failed</span><span class="ln r">   = left: `11234`</span><span class="ln r">   -&gt; build FAILED (as it must)</span><span class="ln"> </span><span class="ln h">== 4. the counterexample 11234, decoded (1 Deposit . 2 Lock . 3 Release . 4 Refund . 5 Dispute)</span><span class="ln y">   Deposit Deposit Lock Release Refund </span><span class="ln">   patched contract (search removed), fe test --filter test_attack_patched_replay:</span><span class="ln g">     PASS  [0.0002s] test_attack_patched_replay</span><span class="ln y">     -&gt; all five calls accepted; the seller AND the buyer were paid</span><span class="ln">   real contract, fe test --filter attack:</span><span class="ln g">     PASS  [0.0002s] test_contract_rejects_attack</span><span class="ln y">     -&gt; the first four calls accepted, the Refund refused, storage unchanged</span></pre></div>
+<pre><span class="ln h">== 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)</span><span class="ln g">   build OK: static_assert(explore(CAP) == STATES) held, STATES = 736, every invariant held on every reachable state and edge</span><span class="ln"> </span><span class="ln h">== 2. the bug: one line in the Refund guard (demo/refund-after-release.patch)</span><span class="ln c">   - if s.escrow &gt; 0 &amp;&amp; s.seller == 0 {</span><span class="ln r">   + if s.escrow &gt; 0 {</span><span class="ln"> </span><span class="ln h">== 3. fe build again</span><span class="ln r">   error[3-0036]: assertion failed in const context</span><span class="ln r">   = assertion message: invariant 'paid once' broken: buyer and seller both paid</span><span class="ln r">   error[8-0081]: static assertion failed</span><span class="ln r">   = left: `11234`</span><span class="ln r">   -&gt; build FAILED (as it must)</span><span class="ln"> </span></pre>
+      <p class="tnote">Blocks 1–3 of <code>sh demo/run<span class="p">.</span>sh</code>. Block 4 of the same run replays the route on the patched contract (all five calls accepted, both sides paid) and on the real one (the Refund refused, storage unchanged).</p></div>
   </div>
 </div></section>
 
 <section class="sec" id="how" aria-labelledby="how-h"><div class="wrap">
-  <h2 class="disp h2" id="how-h">Six parts, one build, <em>no second tool.</em></h2>
+  <h2 class="disp h2" id="how-h">Six parts, one build, <em class="k">no second tool.</em></h2>
   <p class="lede">The model is ordinary Fe. The checker is the compiler you already run. The contract calls the function that was checked.</p>
   <div class="bento">
     <article class="card a"><h3>A const fn walks the graph</h3>
       <p>Breadth-first search with <code>while</code> loops, mutable locals and array writes, evaluated by the compiler. Each successor is checked before it is encoded.</p>
-<pre>    while head &lt; tail {
-        let x = queue[head]
-        head += 1
-        let cur = decode(x)
-        var a: u32 = 0
-        while a &lt; ACTIONS {
-            let act = action_of(a)
-            let n = step(cur, act, cap)
-            if n.ok {
-                // Every invariant is checked before `encode`, so an out-of-box successor fails by name.
-                let v = first_violation(cur, act, n.s, cap)
-                if v != OK { require(v) }
-                let y = encode(n.s)
-                if !visited[y as usize] {
-                    visited[y as usize] = true
-                    queue[tail] = y
-                    tail += 1
-                }
-            }
-            a += 1
-        }
-    }</pre>
+<pre><span class="cl" style="padding-left:4ch">while head &lt; tail {</span><span class="cl" style="padding-left:8ch">let x = queue[head]</span><span class="cl" style="padding-left:8ch">head += 1</span><span class="cl" style="padding-left:8ch">let cur = decode(x)</span><span class="cl" style="padding-left:8ch">var a: u32 = 0</span><span class="cl" style="padding-left:8ch">while a &lt; ACTIONS {</span><span class="cl" style="padding-left:12ch">let act = action_of(a)</span><span class="cl" style="padding-left:12ch">let n = step(cur, act, cap)</span><span class="cl" style="padding-left:12ch">if n.ok {</span><span class="cl" style="padding-left:16ch">// Every invariant is checked before `encode`, so an out-of-box successor fails by name.</span><span class="cl" style="padding-left:16ch">let v = first_violation(cur, act, n.s, cap)</span><span class="cl" style="padding-left:16ch">if v != OK { require(v) }</span><span class="cl" style="padding-left:16ch">let y = encode(n.s)</span><span class="cl" style="padding-left:16ch">if !visited[y as usize] {</span><span class="cl" style="padding-left:20ch">visited[y as usize] = true</span><span class="cl" style="padding-left:20ch">queue[tail] = y</span><span class="cl" style="padding-left:20ch">tail += 1</span><span class="cl" style="padding-left:16ch">}</span><span class="cl" style="padding-left:12ch">}</span><span class="cl" style="padding-left:12ch">a += 1</span><span class="cl" style="padding-left:8ch">}</span><span class="cl" style="padding-left:4ch">}</span></pre>
       <div class="src">src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>94–115</div>
       <div class="chips" style="margin-top:12px"><span class="chip">const fn</span><span class="chip">while</span><span class="chip">array index writes</span><span class="chip">Fe ≥ 26<span class="p">.</span>1<span class="p">.</span>0</span></div></article>
     <article class="card b"><h3>static_assert is the gate</h3>
@@ -729,10 +728,10 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
     <div class="mrow"><div class="who">Route printer, C′ = 20<code>counterexample(20) · fits</code></div><div class="bar hot"><i style="--w:98.4%"></i></div><div class="v"><b>983<span class="p">,</span>899</b> · 98<span class="p">.</span>4%</div></div>
     <div class="mrow"><div class="who">Route printer in the build, C′ = 19<code>counterexample(19)</code></div><div class="bar"><i style="--w:90.8%"></i></div><div class="v"><b>908<span class="p">,</span>455</b> · 90<span class="p">.</span>8%</div></div>
     <div class="mrow"><div class="who">Vault search, B = 10, T = 3<code>vexplore(VB, VT) · 211 states</code></div><div class="bar vlt"><i style="--w:58.7%"></i></div><div class="v"><b>586<span class="p">,</span>715</b> · 58<span class="p">.</span>7%</div></div>
-    <div class="src" style="margin-top:8px">evidence/bench-2026-11-20.md §2 · evidence/budget.md · the escrow's tables alone cost 86,323 steps before the first state</div>
+    <div class="src" style="margin-top:8px">evidence/bench-2026-11-20.md §2 · evidence/budget.md · setting up the escrow's two tables and the start state costs 86,323 steps</div>
   </div>
   <div class="shards">
-    <p>Consts that reference other consts share one budget, so a bigger model is split across <b>independent</b> asserts, each with a fresh million. The locked-phase states at C = 21, as three shards:</p>
+    <p>Consts that reference other consts share one budget, so a bigger model is split across <b>independent</b> asserts, each with a fresh million. The 714 states after Lock (all but the 22 Open ones), as three shards by locked amount:</p>
     <div class="sh"><b>91</b> states<div class="bar"><i style="--w:19.1%"></i></div><span class="src">19<span class="p">.</span>1% of one budget</span></div>
     <div class="sh"><b>238</b> states<div class="bar"><i style="--w:36.3%"></i></div><span class="src">36<span class="p">.</span>3%</span></div>
     <div class="sh"><b>385</b> states<div class="bar"><i style="--w:53.5%"></i></div><span class="src">53<span class="p">.</span>5%</span></div>
@@ -741,8 +740,8 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
 
 <section class="sec" id="vault" aria-labelledby="vault-h"><div class="wrap">
   <div class="lab">Lever frame · <b>second protocol</b></div>
-  <h2 class="disp h2" id="vault-h">A 2-of-3 timelock vault. <em>Pull any lever.</em></h2>
-  <p class="lede">211 reachable states and 580 transitions at balance 10 and lock period 3, depth 0 to 70, in one <code>static_assert</code>. The track repeats once per unit paid out. Each lever is a one-line patch from <code>demo/</code>; each build fails with its own invariant and route.</p>
+  <h2 class="disp h2" id="vault-h">A 2-of-3 timelock vault. <em class="k">Pull any lever.</em></h2>
+  <p class="lede">211 reachable states in one <code>static_assert</code> and 580 transitions in another, at balance 10 and lock period 3 (depth 0 to 70). The track repeats once per unit paid out. Each lever is a small patch from <code>demo/</code> (one to three changed lines); each build fails with its own invariant and route.</p>
   <div class="vframe signal">
     <div class="board" id="vlt-board" data-state="exhausted" data-cum='[]'>
       <div class="bhead"><span>Vault · reachable states · B = 10 · T = 3</span><span class="read">211 states · 580 wires</span></div>
@@ -889,14 +888,14 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
 <g class="lit" data-d="68"><circle class="l" cx="1049.7" cy="43" r="3.4"/><circle class="l" cx="1049.7" cy="73" r="3.4"/><circle class="l" cx="1049.7" cy="103" r="3.4"/><circle class="l" cx="1049.7" cy="133" r="3.4"/></g>
 <g class="lit" data-d="69"><circle class="l" cx="1064.9" cy="43" r="3.4"/><circle class="l" cx="1064.9" cy="73" r="3.4"/><circle class="l" cx="1064.9" cy="103" r="3.4"/><circle class="l" cx="1064.9" cy="133" r="3.4"/></g>
 <g class="lit" data-d="70"><circle class="l" cx="1080" cy="73" r="3.4"/><circle class="l" cx="1080" cy="103" r="3.4"/></g>
-<g class="atk" data-atk="0" style="--rt:1.05s"><path class="rt glow" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 187" stroke-width="10.2"/><path class="rt" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 187" stroke-width="2.9"/><circle class="rl start" style="--at:0.00s" cx="20" cy="88" r="4.4"/><circle class="rl" style="--at:0.35s" cx="35.1" cy="88" r="4.4"/><circle class="rl" style="--at:0.70s" cx="50.3" cy="58" r="4.4"/><g class="nlg" style="--at:1.05s"><circle class="ring" cx="65.4" cy="187" r="15.6" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="65.4" cy="187" r="10.5" stroke-opacity=".6" stroke-width="1"/><circle class="nl" cx="65.4" cy="187" r="6.8" stroke-width="1"/></g></g>
+<g class="atk" data-atk="0" style="--rt:1.05s"><path class="rt glow" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 187" stroke-width="10.2"/><path class="rt" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 187" stroke-width="2.9"/><circle class="rl start" style="--at:0.00s" cx="20" cy="88" r="4.4"/><circle class="rl" style="--at:0.35s" cx="35.1" cy="88" r="4.4"/><circle class="rl" style="--at:0.70s" cx="50.3" cy="58" r="4.4"/><g class="nlg" style="--at:1.05s"><circle class="ring" cx="65.4" cy="187" r="15.6" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="65.4" cy="187" r="10.5" stroke-opacity=".6" stroke-width="1"/><circle class="pulse" cx="65.4" cy="187" r="10.5"/><circle class="nl" cx="65.4" cy="187" r="8.2" stroke-width="1.5"/></g></g>
 <g class="atk" data-atk="1" style="--rt:1.40s"><path class="rt glow" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 58L126 73" stroke-width="10.2"/><path class="rt" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 58L126 73" stroke-width="2.9"/><circle class="rl start" style="--at:0.00s" cx="20" cy="88" r="4.4"/><circle class="rl" style="--at:0.35s" cx="35.1" cy="88" r="4.4"/><circle class="rl" style="--at:0.70s" cx="50.3" cy="58" r="4.4"/><circle class="rl" style="--at:1.05s" cx="65.4" cy="58" r="4.4"/><circle class="rl" style="--at:1.40s" cx="126" cy="73" r="4.4"/></g>
 <g class="atk" data-atk="2" style="--rt:2.45s"><path class="rt glow" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 58L80.6 43L95.7 43L110.9 43L232 73" stroke-width="10.2"/><path class="rt" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 58L80.6 43L95.7 43L110.9 43L232 73" stroke-width="2.9"/><circle class="rl start" style="--at:0.00s" cx="20" cy="88" r="4.4"/><circle class="rl" style="--at:0.35s" cx="35.1" cy="88" r="4.4"/><circle class="rl" style="--at:0.70s" cx="50.3" cy="58" r="4.4"/><circle class="rl" style="--at:1.05s" cx="65.4" cy="58" r="4.4"/><circle class="rl" style="--at:1.40s" cx="80.6" cy="43" r="4.4"/><circle class="rl" style="--at:1.75s" cx="95.7" cy="43" r="4.4"/><circle class="rl" style="--at:2.10s" cx="110.9" cy="43" r="4.4"/><circle class="rl" style="--at:2.45s" cx="232" cy="73" r="4.4"/></g>
 <path class="cyc-r" d="M24 168v5H122v-5"/><text class="cyc" x="73" y="190">PAID 0</text><path class="cyc-r" d="M130 168v5H228v-5"/><text class="cyc" x="179" y="190">PAID 1</text><path class="cyc-r" d="M236 168v5H334v-5"/><text class="cyc" x="285" y="190">PAID 2</text><path class="cyc-r" d="M342 168v5H440v-5"/><text class="cyc" x="391" y="190">PAID 3</text><path class="cyc-r" d="M448 168v5H546v-5"/><text class="cyc" x="497" y="190">PAID 4</text><path class="cyc-r" d="M554 168v5H652v-5"/><text class="cyc" x="603" y="190">PAID 5</text><path class="cyc-r" d="M660 168v5H758v-5"/><text class="cyc" x="709" y="190">PAID 6</text><path class="cyc-r" d="M766 168v5H864v-5"/><text class="cyc" x="815" y="190">PAID 7</text><path class="cyc-r" d="M872 168v5H970v-5"/><text class="cyc" x="921" y="190">PAID 8</text><path class="cyc-r" d="M978 168v5H1076v-5"/><text class="cyc" x="1027" y="190">PAID 9</text></svg></div>
       <div class="bfoot"><span class="stamps"><span class="stamp ok">EXHAUSTED 211/211 · B=10 T=3</span><span class="stamp bad">BUILD FAILED</span></span><span class="bsrc">graph: evidence/state-graph-vault<span class="p">.</span>json</span></div>
     </div>
     <div class="vrow">
-      <div class="vlevers"><button class="lever red" type="button" aria-pressed="false" data-atk="0" data-bug="vault-approve-twice"><span class="slot"><span class="arm"></span></span><span><b>approve-twice</b><span>'counted once' · 122</span></span></button><button class="lever red" type="button" aria-pressed="false" data-atk="1" data-bug="vault-execute-early"><span class="slot"><span class="arm"></span></span><span><b>execute-early</b><span>'timelock respected' · 1236</span></span></button><button class="lever red" type="button" aria-pressed="false" data-atk="2" data-bug="vault-pay-twice"><span class="slot"><span class="arm"></span></span><span><b>pay-twice</b><span>'pays one unit' · 1235556</span></span></button></div>
+      <div class="vlevers"><button class="lever red" type="button" aria-pressed="false" data-atk="0" data-bug="vault-approve-twice"><span class="no">05</span><span class="slot"><span class="arm"></span></span><span><b>approve-twice</b><span>'counted once' · 122</span></span></button><button class="lever red" type="button" aria-pressed="false" data-atk="1" data-bug="vault-execute-early"><span class="no">06</span><span class="slot"><span class="arm"></span></span><span><b>execute-early</b><span>'timelock respected' · 1236</span></span></button><button class="lever red" type="button" aria-pressed="false" data-atk="2" data-bug="vault-pay-twice"><span class="no">07</span><span class="slot"><span class="arm"></span></span><span><b>pay-twice</b><span>'pays one unit' · 1235556</span></span></button></div>
       <div class="term" id="vlt-term"><div class="tb"><span>re-set from evidence/transcript-fail-vault-*.txt</span></div>
 <pre data-bug="main"><span class="ln c"># every lever is one patch to the vault's step(); the build must fail</span><span class="ln c"># legend 1 Propose · 2 ApproveA · 3 ApproveB · 4 ApproveC · 5 Tick · 6 Execute · 7 Cancel</span></pre><pre data-bug="vault-approve-twice" hidden><span class="ln c">$ patch -p1 &lt; demo/vault-approve-twice.patch &amp;&amp; fe build</span><span class="ln r">error[3-0036]: assertion failed in const context</span><span class="ln r">   = assertion message: invariant 'counted once' broken: approval count differs from the signers in the mask</span><span class="ln r">error[8-0081]: static assertion failed</span><span class="ln r">    = left: `122`</span><span class="ln y">Propose · ApproveA · ApproveA</span></pre><pre data-bug="vault-execute-early" hidden><span class="ln c">$ patch -p1 &lt; demo/vault-execute-early.patch &amp;&amp; fe build</span><span class="ln r">error[3-0036]: assertion failed in const context</span><span class="ln r">   = assertion message: invariant 'timelock respected' broken: executed before the timelock ran out</span><span class="ln r">error[8-0081]: static assertion failed</span><span class="ln r">    = left: `1236`</span><span class="ln y">Propose · ApproveA · ApproveB · Execute</span></pre><pre data-bug="vault-pay-twice" hidden><span class="ln c">$ patch -p1 &lt; demo/vault-pay-twice.patch &amp;&amp; fe build</span><span class="ln r">error[3-0036]: assertion failed in const context</span><span class="ln r">   = assertion message: invariant 'pays one unit' broken: execute paid out other than exactly one unit</span><span class="ln r">error[8-0081]: static assertion failed</span><span class="ln r">    = left: `1235556`</span><span class="ln y">Propose · ApproveA · ApproveB · Tick · Tick · Tick · Execute</span></pre></div>
     </div>
@@ -914,10 +913,11 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
 </div></section>
 
 <section class="sec" id="fe" aria-labelledby="fe-h"><div class="wrap why">
-  <div><h2 class="disp h2" id="fe-h">Remove Fe and <em>nothing is left.</em></h2></div>
+  <div><h2 class="disp h2" id="fe-h">Take Fe out and <em class="k">the checker is gone.</em></h2></div>
   <div>
     <p>Since Fe 26.1.0 a <code>const fn</code> may loop, keep mutable locals and write into arrays, and <code>static_assert</code> evaluates it during the build. That is the whole move: the search is ordinary Fe, the build is the checker, and the same <code>step()</code> is called by the contract's <code>recv</code> handlers and by <code>fe test</code> on Sonatina and native.</p>
     <p>We did not compare this against other contract languages or model checkers. This page describes what this build does, not how it ranks.</p>
+    <ul class="why-ev"><li><span>const fn + while + array writes</span><code>src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>94</code></li><li><span>static_assert as the build gate</span><code>src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>254</code></li><li><span>assert! message = named invariant</span><code>src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>41</code></li><li><span>contract · recv calling step()</span><code>src/escrow_contract<span class="p">.</span>fe<span class="p">:</span>64</code></li><li><span>fe test on both backends · black_box</span><code>src/tests<span class="p">.</span>fe<span class="p">:</span>30</code></li></ul>
     <span class="ver">fe 26<span class="p">.</span>6<span class="p">.</span>0 (5b3f96a) · fe.toml ingot · fe fmt --check clean</span>
   </div>
 </div></section>
@@ -935,12 +935,12 @@ footer a:hover{color:var(--ink);border-color:var(--after)}
 <section class="sec" id="faq" aria-labelledby="faq-h"><div class="wrap faq">
   <div><h2 class="disp h2" id="faq-h">Questions a judge would ask.</h2></div>
   <div>
-    <details><summary>Is this formal verification?</summary><div class="ans"><p>No. It is bounded-exhaustive checking: every reachable state of the model at the stated capacity (escrow C = 21, vault B = 10 with T = 3) is explored at compile time. Above the bound nothing is checked; the bet is the small-scope hypothesis, that most protocol bugs already show at small sizes.</p></div></details>
-    <details><summary>Why stop at capacity 21?</summary><div class="ans"><p>Two walls meet there. The state encoding holds at most 21 units (<code>MAX_CAP = 21</code>), and the C = 21 search uses 940,335 of the 1,000,000 steps one assert may spend. The route printer runs at C′ = 19 (90.8%); C′ = 20 would still fit at 98.4%.</p></div></details>
+    <details open><summary>Is this formal verification?</summary><div class="ans"><p>No. It is bounded-exhaustive checking: every reachable state of the model at the stated capacity (escrow C = 21, vault B = 10 with T = 3) is explored at compile time. Above the bound nothing is checked; the bet is the small-scope hypothesis, that most protocol bugs already show at small sizes.</p></div></details>
+    <details><summary>Why stop at capacity 21?</summary><div class="ans"><p>The state encoding holds at most 21 units (<code>MAX_CAP = 21</code>), and the C = 21 search already uses 940,335 of the 1,000,000 steps one assert may spend. The route printer runs at C′ = 19 (90.8%); C′ = 20 would still fit at 98.4%.</p></div></details>
     <details><summary>Can I raise the step budget?</summary><div class="ans"><p>Not in Fe 26.6.0: the limit is a constant in the compiler, with no flag or config. What works is splitting the search into independent asserts, each with its own million. Chaining consts does not help, because consts that reference other consts share one budget.</p></div></details>
     <details><summary>Is the deployed contract the code that was checked?</summary><div class="ans"><p>For the escrow, yes: its <code>recv</code> handlers call the same <code>step()</code>, and a differential test replays every reachable transition through deployed contracts (1,008 deployments, 25,646 handler calls), comparing <code>ok</code> and the stored state each time. The vault's caller and timelock checks are adapter code outside the compile-time check; the README lists exactly what is untested.</p></div></details>
     <details><summary>Who checks the checker?</summary><div class="ans"><p>An independent reference model in plain Python (<code>tools/ref_model<span class="p">.</span>py</code>, stdlib only) recomputes every count; it agrees with all 15 Fe pins and the 3,680-row escrow edge table. It shares the author and one reading of the protocol, which the limitations say plainly.</p></div></details>
-    <details><summary>How do I reproduce it?</summary><div class="ans"><p>Install fe 26.6.0 (5b3f96a), then <code>fe build</code>, <code>sh demo/run<span class="p">.</span>sh</code>, <code>fe test</code> and <code>fe test --backend native</code>. <a href="https://github.com/edycutjong/exhaust/blob/main/DEMO.md">DEMO.md</a> maps every number to its command; a clean clone on Linux x86-64 reproduces the build and both test runs (<code>evidence/repro-linux-2026-11-21<span class="p">.</span>txt</code>).</p></div></details>
+    <details><summary>How do I reproduce it?</summary><div class="ans"><p>Install fe 26.6.0 (5b3f96a), then <code>fe build</code>, <code>sh demo/run<span class="p">.</span>sh</code>, <code>fe test</code> and <code>fe test --backend native</code>. <a href="https://github.com/edycutjong/exhaust/blob/main/DEMO.md">DEMO.md</a> maps every number to its command; a clean clone on Linux x86-64 reproduces the build and both test runs; the native backend needs a C linker such as <code>gcc</code> with <code>libc6-dev</code> (<code>evidence/repro-linux-2026-11-21<span class="p">.</span>txt</code>).</p></div></details>
   </div>
 </div></section>
 
@@ -1057,7 +1057,10 @@ fe test &amp;&amp; fe test --backend native</pre>
         else { vb.sweep(1200); showTerm('main'); }
       });
     });
-    onVisible(vEl, function () { if (!RM) vb.sweep(2200); }, 0.4);
+    onVisible(vEl, function () {                  /* default route on view: sweep, then pull lever 1 (unless the reader already did) */
+      if (RM) return;
+      vb.sweep(2200, function () { setTimeout(function () { if (!vlev.some(function (o) { return o.getAttribute('aria-pressed') === 'true'; })) vlev[0].click(); }, 900); });
+    }, 0.4);
   }
 
   /* ---------- terminal replay (lines of a committed transcript, typed in order, none edited) ---------- */
