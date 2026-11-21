@@ -2,7 +2,10 @@
 
 Every figure in `README.md` comes from a command below, run on `fe 26.6.0 (5b3f96a)` (macOS Apple Silicon; the Linux x86-64
 container run is `evidence/repro-linux-2026-11-21.txt`). The raw output is committed in `evidence/`; most files record the
-commit, the Fe version and the machine in their header. Install Fe first (pinned):
+commit, the Fe version and the machine in their header. The source (`src/`, `fe.toml`, `demo/`) last changed at `de43ffc`;
+every transcript this table cites ran at that commit or a later one (only docs, tools and evidence changed since), and
+`git diff --stat de43ffc HEAD -- src fe.toml demo` prints nothing at the submitted commit. Older runs kept for history are
+named as such. Install Fe first (pinned):
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path
@@ -18,6 +21,8 @@ sh demo/run.sh      # red: invariant 'paid once' broken, left: `11234`; then the
 ```
 
 Output: `evidence/demo-run.txt` (green run: `evidence/transcript-pass.txt`; the failing build: `evidence/transcript-fail-refund-after-release.txt`).
+`demo/run.sh` patches temporary copies, so your checkout is never modified. To try your own mutation: edit `src/escrow.fe`
+(for example, delete `&& s.seller == 0` from the Refund guard), run `fe build`, then `git restore src/escrow.fe`.
 
 ## Number to command
 
@@ -34,6 +39,7 @@ Output: `evidence/demo-run.txt` (green run: `evidence/transcript-pass.txt`; the 
 | Differential: 1,008 deployments, 25,646 calls, 736 states, 966 edges | `sh tools/differential.sh` | `evidence/differential.txt` |
 | 16,394,182 gas for the runtime search (C = 17, 494 states) | `fe test --filter test_runtime_search_gas --show-logs` | `evidence/gas.txt` |
 | 9 of 9 bug patches fail `fe build` naming the invariant and printing the digits | `sh demo/check-bugs.sh` | `evidence/check-bugs.txt`, one transcript per patch: `evidence/transcript-fail-<patch>.txt` |
+| Every planted bug already breaks an invariant at escrow capacity 1 or 2, or vault balance 1 or 2 (T = 3) and timelock 1 (B = 10); `11234` is the same route at capacity 2 and 21 | `sh tools/small_scope.sh` (the oracle, `tools/ref_model.py --bug`) | `evidence/small-scope.txt` |
 | The checker's own negative tests | `sh demo/check-bugs.sh --conformance` | `evidence/conformance.txt` |
 | Native trace by action name | `sh tools/trace.sh demo/refund-after-release.patch` (macOS arm64) | `evidence/transcript-trace-<patch>.txt` |
 | Digits to action names | `python3 tools/decode-trace 11234 --bug refund-after-release` (vault: `--protocol vault --bug vault-execute-early`) | stdout |

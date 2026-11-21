@@ -26,7 +26,7 @@ Required by the Fe Builders Challenge 2026 rules. This file is updated as the pr
 
 - **Claude Code** (Anthropic; Claude Opus 5.5 and Claude Sonnet 5.5) wrote most of the code and documentation under the
   author's direction: design, Fe source, tests, scripts and prose.
-- **Outside models reviewed the specification** before any code of this repository was written (the scratch spike above predates the review): OpenAI Codex, xAI Grok and Alibaba Qwen (two rounds). Grok and Qwen then reviewed the architecture and code (two rounds); Codex was usage-limited in both of those rounds and did not review them. Their accepted suggestions changed the design (for example the transition form of the `conserved`
+- **Outside models reviewed the specification** before any code of this repository was written (the scratch spike above predates the review): OpenAI Codex, xAI Grok and Alibaba Qwen (two rounds). Grok and Qwen then reviewed the architecture and code (two rounds); Codex was usage-limited in both of those rounds and did not review them. Grok, Qwen and Meta Muse then reviewed the judge-facing documents once (README, DEMO, MODEL, FE-NOTES, this file, the project page and deck); Codex was usage-limited again. Their accepted suggestions changed the design (for example the transition form of the `conserved`
   invariant); they did not write repository code.
 - The author is responsible for every line and can explain it. **The tests and the compile-time checks are the check**:
   `fe build` runs the search, exhaustive at the capacities stated in `evidence/capacities.md`, and `fe test` runs it again
