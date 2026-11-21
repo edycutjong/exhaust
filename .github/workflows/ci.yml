@@ -92,6 +92,8 @@ jobs:
         run: sh demo/check-bugs.sh
       - name: Conformance (the checker's own negative tests; the job passes only when each mutant is caught)
         run: sh demo/check-bugs.sh --conformance
+      - name: Gate self-tests (an empty bug table and an oracle crash must fail their gates)
+        run: sh tools/test_gates.sh
 
   oracle:
     name: Oracle (independent Python model vs the Fe pins)

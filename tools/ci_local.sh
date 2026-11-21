@@ -20,7 +20,7 @@ cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 "model name" /p
   echo "fe: $(fe --version)"
   echo "uname: $(uname -a)"
   echo "cpu: $cpu"
-  for step in "fe fmt --check" "fe check" "fe build" "fe test" "fe test --backend native" "sh demo/run.sh" "sh demo/check-bugs.sh" "sh demo/check-bugs.sh --conformance" "python3 -I tools/ref_model.py --check" "sh bench/run.sh --quick --date ci" "sh tools/transition_coverage.sh" "sh tools/leak_scan.sh" "actionlint .github/workflows/ci.yml .github/workflows/security.yml .github/workflows/release.yml"; do
+  for step in "fe fmt --check" "fe check" "fe build" "fe test" "fe test --backend native" "sh demo/run.sh" "sh demo/check-bugs.sh" "sh demo/check-bugs.sh --conformance" "sh tools/test_gates.sh" "python3 -I tools/ref_model.py --check" "sh bench/run.sh --quick --date ci" "sh tools/transition_coverage.sh" "sh tools/leak_scan.sh" "actionlint .github/workflows/ci.yml .github/workflows/security.yml .github/workflows/release.yml"; do
     echo
     echo "## $step"
     t0=$(python3 -c 'import time; print(time.time())')
