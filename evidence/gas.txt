@@ -1,5 +1,5 @@
-# fe test --filter test_runtime_search_gas --show-logs, 2026-11-20 21:03 UTC, commit a01722e, fe: fe 26.6.0 (5b3f96a), Darwin arm64
-PASS  [0.0028s] test_runtime_search_gas
+# fe test --filter test_runtime_search_gas --show-logs, 2026-11-21 02:22 UTC, commit 9d72b71, fe: fe 26.6.0 (5b3f96a), Darwin arm64
+PASS  [0.0042s] test_runtime_search_gas
 event GasUsed data: 0x0000000000000000000000000000000000000000000000000000000000fa27c600000000000000000000000000000000000000000000000000000000000001ee
 test result: ok. 1 passed; 0 failed
 runtime_search_gas: 16394182
