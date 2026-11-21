@@ -1,0 +1,24 @@
+# Transition coverage, 2026-11-21 00:32 UTC
+commit: c5d9890504e2132cf3791d3ae24cfe006141cc31
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+
+Line coverage: none. Fe 26.6.0 has no coverage tool (checked: `fe --help` lists no coverage command).
+
+| transition set | replayed on the EVM | oracle reachable | covered |
+|---|---:|---:|---:|
+| escrow (C=21), accepted edges | 966 | 966 | 100% |
+| escrow (C=21), attempts (accepted + rejected) | 3680 | 3680 | 100% |
+| escrow (C=21), states reached | 736 | 736 | 100% |
+| vault contract graph B=10 T=3 (lock passed), accepted edges | 250 | 250 | 100% |
+| vault contract graph B=10 T=3 (lock passed), attempts | 546 | 546 | 100% |
+| vault contract graph B=10 T=3 (lock passed), states reached | 91 | 91 | 100% |
+| vault contract graph B=10 T=3 (lock never passes), accepted edges | 21 | 21 | 100% |
+| vault contract graph B=10 T=3 (lock never passes), attempts | 54 | 54 | 100% |
+| vault contract graph B=10 T=3 (lock never passes), states reached | 9 | 9 | 100% |
+
+Scope: the escrow's contract graph equals its model (736 states). The vault's contract graph is a subset of its 211-state model
+(the harness can neither tick the clock nor change the caller), so its 91 + 9 states are what the deployed handlers can reach;
+the model-level vault search is exercised by the compile-time and runtime explorers, not by this replay.
+
+RESULT: every oracle-reachable transition was replayed
