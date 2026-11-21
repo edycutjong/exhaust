@@ -1,9 +1,10 @@
 #!/bin/sh
 # Transition coverage. Fe 26.6.0 ships no line-coverage tool, so the measurable coverage here is over the model's
 # transitions: how many of the oracle's reachable edges the exhaustive-edge differential replayed through the DEPLOYED
-# contract (evm.call), comparing `ok` and the stored state with step() after every call.
+# contract (evm.call). The per-edge compare (`ok` and the stored state against step() after every call) happens inside
+# the Fe tests, which must pass; this script then checks that the replayed COUNTS equal the oracle's reachable counts.
 # The denominators come from the independent Python oracle (tools/ref_model.py), the numerators from the tests' own
-# event logs. Exits 1 unless every numerator equals its denominator.
+# event logs. Exits 1 unless every numerator equals its (non-zero) denominator.
 # Usage: sh tools/transition_coverage.sh     (EVIDENCE=1 saves evidence/transition-coverage.txt when it passes)
 set -eu
 cd "$(dirname "$0")/.."
@@ -44,15 +45,16 @@ for v in vlt:
 print("| transition set | replayed on the EVM | oracle reachable | covered |")
 print("|---|---:|---:|---:|")
 for name, got, want in rows:
-    ok &= got == want
-    print("| %s | %d | %d | %s |" % (name, got, want, "100%" if got == want else "%.1f%%" % (100.0 * got / want)))
+    match = want != 0 and got == want   # a zero denominator is a gap, never 100%
+    ok &= match
+    print("| %s | %d | %d | %s |" % (name, got, want, "100%" if match else "gap" if want == 0 else "%.1f%%" % (100.0 * got / want)))
 print()
 print("Scope: the escrow's contract graph equals its model (%d states). The vault's contract graph is a subset of its %d-state model" % (esc[1], m.vsearch(10, 3)["states"]))
 print("(the harness can neither tick the clock nor change the caller), so its %s states are what the deployed handlers can reach;" % " + ".join(str(v[1]) for v in vlt))
 print("the model-level vault search is exercised by the compile-time and runtime explorers, not by this replay. Its denominators")
 print("are the oracle's contract-graph counts, so a vault match shows the replay reached everything the oracle says is reachable there.")
 print()
-print("RESULT: " + ("every transition the oracle says is reachable was replayed (escrow: its full model graph; vault: the deployed handlers' contract graph)" if ok else "COVERAGE GAP"))
+print("RESULT: " + ("the replayed counts equal the oracle's reachable counts, and every replayed call matched step() in the tests (escrow: its full model graph; vault: the deployed handlers' contract graph)" if ok else "COVERAGE GAP"))
 sys.exit(0 if ok else 1)
 PY
 {
