@@ -24,7 +24,8 @@ probe() {
 bugs() { grep -v '^#' demo/bugs.tsv | awk -F '\t' -v want="$1" '($4 == "vault") == (want == "vault") { sub(/^demo\//, "", $1); sub(/\.patch$/, "", $1); print $1 }'; }
 
 echo
-echo "## Escrow: smallest capacity at which each bug's invariant breaks (checked capacity C = 21)"
+echo "## Escrow: smallest capacity at which each bug breaks an invariant (checked capacity C = 21)"
+echo "(at a small capacity the first invariant broken can differ from the one the C = 21 build names, as for mint-release)"
 for bug in $(bugs escrow); do
   c=1; hit=""
   while [ $c -le 21 ]; do
