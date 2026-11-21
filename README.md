@@ -97,7 +97,7 @@ decodes digits.
 
 ## 🏗️ Architecture & Tech Stack
 
-<p align="center"><img src="docs/architecture.svg" alt="src/escrow.fe holds step() and the invariants. The compile-time explorer runs it under static_assert in fe build; the contract's recv handlers call the same step() on two backends; tests replay every reachable edge through the deployed contract. A Python oracle outside Fe checks the pinned counts." width="100%"></p>
+<p align="center"><img src="docs/architecture.svg" alt="src/escrow.fe holds step() and the invariants. The compile-time explorer runs it under static_assert in fe build; the contract's recv handlers call the same step() on the EVM backend, and the runtime search runs on both backends; tests replay every reachable edge through the deployed contract. A Python oracle outside Fe checks the pinned counts." width="100%"></p>
 
 | Layer | What |
 |---|---|

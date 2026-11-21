@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470" width="960" height="470" role="img" aria-labelledby="t d" font-family="ui-monospace, Menlo, Consolas, monospace">
   <title id="t">exhaust architecture: one step() function, three executions</title>
-  <desc id="d">src/escrow.fe holds step() and the invariants. The compile-time explorer runs it under static_assert inside fe build; the escrow contract's recv handlers call the same step() at runtime on two backends; the tests replay every reachable transition via the deployed contract. A Python oracle outside Fe checks the pinned counts. Bug patches to step() turn fe build red.</desc>
+  <desc id="d">src/escrow.fe holds step() and the invariants. The compile-time explorer runs it under static_assert inside fe build; the escrow contract's recv handlers call the same step() on the EVM backend, and the runtime search runs on both backends; the tests replay every reachable transition via the deployed contract. A Python oracle outside Fe checks the pinned counts. Bug patches to step() turn fe build red.</desc>
   <defs>
     <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#23221E"/></marker>
     <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#A8261C"/></marker>
@@ -34,9 +34,9 @@
     <text x="480" y="256" text-anchor="middle" font-weight="700">escrow_contract.fe</text>
     <text x="480" y="278" text-anchor="middle">recv: load, step(), store</text>
     <text x="480" y="298" text-anchor="middle">fe test (Sonatina EVM)</text>
-    <text x="480" y="318" text-anchor="middle">fe test --backend native</text>
+    <text x="480" y="318" text-anchor="middle">contract tests: EVM only</text>
     <text x="805" y="256" text-anchor="middle" font-weight="700">tests.fe</text>
-    <text x="805" y="278" text-anchor="middle">runtime search agrees</text>
+    <text x="805" y="278" text-anchor="middle">search agrees: EVM + native</text>
     <text x="805" y="298" text-anchor="middle">replays every reachable edge</text>
     <text x="805" y="318" text-anchor="middle">via the deployed contract</text>
     <text x="155" y="414" text-anchor="middle" font-weight="700">fe build: green or red</text>
