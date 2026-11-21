@@ -528,7 +528,7 @@ code{font-family:var(--font-data);font-size:.86em}
       <div class="node"><b>differential</b>1,008 deployments, 25,646 handler calls, each compared with <code>step()</code></div>
     </div>
   </div>
-  <div style="display:flex;gap:80px;margin-top:44px"><div><div class="kpi">1,008</div><div class="kl">deployed contracts</div></div><div><div class="kpi">25,646</div><div class="kl">handler calls replayed</div></div><div><div class="kpi">0</div><div class="kl">mismatches with <code>step()</code></div></div></div>
+  <div style="display:flex;gap:80px;margin-top:44px"><div><div class="kpi">1,008</div><div class="kl">deployed contracts</div></div><div><div class="kpi">25,646</div><div class="kl">handler calls replayed</div></div><div><div class="kpi">25,646</div><div class="kl">stored states compared with <code>step()</code>, all equal</div></div></div>
   <div class="src" style="margin-top:22px">evidence/differential.txt · the vault's caller and timelock checks are adapter code outside the check (README · Limitations)</div>
   <div class="foot"><span>exhaust · source de43ffc</span><span>5 / 10</span></div>
   <aside class="notes">For the escrow, the function that was checked is the function that is deployed. Storage states the handlers cannot reach are not covered.</aside>
