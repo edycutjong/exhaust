@@ -46,7 +46,7 @@
     <text x="805" y="414" text-anchor="middle" font-weight="700">25,646 calls checked</text>
     <text x="805" y="434" text-anchor="middle" font-size="12">ok + state match step()</text>
     <text x="815" y="66" text-anchor="middle" fill="#A8261C" font-weight="700">demo/*.patch</text>
-    <text x="815" y="86" text-anchor="middle" fill="#A8261C" font-size="12">one-line bug in step()</text>
+    <text x="815" y="86" text-anchor="middle" fill="#A8261C" font-size="12">small bug patches to step()</text>
     <text x="815" y="102" text-anchor="middle" fill="#A8261C" font-size="12">fe build must go red</text>
     <text x="30" y="24" font-size="12" fill="#64605A">escrow shown; src/vault*.fe repeat the same shape</text>
     <text x="30" y="462" font-size="12" fill="#64605A">tools/ref_model.py (Python oracle, outside Fe) checks every pinned count</text>
