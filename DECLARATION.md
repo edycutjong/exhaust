@@ -31,7 +31,8 @@ Required by the Fe Builders Challenge 2026 rules. This file is updated as the pr
 - **Media.** The demo video's voice-over is AI speech (ElevenLabs text-to-speech) reading a script written with Claude
   Code; the few sound effects are synthesized sine tones and there is no music. The video, the README GIF, the project
   page, the deck and the images in `docs/assets/` were made with Claude Code under the author's direction. The terminal in
-  the video and the GIF is a real capture of the commands in a fresh clone (`fe 26.6.0` output), replayed, not mocked.
+  the video is a real capture of the commands in a fresh clone (`fe 26.6.0` output), replayed, not mocked; the README GIF is
+  cut from that video.
 - The author is responsible for every line and can explain it. **The tests and the compile-time checks are the check**:
   `fe build` runs the search, exhaustive at the capacities stated in `evidence/capacities.md`, and `fe test` runs it again
   at runtime on two backends.
