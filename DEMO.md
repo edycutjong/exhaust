@@ -19,7 +19,7 @@ fe --version        # fe 26.6.0 (5b3f96a)
 ## The 60-second demo
 
 ```sh
-fe build            # green: explore(CAP) == STATES held, 736 states at C = 21, every invariant on every state and edge
+fe build            # green: explore(CAP) == STATES held, 736 states at C = 21, the 4 state invariants on every state and the transition invariant on every accepted edge
 sh demo/run.sh      # red: invariant 'paid once' broken, left: `11234`; then the attack replayed on the patched and the real contract
 ```
 

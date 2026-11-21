@@ -26,8 +26,8 @@
 **Fe contract authors and auditors can miss the sequence nobody wrote a test for** (Deposit, Deposit, Lock, Release, Refund pays
 both sides); `exhaust` finds it inside the build they already run. A `const fn` explores every reachable state of the
 model inside `fe build`, at a stated capacity: the escrow at C = 21 units, **all 736 reachable states and every accepted
-transition checked against five named invariants**. Break the model and the build fails: the compiler names the invariant
-and prints a shortest counterexample as action digits.
+transition checked against five named invariants**. Break the model and the build fails: the C = 21 search names the invariant,
+and a second search at C′ = 19 prints a shortest counterexample as action digits.
 
 **The ceiling, on the first screen.** Fe 26.6.0 gives each `static_assert` evaluation 1,000,000 evaluator steps and a
 recursion limit of 64, with no CLI or config override. The C = 21 search uses **940,335** of them (86,323 to set up its tables,
@@ -53,7 +53,7 @@ git clone https://github.com/edycutjong/exhaust && cd exhaust
 curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path
 export PATH=$HOME/.fe/bin:$PATH # this shell only: repeat it in every new terminal
 fe --version                  # fe 26.6.0 (5b3f96a)
-fe build                      # the compile-time search: green (736 states at C = 21)
+fe build                      # green = static_assert(explore(CAP) == STATES) held: 736 states at C = 21 (no count printed)
 sh demo/run.sh                # one-line bug in the Refund guard: red, with the invariant and the digits
 fe test                       # Sonatina (EVM) backend: 28 tests
 fe test --backend native      # native backend: 10 tests (Linux needs a C linker: apt-get install gcc libc6-dev)
@@ -80,7 +80,7 @@ it by hand: delete `&& s.seller == 0` from the Refund guard in `src/escrow.fe`, 
 
 A protocol state machine (escrow, vault, timelock) fails in the sequences nobody wrote a test for: Deposit, Deposit, Lock,
 Release, then Refund pays both sides. Unit tests check the paths an author imagined; a model checker explores all of them,
-but it is a separate tool, a separate language and a separate step that the contract's own build never runs.
+but the usual workflow is another tool, often a second model of the contract, run as a separate step.
 
 ### The Solution
 
@@ -325,7 +325,7 @@ MODEL.md  FE-NOTES.md  DECLARATION.md  DEMO.md
 
 ## 📽️ Demo Materials
 
-**Landing + deck:** [exhaust.edycu.dev](https://exhaust.edycu.dev/) · [pitch deck](https://exhaust.edycu.dev/deck/) · [deck PDF](docs/pitch-deck.pdf) (GitHub Pages from `docs/`; live once the repo is public).
+**Landing + deck:** [exhaust.edycu.dev](https://exhaust.edycu.dev/) · [pitch deck](https://exhaust.edycu.dev/deck/) · [deck PDF](docs/pitch-deck.pdf) (GitHub Pages from `docs/`; live once the repo is public and Pages is enabled).
 
 `DEMO.md` has the exact command behind every number here. The demo is reproducible from a fresh clone
 (a Linux x86-64 container run of a clean clone at 3f2db27: `evidence/repro-linux-2026-11-21.txt`, 28 + 10 tests; `evidence/repro-clone-2026-11-21.txt` is an earlier fresh-clone run that predates the vault).
