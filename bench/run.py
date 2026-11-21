@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Deterministic benchmark driver. Usage: sh bench/run.sh [--skip-budget] [--date YYYY-MM-DD]
+"""Deterministic benchmark driver. Usage: sh bench/run.sh [--quick] [--skip-budget] [--date YYYY-MM-DD]
 
 Writes evidence/bench-<date>.json and evidence/bench-<date>.md. Counts (states, edges, attempts) are exact and come from
 the Python oracle (tools/ref_model.py); every `fe check` row is a pass/fail against that oracle count, so a row that says
 `pass` means the Fe compile-time search agrees with the oracle at that size. Wall times are the median of 5 `fe check`
 runs on this machine (they vary between machines and runs; the counts do not). Standard library only.
+
+`--quick` (the CI smoke run): one `fe check` per row, escrow C = 8 / 19 / 21 and the vault B = 10 T = 3 only, and it EXITS 1
+unless every explore row passes, the printer passes at C = 8 / 19 and hits the step limit at C = 21 (the documented ceiling).
+It writes evidence/bench-<date>.{json,md} like the full run and skips sections 2-4.
 
 Sections: (1) escrow capacity sweep, (2) the step budget (bench/budget_probe.py), (3) shard scaling 1/2/4/8,
 (4) runtime search gas on the EVM backend and time on the native backend, (5) the vault.
@@ -89,11 +93,49 @@ def gas_of(out):
     return int(m_.group(1)[:64], 16), int(m_.group(1)[64:], 16)
 
 
+def quick(date):
+    """CI smoke: a few rows, gated on the step-limit pass/fail outcomes. Returns the process exit code."""
+    fe = subprocess.run(["fe", "--version"], capture_output=True, text=True).stdout.strip()
+    d = make_copy()
+    (d / "src" / "bench_probe.fe").write_text(HEADER + "\n")
+    rows, bad = [], []
+    for c, want_printer in ((8, "pass"), (19, "pass"), (21, "step-limit")):
+        r = m.search(c)
+        st, wall = check(d, f"static_assert(explore({c}) == {r['states']})", runs=1)
+        cst, cwall = check(d, f"static_assert(counterexample({c}) == 0)", runs=1)
+        rows.append({"model": "escrow", "cap": c, "states": r["states"], "explore": st, "explore_s": wall,
+                     "printer": cst, "printer_s": cwall, "printer_expected": want_printer})
+        if st != "pass" or cst != want_printer:
+            bad.append(rows[-1])
+    r = m.vsearch(10, 3)
+    st, wall = check(d, f"static_assert(vexplore(10, 3) == {r['states']})", runs=1)
+    rows.append({"model": "vault", "b": 10, "t": 3, "states": r["states"], "explore": st, "explore_s": wall})
+    if st != "pass":
+        bad.append(rows[-1])
+    shutil.rmtree(d)
+    meta = {"date_utc": time.strftime("%Y-%m-%d %H:%M", time.gmtime()), "fe": fe, "uname": " ".join(platform.uname()), "cpu": cpu(), "quick": True}
+    (ROOT / "evidence" / f"bench-{date}.json").write_text(json.dumps({"meta": meta, "rows": rows}, indent=1) + "\n")
+    L = [f"# Bench smoke ({date}) — bench/run.py --quick", "", f"{meta['date_utc']} UTC · `{fe}` · `{meta['uname']}` · {meta['cpu']}", "",
+         "Single `fe check` per row (wall times are one run, not a median). Gate: every explore row `pass`; the attack printer `pass` at C = 8 / 19 and `step-limit` at C = 21.", "",
+         "| model | size | states | explore | printer (want) |", "|---|---|---:|---|---|"]
+    for x in rows:
+        size = f"C={x['cap']}" if x["model"] == "escrow" else "B=10 T=3"
+        L.append(f"| {x['model']} | {size} | {x['states']} | {x['explore']} ({x['explore_s']} s) | "
+                 + (f"{x['printer']} ({x['printer_expected']})" if x["model"] == "escrow" else "—") + " |")
+    L.append("")
+    L.append("RESULT: " + ("PASS" if not bad else f"FAIL ({len(bad)} row(s) off)"))
+    (ROOT / "evidence" / f"bench-{date}.md").write_text("\n".join(L) + "\n")
+    print("\n".join(L))
+    return 1 if bad else 0
+
+
 def main():
     skip_budget = "--skip-budget" in sys.argv
     date = time.strftime("%Y-%m-%d", time.gmtime())
     if "--date" in sys.argv:
         date = sys.argv[sys.argv.index("--date") + 1]
+    if "--quick" in sys.argv:
+        sys.exit(quick(date))
     fe = subprocess.run(["fe", "--version"], capture_output=True, text=True).stdout.strip()
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     dirty = bool(subprocess.run(["git", "status", "--porcelain", "--", "src"], cwd=ROOT, capture_output=True, text=True).stdout.strip())

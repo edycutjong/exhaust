@@ -9,3 +9,4 @@ coverage/
 out/
 .vercel/
 *.env
+evidence/bench-ci.*
