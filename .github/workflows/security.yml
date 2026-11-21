@@ -38,14 +38,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # CodeQL has no Fe extractor; it covers what it does support here: the workflow files and tools/*.py + bench/*.py.
+        # Needs a public repo (or GitHub Advanced Security). CodeQL has no Fe extractor; it covers what it does support here: the workflow files and tools/*.py + bench/*.py.
         language: [actions, python]
     steps:
       - uses: actions/checkout@v5
-      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           build-mode: none
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"

@@ -42,11 +42,12 @@ for name, got, want in rows:
     ok &= got == want
     print("| %s | %d | %d | %s |" % (name, got, want, "100%" if got == want else "%.1f%%" % (100.0 * got / want)))
 print()
-print("Scope: the escrow's contract graph equals its model (736 states). The vault's contract graph is a subset of its 211-state model")
-print("(the harness can neither tick the clock nor change the caller), so its 91 + 9 states are what the deployed handlers can reach;")
-print("the model-level vault search is exercised by the compile-time and runtime explorers, not by this replay.")
+print("Scope: the escrow's contract graph equals its model (%d states). The vault's contract graph is a subset of its %d-state model" % (esc[1], m.vsearch(10, 3)["states"]))
+print("(the harness can neither tick the clock nor change the caller), so its %s states are what the deployed handlers can reach;" % " + ".join(str(v[1]) for v in vlt))
+print("the model-level vault search is exercised by the compile-time and runtime explorers, not by this replay. Its denominators")
+print("are the oracle's contract-graph counts, so a vault match shows the replay reached everything the oracle says is reachable there.")
 print()
-print("RESULT: " + ("every oracle-reachable transition was replayed" if ok else "COVERAGE GAP"))
+print("RESULT: " + ("every transition the oracle says is reachable was replayed (escrow: its full model graph; vault: the deployed handlers' contract graph)" if ok else "COVERAGE GAP"))
 sys.exit(0 if ok else 1)
 PY
 {

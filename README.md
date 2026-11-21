@@ -219,8 +219,8 @@ printing its digits, and `--conformance` does the same for the checker's own mut
 every pin), **Bench smoke** (`bench/run.sh --quick`, gated on the step-limit rows) and **Transition coverage**.
 `security.yml` runs gitleaks over the full history and CodeQL for what it supports here (the workflow files and the Python
 under `tools/` and `bench/`; CodeQL has no Fe extractor). `release.yml` derives the next version from Angular-style commit
-prefixes; `v0.1.0` is the first release. Dependabot watches the GitHub Actions the workflows use (Fe has no Dependabot
-ecosystem and the ingot has no third-party dependencies).
+prefixes; the first release is `v0.1.0`. Dependabot watches the GitHub Actions the workflows use (the ingot has no third-party dependencies
+for it to watch).
 
 **Coverage.** Fe 26.6.0 has no line-coverage tool, so none is claimed. The measurable coverage is over transitions:
 `sh tools/transition_coverage.sh` replays the oracle's reachable transitions through the deployed contracts and reports
@@ -229,8 +229,8 @@ replayed against reachable, from the tests' own event logs and the Python oracle
 is a subset of its 211-state model; see `MODEL.md`). Output: `evidence/transition-coverage.txt`.
 
 Transcripts of the runs are in `evidence/` (`transcript-tests.txt`: 28 passed on Sonatina, 10 passed on native;
-`ci-local-2026-11-21.txt`, at the commit of the run: every step above run locally). GitHub Actions did not start on this
-private repository, so the CI evidence is that local transcript until the repository is public and Actions run.
+`ci-local-2026-11-21.txt`, at the commit of the run: every step above run locally). On the private repository GitHub created the Actions runs but refused every job (account billing), so no
+workflow step has run on GitHub yet; the CI evidence is that local transcript until Actions can run.
 
 ## 📁 Project Structure
 

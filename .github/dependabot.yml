@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Fe has no Dependabot ecosystem and the ingot has no third-party dependencies (fe.toml pins none); tools/ and bench/
+  # The ingot has no third-party dependencies (fe.toml pins none), so there is nothing for Dependabot to track in Fe; tools/ and bench/
   # are standard-library Python with no manifest. The only moving parts are the GitHub Actions the workflows use.
   - package-ecosystem: "github-actions"
     directory: "/"

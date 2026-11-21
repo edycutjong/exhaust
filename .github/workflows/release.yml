@@ -2,10 +2,13 @@ name: release
 
 # Semantic versioning from Angular-style commit prefixes (fix:/perf: patch, feat: minor, feat!: or BREAKING CHANGE: major;
 # docs/chore/test/refactor/style/ci: no release). The first release, v0.1.0, was tagged by hand at the end of the harden
-# phase; every later push to main is read from that tag on.
+# phase; every later release is read from that tag on. It runs only after the CI workflow succeeded on main, so a red
+# commit is never tagged.
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -18,10 +21,12 @@ concurrency:
 
 jobs:
   release:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0 # full history and tags: the next version is computed from commits since the last tag
 
       - name: Compute next version from Angular commits
@@ -29,7 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          LAST=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          LAST=$(git describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null || echo "")
           if [ -z "$LAST" ]; then
             LOG=$(git log --format=%B); CUR="0.0.0"
           else
@@ -39,7 +44,7 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
           fi
           BUMP="none"
-          if printf '%s\n' "$LOG" | grep -qE '^(feat|fix|perf)(\(.+\))?!:|BREAKING CHANGE:'; then BUMP="major"
+          if printf '%s\n' "$LOG" | grep -qE '^(feat|fix|perf)(\(.+\))?!:|^BREAKING CHANGE:'; then BUMP="major"
           elif printf '%s\n' "$LOG" | grep -qE '^feat(\(.+\))?:'; then BUMP="minor"
           elif printf '%s\n' "$LOG" | grep -qE '^(fix|perf)(\(.+\))?:'; then BUMP="patch"
           fi
@@ -55,6 +60,10 @@ jobs:
           esac
           NEXT="v${MA}.${MI}.${PA}"
           echo "Bump: $BUMP  ${LAST:-none} -> $NEXT"
+          if git rev-parse -q --verify "refs/tags/$NEXT" > /dev/null; then
+            echo "$NEXT already exists: nothing to do."
+            echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
           echo "next=$NEXT" >> "$GITHUB_OUTPUT"
           echo "skip=false" >> "$GITHUB_OUTPUT"
 
