@@ -1,6 +1,7 @@
 #!/bin/sh
 # Runs the CI workflow's steps locally and prints a transcript; with EVIDENCE=1 it is saved to
-# evidence/ci-local-<date>.txt (only when every step passed).
+# evidence/ci-local-<date>.txt (only when every step ran and passed). Exit 0 all passed, 1 a step failed,
+# 3 nothing failed but a step was skipped (a missing tool).
 # Usage: sh tools/ci_local.sh            (from anywhere inside the repository)
 set -u
 cd "$(dirname "$0")/.."
@@ -10,6 +11,7 @@ log=$(mktemp)
 trap 'rm -f "$log" "$out"' EXIT
 mkdir -p evidence
 fail=0
+skipped=""  # a skipped step is never reported as passed, and no evidence is saved from a run that skipped one
 cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 "model name" /proc/cpuinfo 2>/dev/null | cut -d: -f2)
 [ -n "$cpu" ] || cpu=unknown
 {
@@ -22,7 +24,7 @@ cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 "model name" /p
     echo
     echo "## $step"
     t0=$(python3 -c 'import time; print(time.time())')
-    case "$step" in actionlint*) command -v actionlint >/dev/null 2>&1 || { echo "(actionlint not installed here: skipped)"; continue; } ;; esac
+    case "$step" in actionlint*) command -v actionlint >/dev/null 2>&1 || { echo "-> SKIPPED (actionlint not installed here)"; skipped="$skipped actionlint"; continue; } ;; esac
     $step > "$log" 2>&1
     status=$?
     t1=$(python3 -c 'import time; print(time.time())')
@@ -31,8 +33,11 @@ cpu=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || grep -m1 "model name" /p
     if [ "$status" -eq 0 ]; then echo "-> PASS (${secs} s wall)"; else echo "-> FAIL (exit $status, ${secs} s wall)"; fail=1; fi
   done
   echo
-  if [ "$fail" -eq 0 ]; then echo "RESULT: all steps passed"; else echo "RESULT: at least one step failed"; fi
+  if [ "$fail" -ne 0 ]; then echo "RESULT: at least one step failed"
+  elif [ -n "$skipped" ]; then echo "RESULT: every step that ran passed; skipped:$skipped"
+  else echo "RESULT: all steps passed"; fi
 } > "$out" 2>&1
 cat "$out"
-if [ "${EVIDENCE:-0}" = 1 ] && [ "$fail" -eq 0 ]; then cp "$out" "$keep"; fi
+if [ "${EVIDENCE:-0}" = 1 ] && [ "$fail" -eq 0 ] && [ -z "$skipped" ]; then cp "$out" "$keep"; fi
+[ "$fail" -eq 0 ] && [ -n "$skipped" ] && exit 3
 exit "$fail"
