@@ -37,7 +37,7 @@ larger model is split into independent asserts, never chained (`evidence/budget.
 This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification; what it
 does not cover is listed under [Limitations](#limitations-what-this-does-not-prove). For the nine bugs we planted, an
 independent Python re-count of the model (`tools/ref_model.py`) shows each one already breaking an invariant at escrow
-capacity 1 or 2, or vault balance 1 or 2 (`evidence/small-scope.txt`; at a small capacity the first invariant broken can
+capacity 1 or 2, or vault balance 1 or 2 (T = 3) and timelock 1 (B = 10) (`evidence/small-scope.txt`; at a small capacity the first invariant broken can
 differ from the table's, as for `mint-release`), and the demo route `11234` the oracle prints at capacity 2 is the one the
 build's trace printer prints at C′ = 19 (`evidence/check-bugs.txt`): an illustration of the hypothesis on this zoo, not evidence about bugs nobody planted. C = 21 is how far one assert can count, not what the demo bug needs.
 
@@ -88,6 +88,9 @@ but the usual workflow is another tool, often a second model of the contract, ru
 every state it reaches and `static_assert`s the reachable count and the invariants. If a patch to `step()` breaks an
 invariant, `fe build` fails and prints the attack. The same `step()` runs in the contract's `recv` handlers, so for the escrow the function
 that was checked is the function that is deployed (the vault's caller and timelock checks are adapter code, see below).
+
+The digits come from the trace search at C′ = 19 (the state count runs at C = 21), so `cap-off-by-one`'s twenty Deposits are
+one more than C′.
 
 | Bug patch (`demo/`) | Invariant named | Counterexample (`left:`) | Decoded |
 |---|---|---|---|
