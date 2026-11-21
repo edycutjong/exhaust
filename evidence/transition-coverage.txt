@@ -1,5 +1,5 @@
-# Transition coverage, 2026-11-21 00:32 UTC
-commit: c5d9890504e2132cf3791d3ae24cfe006141cc31
+# Transition coverage, 2026-11-21 00:37 UTC
+commit: adcff70d6604c9eec5419ffe85b78bebfcbb9107
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -19,6 +19,7 @@ Line coverage: none. Fe 26.6.0 has no coverage tool (checked: `fe --help` lists 
 
 Scope: the escrow's contract graph equals its model (736 states). The vault's contract graph is a subset of its 211-state model
 (the harness can neither tick the clock nor change the caller), so its 91 + 9 states are what the deployed handlers can reach;
-the model-level vault search is exercised by the compile-time and runtime explorers, not by this replay.
+the model-level vault search is exercised by the compile-time and runtime explorers, not by this replay. Its denominators
+are the oracle's contract-graph counts, so a vault match shows the replay reached everything the oracle says is reachable there.
 
-RESULT: every oracle-reachable transition was replayed
+RESULT: every transition the oracle says is reachable was replayed (escrow: its full model graph; vault: the deployed handlers' contract graph)
