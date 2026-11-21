@@ -1,65 +1,65 @@
-# CI steps run locally, 2026-11-21 00:25 UTC
-commit: d5f0ca79cf8ce97ea704001104d1fbd7c07d2bb4
+# CI steps run locally, 2026-11-21 00:31 UTC
+commit: c5d9890504e2132cf3791d3ae24cfe006141cc31
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 cpu: Apple M1 Max
 
 ## fe fmt --check
--> PASS (0.17 s wall)
+-> PASS (0.14 s wall)
 
 ## fe check
--> PASS (1.47 s wall)
+-> PASS (1.34 s wall)
 
 ## fe build
--> PASS (1.69 s wall)
+-> PASS (1.55 s wall)
 
 ## fe test
-PASS  [0.0024s] test_contract_rejects_attack
+PASS  [0.0023s] test_handler_dispute
 PASS  [0.0024s] test_action_ids_distinct
-PASS  [0.0024s] test_handler_dispute
+PASS  [0.0024s] test_contract_matches_step
+PASS  [0.0024s] test_contract_rejects_attack
 PASS  [0.0024s] test_handler_deposit
-PASS  [0.0025s] test_contract_matches_step
-PASS  [0.0001s] test_handler_lock
-PASS  [0.0001s] test_handler_refund
-PASS  [0.0001s] test_handler_release
+PASS  [0.0003s] test_handler_lock
+PASS  [0.0003s] test_handler_release
+PASS  [0.0011s] test_handler_refund
 PASS  [0.0000s] test_vault_action_ids_distinct
 PASS  [0.0002s] test_vault_contract_matches_vstep
-PASS  [0.0027s] test_runtime_search_gas
-PASS  [0.0053s] test_counterexample_none
-PASS  [0.0070s] test_runtime_explore_agrees
+PASS  [0.0047s] test_counterexample_none
+PASS  [0.0029s] test_runtime_search_gas
+PASS  [0.0023s] test_vault_counterexample_none
 PASS  [0.0001s] test_vault_handler_approve
 PASS  [0.0001s] test_vault_handler_cancel
 PASS  [0.0001s] test_vault_handler_execute
 PASS  [0.0001s] test_vault_handler_propose
 PASS  [0.0001s] test_vault_identity_guards
-PASS  [0.0101s] test_oracle_edges
-PASS  [0.0102s] test_shards_partition
+PASS  [0.0066s] test_runtime_explore_agrees
+PASS  [0.0085s] test_oracle_edges
+PASS  [0.0019s] test_vault_runtime_search_gas
 PASS  [0.0001s] test_vault_timelock_holds
-PASS  [0.0136s] test_encode_roundtrip
-PASS  [0.0125s] test_vault_runtime_agrees
-PASS  [0.0134s] test_vault_runtime_search_gas
-PASS  [0.0268s] test_vault_counterexample_none
+PASS  [0.0132s] test_encode_roundtrip
+PASS  [0.0113s] test_shards_partition
+PASS  [0.0118s] test_vault_runtime_agrees
+PASS  [0.0462s] test_vault_differential
 PASS  [0.0495s] test_vault_encode_roundtrip
-PASS  [0.0684s] test_vault_differential
-PASS  [0.1530s] test_differential_all_edges
+PASS  [0.1438s] test_differential_all_edges
 
 test result: ok. 28 passed; 0 failed
--> PASS (7.44 s wall)
+-> PASS (7.11 s wall)
 
 ## fe test --backend native
-PASS  [0.3589s] test_runtime_explore_agrees
-PASS  [0.3659s] test_vault_counterexample_none
-PASS  [0.3659s] test_counterexample_none
-PASS  [0.3677s] test_oracle_edges
-PASS  [0.3745s] test_shards_partition
-PASS  [0.0100s] test_vault_action_ids_distinct
-PASS  [0.3768s] test_action_ids_distinct
-PASS  [0.3780s] test_encode_roundtrip
-PASS  [0.3780s] test_vault_runtime_agrees
-PASS  [0.0246s] test_vault_encode_roundtrip
+PASS  [0.3747s] test_encode_roundtrip
+PASS  [0.3751s] test_counterexample_none
+PASS  [0.3780s] test_runtime_explore_agrees
+PASS  [0.3785s] test_oracle_edges
+PASS  [0.3785s] test_action_ids_distinct
+PASS  [0.3785s] test_vault_counterexample_none
+PASS  [0.3898s] test_vault_runtime_agrees
+PASS  [0.3899s] test_shards_partition
+PASS  [0.0153s] test_vault_encode_roundtrip
+PASS  [0.0301s] test_vault_action_ids_distinct
 
 test result: ok. 10 passed; 0 failed
--> PASS (3.88 s wall)
+-> PASS (3.29 s wall)
 
 ## sh demo/run.sh
 == 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)
@@ -82,13 +82,13 @@ test result: ok. 10 passed; 0 failed
      PASS  [0.0002s] test_attack_patched_replay
      -> all five calls accepted; the seller AND the buyer were paid
    real contract, fe test --filter attack:
-     PASS  [0.0001s] test_contract_rejects_attack
+     PASS  [0.0002s] test_contract_rejects_attack
      -> the first four calls accepted, the Refund refused, storage unchanged
--> PASS (5.12 s wall)
+-> PASS (4.54 s wall)
 
 ## sh demo/check-bugs.sh
-# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-21 00:25 UTC
-commit: d5f0ca79cf8ce97ea704001104d1fbd7c07d2bb4
+# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-21 00:31 UTC
+commit: c5d9890504e2132cf3791d3ae24cfe006141cc31
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -125,11 +125,11 @@ PASS  demo/vault-execute-unguarded.patch | exit 1 | 'two distinct approvals': ye
       = assertion message: invariant 'two distinct approvals' broken: executed without two distinct signers
       = left: `6`
 RESULT: all rows as expected
--> PASS (24.23 s wall)
+-> PASS (23.11 s wall)
 
 ## sh demo/check-bugs.sh --conformance
-# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-21 00:26 UTC
-commit: d5f0ca79cf8ce97ea704001104d1fbd7c07d2bb4
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-21 00:32 UTC
+commit: c5d9890504e2132cf3791d3ae24cfe006141cc31
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -147,7 +147,7 @@ PASS  K6  conformance/bad-init.patch  [full]  `fe build` exit 1 (want 1)  expect
 PASS  K7  conformance/vault-skip-cancel.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `380`;;!invariant '
 PASS  K8  conformance/lock-boundary-gt.patch  [full]  `fe test` exit 1 (want 1)  expect: ^FAIL .*test_vault_contract_matches_vstep;;^FAIL .*test_vault_handler_execute;;^FAIL .*test_vault_differential;;test result: FAILED. 25 passed; 3 failed
 RESULT: all rows as expected
--> PASS (22.44 s wall)
+-> PASS (22.35 s wall)
 
 ## python3 -I tools/ref_model.py --check
 # oracle: tools/ref_model.py, python 3.11.1
@@ -203,6 +203,68 @@ check vedges(10, 3) == 580: oracle 580 -> AGREE
 check vedge_hash(10, 3) == 1115689132712769016: oracle 1115689132712769016 -> AGREE
 check src/oracle_edges.fe (cap 21, 3680 rows) == oracle's table now: AGREE
 RESULT: oracle agrees with every Fe pin
--> PASS (0.34 s wall)
+-> PASS (0.36 s wall)
+
+## sh bench/run.sh --quick --date ci
+# Bench smoke (ci) — bench/run.py --quick
+
+2026-11-21 00:32 UTC · `fe 26.6.0 (5b3f96a)` · `Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64 arm` · Apple M1 Max
+
+Single `fe check` per row (wall times are one run, not a median). Gate: every explore row `pass`; the attack printer `pass` at C = 8 / 19 and `step-limit` at C = 21.
+
+| model | size | states | explore | printer (want) |
+|---|---|---:|---|---|
+| escrow | C=8 | 125 | pass (0.624 s) | pass (pass) |
+| escrow | C=19 | 609 | pass (0.706 s) | pass (pass) |
+| escrow | C=21 | 736 | pass (0.676 s) | step-limit (step-limit) |
+| vault | B=10 T=3 | 211 | pass (0.637 s) | — |
+
+RESULT: PASS
+-> PASS (4.71 s wall)
+
+## sh tools/transition_coverage.sh
+# Transition coverage, 2026-11-21 00:32 UTC
+commit: c5d9890504e2132cf3791d3ae24cfe006141cc31
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+
+Line coverage: none. Fe 26.6.0 has no coverage tool (checked: `fe --help` lists no coverage command).
+
+| transition set | replayed on the EVM | oracle reachable | covered |
+|---|---:|---:|---:|
+| escrow (C=21), accepted edges | 966 | 966 | 100% |
+| escrow (C=21), attempts (accepted + rejected) | 3680 | 3680 | 100% |
+| escrow (C=21), states reached | 736 | 736 | 100% |
+| vault contract graph B=10 T=3 (lock passed), accepted edges | 250 | 250 | 100% |
+| vault contract graph B=10 T=3 (lock passed), attempts | 546 | 546 | 100% |
+| vault contract graph B=10 T=3 (lock passed), states reached | 91 | 91 | 100% |
+| vault contract graph B=10 T=3 (lock never passes), accepted edges | 21 | 21 | 100% |
+| vault contract graph B=10 T=3 (lock never passes), attempts | 54 | 54 | 100% |
+| vault contract graph B=10 T=3 (lock never passes), states reached | 9 | 9 | 100% |
+
+Scope: the escrow's contract graph equals its model (736 states). The vault's contract graph is a subset of its 211-state model
+(the harness can neither tick the clock nor change the caller), so its 91 + 9 states are what the deployed handlers can reach;
+the model-level vault search is exercised by the compile-time and runtime explorers, not by this replay.
+
+RESULT: every oracle-reachable transition was replayed
+-> PASS (7.01 s wall)
+
+## sh tools/leak_scan.sh
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m7:32AM[0m [32mINF[0m [1m90 commits scanned.[0m
+[90m7:32AM[0m [32mINF[0m [1mscanned ~1096549 bytes (1.10 MB) in 290ms[0m
+[90m7:32AM[0m [32mINF[0m [1mno leaks found[0m
+gitleaks: no leaks found
+kitchen-file pattern: no tracked file matches
+-> PASS (0.49 s wall)
+
+## actionlint .github/workflows/ci.yml .github/workflows/security.yml .github/workflows/release.yml
+-> PASS (0.36 s wall)
 
 RESULT: all steps passed
