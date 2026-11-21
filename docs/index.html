@@ -691,7 +691,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
       <div class="notice"><header><span>Change notice · src/escrow.fe</span><span>Refund guard</span></header>
 <pre><span class="minus">-  if s.escrow &gt; 0 &amp;&amp; s.seller == 0 {</span><span class="plus">+  if s.escrow &gt; 0 {</span></pre></div>
       <ol class="steps">
-        <li><span><code>fe build</code> is green: at C = 21 the search held <code>explore(CAP) == STATES</code> with 736 states, every invariant on every state and edge.</span></li>
+        <li><span><code>fe build</code> is green: at C = 21 the search held <code>explore(CAP) == STATES</code> with 736 states, the four state invariants on every state and the transition invariant on every accepted edge.</span></li>
         <li><span>Drop the seller check from the Refund guard. Nothing else in the ingot changes.</span></li>
         <li class="red"><span>The build fails. The compiler prints the invariant's message and the shortest route as action digits: <code>11234</code>, Deposit, Deposit, Lock, Release, Refund.</span></li>
       </ol>
