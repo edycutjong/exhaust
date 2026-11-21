@@ -1,0 +1,208 @@
+# CI steps run locally, 2026-11-21 00:25 UTC
+commit: d5f0ca79cf8ce97ea704001104d1fbd7c07d2bb4
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+cpu: Apple M1 Max
+
+## fe fmt --check
+-> PASS (0.17 s wall)
+
+## fe check
+-> PASS (1.47 s wall)
+
+## fe build
+-> PASS (1.69 s wall)
+
+## fe test
+PASS  [0.0024s] test_contract_rejects_attack
+PASS  [0.0024s] test_action_ids_distinct
+PASS  [0.0024s] test_handler_dispute
+PASS  [0.0024s] test_handler_deposit
+PASS  [0.0025s] test_contract_matches_step
+PASS  [0.0001s] test_handler_lock
+PASS  [0.0001s] test_handler_refund
+PASS  [0.0001s] test_handler_release
+PASS  [0.0000s] test_vault_action_ids_distinct
+PASS  [0.0002s] test_vault_contract_matches_vstep
+PASS  [0.0027s] test_runtime_search_gas
+PASS  [0.0053s] test_counterexample_none
+PASS  [0.0070s] test_runtime_explore_agrees
+PASS  [0.0001s] test_vault_handler_approve
+PASS  [0.0001s] test_vault_handler_cancel
+PASS  [0.0001s] test_vault_handler_execute
+PASS  [0.0001s] test_vault_handler_propose
+PASS  [0.0001s] test_vault_identity_guards
+PASS  [0.0101s] test_oracle_edges
+PASS  [0.0102s] test_shards_partition
+PASS  [0.0001s] test_vault_timelock_holds
+PASS  [0.0136s] test_encode_roundtrip
+PASS  [0.0125s] test_vault_runtime_agrees
+PASS  [0.0134s] test_vault_runtime_search_gas
+PASS  [0.0268s] test_vault_counterexample_none
+PASS  [0.0495s] test_vault_encode_roundtrip
+PASS  [0.0684s] test_vault_differential
+PASS  [0.1530s] test_differential_all_edges
+
+test result: ok. 28 passed; 0 failed
+-> PASS (7.44 s wall)
+
+## fe test --backend native
+PASS  [0.3589s] test_runtime_explore_agrees
+PASS  [0.3659s] test_vault_counterexample_none
+PASS  [0.3659s] test_counterexample_none
+PASS  [0.3677s] test_oracle_edges
+PASS  [0.3745s] test_shards_partition
+PASS  [0.0100s] test_vault_action_ids_distinct
+PASS  [0.3768s] test_action_ids_distinct
+PASS  [0.3780s] test_encode_roundtrip
+PASS  [0.3780s] test_vault_runtime_agrees
+PASS  [0.0246s] test_vault_encode_roundtrip
+
+test result: ok. 10 passed; 0 failed
+-> PASS (3.88 s wall)
+
+## sh demo/run.sh
+== 1. fe build (the escrow, every reachable state at capacity 21 checked at compile time)
+   build OK: static_assert(explore(CAP) == STATES) held, STATES = 736, every invariant held on every reachable state and edge
+
+== 2. the bug: one line in the Refund guard (demo/refund-after-release.patch)
+   - if s.escrow > 0 && s.seller == 0 {
+   + if s.escrow > 0 {
+
+== 3. fe build again
+   error[3-0036]: assertion failed in const context
+   = assertion message: invariant 'paid once' broken: buyer and seller both paid
+   error[8-0081]: static assertion failed
+   = left: `11234`
+   -> build FAILED (as it must)
+
+== 4. the counterexample 11234, decoded (1 Deposit . 2 Lock . 3 Release . 4 Refund . 5 Dispute)
+   Deposit Deposit Lock Release Refund 
+   patched contract (search removed), fe test --filter test_attack_patched_replay:
+     PASS  [0.0002s] test_attack_patched_replay
+     -> all five calls accepted; the seller AND the buyer were paid
+   real contract, fe test --filter attack:
+     PASS  [0.0001s] test_contract_rejects_attack
+     -> the first four calls accepted, the Refund refused, storage unchanged
+-> PASS (5.12 s wall)
+
+## sh demo/check-bugs.sh
+# Bug zoo: every patch must fail fe build naming its invariant and printing its digits (demo/bugs.tsv), 2026-11-21 00:25 UTC
+commit: d5f0ca79cf8ce97ea704001104d1fbd7c07d2bb4
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+
+PASS  baseline: unpatched fe build exit 0
+
+patch | fe build exit | invariant named | digits printed | per-handler suite (test_handler_* / test_vault_handler_*) | scripted contract run (test_contract_matches_step / test_vault_contract_matches_vstep)
+PASS  demo/refund-after-release.patch | exit 1 | 'paid once': yes | 11234: yes | missed | caught
+      = assertion message: invariant 'paid once' broken: buyer and seller both paid
+      = left: `11234`
+PASS  demo/settle-early.patch | exit 1 | 'settled empty': yes | 1123: yes | caught (1 of 5 fail) | caught
+      = assertion message: invariant 'settled empty' broken: settled with units still in escrow
+      = left: `1123`
+      = left: `946`
+      = left: `649063484112972613`
+PASS  demo/cap-off-by-one.patch | exit 1 | 'within capacity': yes | 11111111111111111111: yes | missed | missed
+      = assertion message: invariant 'within capacity' broken: more units than the capacity
+      = left: `11111111111111111111`
+PASS  demo/mint-release.patch | exit 1 | 'conserved': yes | 123: yes | caught (1 of 5 fail) | caught
+      = assertion message: invariant 'conserved' broken: units created or lost by a non-deposit action
+      = left: `123`
+PASS  demo/vault-approve-twice.patch | exit 1 | 'counted once': yes | 122: yes | caught (1 of 4 fail) | missed
+      = assertion message: invariant 'counted once' broken: approval count differs from the signers in the mask
+      = left: `122`
+PASS  demo/vault-execute-early.patch | exit 1 | 'timelock respected': yes | 1236: yes | missed | missed
+      = assertion message: invariant 'timelock respected' broken: executed before the timelock ran out
+      = left: `1236`
+PASS  demo/vault-pay-twice.patch | exit 1 | 'pays one unit': yes | 1235556: yes | caught (1 of 4 fail) | caught
+      = assertion message: invariant 'pays one unit' broken: execute paid out other than exactly one unit
+      = left: `1235556`
+PASS  demo/vault-cancel-pays.patch | exit 1 | 'only execute pays': yes | 17: yes | caught (1 of 4 fail) | caught
+      = assertion message: invariant 'only execute pays' broken: balance or paid-out units changed on an action other than execute
+      = left: `17`
+PASS  demo/vault-execute-unguarded.patch | exit 1 | 'two distinct approvals': yes | 6: yes | caught (1 of 4 fail) | caught
+      = assertion message: invariant 'two distinct approvals' broken: executed without two distinct signers
+      = left: `6`
+RESULT: all rows as expected
+-> PASS (24.23 s wall)
+
+## sh demo/check-bugs.sh --conformance
+# Conformance: the checker's own negative tests (conformance/expected.tsv), 2026-11-21 00:26 UTC
+commit: d5f0ca79cf8ce97ea704001104d1fbd7c07d2bb4
+fe: fe 26.6.0 (5b3f96a)
+uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
+
+PASS  K1  demo/mint-release.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'conserved';;left: `123`
+PASS  K1  demo/mint-release.patch  [stripped+conformance/k1_replay.fe]  `fe test --filter test_k1_shared_bug_replay` exit 0 (want 0)  expect: ^PASS .*test_k1_shared_bug_replay
+PASS  K2  conformance/swap-release-refund.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `877585624444148941`;;!step limit;;!invariant ';;!left: `[0-9]{1,17}`
+PASS  K2  conformance/swap-release-refund.patch  [nohash]  `fe test --filter test_oracle_edges` exit 1 (want 1)  expect: ^FAIL .*test_oracle_edges
+PASS  K2  conformance/swap-release-refund.patch  [nohash]  `fe test --backend native --filter test_oracle_edges` exit 1 (want 1)  expect: ^FAIL .*test_oracle_edges
+PASS  K3  demo/cap-off-by-one.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'within capacity'
+PASS  K4  conformance/skip-action.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `341`
+PASS  K5  conformance/adapter-corruption.patch  [full]  `fe build` exit 0 (want 0)  expect: Wrote .*Escrow.bin
+PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_differential_all_edges` exit 1 (want 1)  expect: ^FAIL .*test_differential_all_edges
+PASS  K5  conformance/adapter-corruption.patch  [full]  `fe test --filter test_runtime_explore_agrees` exit 0 (want 0)  expect: ^PASS .*test_runtime_explore_agrees
+PASS  K6  conformance/bad-init.patch  [full]  `fe build` exit 1 (want 1)  expect: invariant 'settled empty';;left: `9`
+PASS  K7  conformance/vault-skip-cancel.patch  [full]  `fe build` exit 1 (want 1)  expect: left: `380`;;!invariant '
+PASS  K8  conformance/lock-boundary-gt.patch  [full]  `fe test` exit 1 (want 1)  expect: ^FAIL .*test_vault_contract_matches_vstep;;^FAIL .*test_vault_handler_execute;;^FAIL .*test_vault_differential;;test result: FAILED. 25 passed; 3 failed
+RESULT: all rows as expected
+-> PASS (22.44 s wall)
+
+## python3 -I tools/ref_model.py --check
+# oracle: tools/ref_model.py, python 3.11.1
+cap  states  edges  attempts  diameter  edge_hash
+  2      14     16        70         5  1524000005756973351
+  4      39     48       195         9  2090054049007746902
+ 10     186    240       930        21  1263784320315727760
+ 17     494    646      2470        35  1210023004570408906
+ 18     550    720      2750        37  1694267728619545757
+ 19     609    798      3045        39  1278408031475724804
+ 20     671    880      3355        41  527064345745122688
+ 21     736    966      3680        43  1194004490208706542
+bug cap-off-by-one         cap 18: 'within capacity' 1111111111111111111
+bug cap-off-by-one         cap 19: 'within capacity' 11111111111111111111
+bug mint-release           cap 18: 'conserved' 123
+bug mint-release           cap 19: 'conserved' 123
+bug refund-after-release   cap 18: 'paid once' 11234
+bug refund-after-release   cap 19: 'paid once' 11234
+bug settle-early           cap 18: 'settled empty' 1123
+bug settle-early           cap 19: 'settled empty' 1123
+
+# vault (2-of-3 + timelock)
+   B  T  states  edges  attempts  diameter
+   8  2     137    376       959        48
+  10  1     131    360       917        50
+  10  2     171    470      1197        60
+  10  3     211    580      1477        70
+bug vault-approve-twice    B=10 T=3: 'counted once' 122
+bug vault-cancel-pays      B=10 T=3: 'only execute pays' 17
+bug vault-execute-early    B=10 T=3: 'timelock respected' 1236
+bug vault-execute-unguarded B=10 T=3: 'two distinct approvals' 6
+bug vault-pay-twice        B=10 T=3: 'pays one unit' 1235556
+vault contract graph B=10 T=3 lock ready: 91 states, 250 edges, 546 attempts
+vault contract graph B=10 T=3 lock locked: 9 states, 21 edges, 54 attempts
+differential workload at cap 21: 1008 deployments, 25646 action calls, 25646 raw_state() reads, 51292 calls
+shards at cap 21: k=1..7 91, k=8..14 238, k=15..21 385, Open 22; disjoint True, union == reachable set True
+check: all 8 pins in src/escrow_explore.fe parsed
+check explore(17) == 494: oracle 494 -> AGREE
+check counterexample(19) == 0: oracle 0 -> AGREE
+check shard(1) == 91: oracle 91 -> AGREE
+check shard(8) == 238: oracle 238 -> AGREE
+check shard(15) == 385: oracle 385 -> AGREE
+check edges(21) == 966: oracle 966 -> AGREE
+check edge_hash(21) == 1194004490208706542: oracle 1194004490208706542 -> AGREE
+check explore(21) == 736: oracle 736 -> AGREE
+check: all 7 pins in src/vault_explore.fe parsed
+check vcounterexample(10, 3) == 0: oracle 0 -> AGREE
+check vexplore(10, 1) == 131: oracle 131 -> AGREE
+check vexplore(10, 2) == 171: oracle 171 -> AGREE
+check vexplore(8, 2) == 137: oracle 137 -> AGREE
+check vexplore(10, 3) == 211: oracle 211 -> AGREE
+check vedges(10, 3) == 580: oracle 580 -> AGREE
+check vedge_hash(10, 3) == 1115689132712769016: oracle 1115689132712769016 -> AGREE
+check src/oracle_edges.fe (cap 21, 3680 rows) == oracle's table now: AGREE
+RESULT: oracle agrees with every Fe pin
+-> PASS (0.34 s wall)
+
+RESULT: all steps passed

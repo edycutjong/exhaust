@@ -1,7 +1,7 @@
 <div align="center">
   <img src="docs/assets/icon.svg" alt="exhaust icon" width="144">
   <h1>exhaust 🔦</h1>
-  <p><em>The Fe compiler is the model checker: every reachable state of a protocol, explored inside <code>fe build</code>.</em></p>
+  <p><em>The Fe compiler is the model checker: every reachable state of a protocol model, up to a stated capacity, explored inside <code>fe build</code>.</em></p>
   <img src="docs/assets/readme-hero-animated.svg" alt="exhaust: the Fe compiler explores every reachable state of an escrow inside fe build: 736 lamps lit at capacity 21, all held. One line changes. A new red lamp: Deposit, Deposit, Lock, Release, Refund." width="100%">
 
   <br/>
@@ -14,15 +14,15 @@
 
   ![Fe](https://img.shields.io/badge/Fe-26.6.0-23221E?style=flat)
   ![Backends](https://img.shields.io/badge/backends-Sonatina_EVM_+_native-A8261C?style=flat)
-  ![Tests](https://img.shields.io/badge/fe_test-28_+_10_pass-6FB27E?style=flat)
+  ![Tests](https://img.shields.io/badge/fe_test-28_EVM_/_10_native_pass-6FB27E?style=flat)
   [![License](https://img.shields.io/badge/License-Apache_2.0-yellow)](LICENSE)
 
 </div>
 
 ---
 
-**Fe contract authors and auditors get a checker that runs where they already work.** Reviewing a state machine means
-hoping the test you did not write was not the one that mattered. Here a `const fn` explores every reachable state of the
+**Fe contract authors and auditors miss the sequence nobody wrote a test for** (Deposit, Deposit, Lock, Release, Refund pays
+both sides); `exhaust` finds it inside the build they already run. A `const fn` explores every reachable state of the
 model inside `fe build`, at a stated capacity: the escrow at C = 21 units, **all 736 reachable states and every accepted
 transition checked against five named invariants**. Break the model and the build fails: the compiler names the invariant
 and prints a shortest counterexample as action digits.
@@ -36,7 +36,7 @@ This is bounded-exhaustive checking at the stated capacities (the small-scope hy
 
 ## 📸 See it in Action
 
-Try it in 60 seconds (macOS Apple Silicon or Linux x86-64; git, curl and patch):
+Try it (macOS Apple Silicon or Linux x86-64; git, curl and patch):
 
 ```sh
 git clone https://github.com/edycutjong/exhaust && cd exhaust
@@ -74,8 +74,8 @@ but it is a separate tool, a separate language and a separate step that the cont
 
 `exhaust` moves the search into the compiler. The model is ordinary Fe: a `const fn` breadth-first search calls `step()` on
 every state it reaches and `static_assert`s the reachable count and the invariants. If a patch to `step()` breaks an
-invariant, `fe build` fails and prints the attack. The same `step()` runs in the contract's `recv` handlers, so the thing that
-was checked is the thing that is deployed.
+invariant, `fe build` fails and prints the attack. The same `step()` runs in the contract's `recv` handlers, so for the escrow the function
+that was checked is the function that is deployed (the vault's caller and timelock checks are adapter code, see below).
 
 | Bug patch (`demo/`) | Invariant named | Counterexample (`left:`) | Decoded |
 |---|---|---|---|
@@ -123,10 +123,9 @@ static_assert(explore(17) == 494)
 static_assert(explore(CAP) == STATES)       // CAP = 21, STATES = 736
 ```
 
-**What only Fe lets me do here.** The model is a `const fn` with a loop and array writes, evaluated by the compiler under
-`static_assert`, and the very same function is called from `recv` handlers and tests on two backends. We know of no
-equivalent in another contract language that runs the checked function in the deployed contract's own build; this is not a
-claim about any tool we did not test.
+**How Fe is used here (what only Fe gives this build).** The model is a `const fn` with a loop and array writes, evaluated by the compiler under
+`static_assert`, and the very same function is called from `recv` handlers and tests on two backends. We did not
+compare this against other contract languages or model checkers: this describes what this build does, not how it ranks.
 
 ## 📊 Engineering Rigor
 
@@ -136,7 +135,7 @@ claim about any tool we did not test.
 | Compile-time step budget (C = 21) | 940,335 of 1,000,000 (94.0%) | `evidence/budget.md` |
 | Attack printer (C′ = 19) | 908,455 steps (90.8%); C′ = 20 fits at 98.4% | `evidence/capacities.md` |
 | Vault (B = 10, T = 3) | 211 states, 580 edges, 586,715 steps (58.7%) | `evidence/bench-2026-11-20.md` §5 |
-| Independent oracle | agrees with all 8 Fe pins | `evidence/oracle.txt` |
+| Independent oracle | agrees with all 15 Fe pins (8 escrow, 7 vault) and the 3,680-row edge table | `evidence/oracle.txt` |
 | Differential (C = 21) | 1,008 deployments, 25,646 calls, every ok + state matched against `step()` | `evidence/differential.txt` |
 | Runtime search gas, same explorer (C = 17) | 16,394,182 (494 states) | `evidence/gas.txt` |
 | Bug zoo | 9 of 9 patches fail `fe build` naming the invariant | `evidence/check-bugs.txt` |
@@ -145,7 +144,10 @@ C = 21 is the largest capacity the encoding holds; the largest independent shard
 the benchmark file with the machine and load noted: at these sizes they carry little signal, the step budget is the cost
 that decides what fits.
 
-### What this does not prove
+### Limitations: what this does not prove
+
+In short: only the stated capacities are explored; no liveness; the escrow model has no caller identity and moves no value; the
+model, the Fe code and the oracle share one author. Details:
 
 
 - Only the stated capacities are explored (C = 21 for the state count, C′ = 19 for the printed trace); behaviour above them is
@@ -209,7 +211,7 @@ sh tools/ci_local.sh                  # the CI workflow's steps, run locally
 
 `.github/workflows/ci.yml` runs the same steps on a pinned Fe, including a job that must see the bug patches fail the build.
 Transcripts of the runs are in `evidence/` (`transcript-tests.txt`: 28 passed on Sonatina, 10 passed on native;
-`ci-local-2026-11-20.txt`).
+`ci-local-2026-11-21.txt`, at the commit of the run).
 
 ## 📁 Project Structure
 
@@ -226,12 +228,15 @@ MODEL.md  FE-NOTES.md  DECLARATION.md  DEMO.md
 ## 📽️ Demo Materials
 
 `DEMO.md` has the exact command behind every number here. The demo is reproducible from a fresh clone
-(`evidence/repro-clone-2026-11-21.txt`; a Linux x86-64 container run: `evidence/repro-linux-2026-11-21.txt`).
+(a Linux x86-64 container run of a clean clone at 7b5e404: `evidence/repro-linux-2026-11-21.txt`, 28 + 10 tests; `evidence/repro-clone-2026-11-21.txt` is an earlier fresh-clone run that predates the vault).
 
 ## 📄 License
 
-Apache-2.0 (`LICENSE`). Built during the contest window: first commit 2026-11-15, solo author. `DECLARATION.md` covers
-pre-existing work, reused code and AI assistance (Claude Code wrote most of the code and prose under the author's direction).
+Apache-2.0 (`LICENSE`).
+
+**Team:** solo (edycutjong). **Declaration** (`DECLARATION.md`): nothing existed before the window opened on 2026-11-03; a day-0
+feasibility spike was ported into this repository module by module; the first commit is 2026-11-15; Fe's own `std`/`core` is the
+only dependency; Claude Code wrote most of the code and prose under the author's direction.
 
 ## 🙏 Acknowledgments
 
