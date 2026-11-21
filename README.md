@@ -50,7 +50,7 @@ Try it (macOS Apple Silicon or Linux x86-64; git, curl and patch):
 ```sh
 git clone https://github.com/edycutjong/exhaust && cd exhaust
 curl -fsSL https://raw.githubusercontent.com/argotorg/fe/v26.6.0/feup/feup.sh | bash -s -- --version v26.6.0 --no-modify-path
-export PATH=$HOME/.fe/bin:$PATH
+export PATH=$HOME/.fe/bin:$PATH # this shell only: repeat it in every new terminal
 fe --version                  # fe 26.6.0 (5b3f96a)
 fe build                      # the compile-time search: green (736 states at C = 21)
 sh demo/run.sh                # one-line bug in the Refund guard: red, with the invariant and the digits
@@ -71,7 +71,7 @@ error[8-0081]: static assertion failed
 It then replays that attack on the patched contract (all five calls accepted: seller and buyer both paid) and on the real
 one (the Refund is refused, storage unchanged). It works on temporary copies, so your checkout is never patched. To break
 it by hand: delete `&& s.seller == 0` from the Refund guard in `src/escrow.fe`, run `fe build`, then
-`git restore src/escrow.fe`.
+`git restore src/escrow.fe` before `fe test` (a failed `static_assert` stops `fe test` from running at all).
 
 ## 💡 The Problem & Solution
 
@@ -129,7 +129,31 @@ handlers calling the shared `step()`; `fe test` on both backends with `black_box
 a proper ingot and `fe fmt --check`.
 
 ```fe
-// src/escrow_explore.fe: the build fails if the reachable-state count drifts, or any invariant breaks on the way
+// src/escrow_explore.fe, explore_seeds (explore calls it): a breadth-first search in a const fn, every action from every state
+while head < tail {
+    let x = queue[head]
+    head += 1
+    let cur = decode(x)
+    var a: u32 = 0
+    while a < ACTIONS {
+        let act = action_of(a)
+        let n = step(cur, act, cap)
+        if n.ok {
+            // Every invariant is checked before `encode`, so an out-of-box successor fails by name.
+            let v = first_violation(cur, act, n.s, cap)
+            if v != OK { require(v) }
+            let y = encode(n.s)
+            if !visited[y as usize] {
+                visited[y as usize] = true
+                queue[tail] = y
+                tail += 1
+            }
+        }
+        a += 1
+    }
+}
+
+// the build fails if the reachable-state count drifts, or any invariant breaks on the way
 static_assert(explore(17) == 494)
 static_assert(explore(CAP) == STATES)       // CAP = 21, STATES = 736
 ```
