@@ -20,7 +20,7 @@ Required by the Fe Builders Challenge 2026 rules. This file is updated as the pr
   pattern (install Fe with `feup`, then `fe fmt --check` / `fe test` / `fe build`) and the license choice.
 - **LICENSE**: the unmodified Apache License 2.0 text.
 - **Fonts** (SIL OFL 1.1, self-hosted in `docs/assets/` for the project page and deck): Saira Extra Condensed, Literata and B612 Mono; their OFL texts are in `docs/assets/fonts/OFL-*.txt`.
-- No JavaScript library is used; the page and deck are hand-written HTML, CSS and vanilla JS (about 190 lines in all).
+- No JavaScript library or framework is used: the page and deck are plain HTML and CSS with about 190 lines of vanilla JS in all.
 
 ## AI assistance
 
@@ -28,6 +28,10 @@ Required by the Fe Builders Challenge 2026 rules. This file is updated as the pr
   author's direction: design, Fe source, tests, scripts and prose.
 - **Outside models reviewed the specification** before any code of this repository was written (the scratch spike above predates the review): OpenAI Codex, xAI Grok and Alibaba Qwen (two rounds). Grok and Qwen then reviewed the architecture and code (two rounds); Codex was usage-limited in both of those rounds and did not review them. Grok, Qwen and Meta Muse then reviewed the judge-facing documents once (README, DEMO, MODEL, FE-NOTES, this file, the project page and deck); Codex was usage-limited again. Their accepted suggestions changed the design (for example the transition form of the `conserved`
   invariant); they did not write repository code.
+- **Media.** The demo video's voice-over is AI speech (ElevenLabs text-to-speech) reading a script written with Claude
+  Code; the few sound effects are synthesized sine tones and there is no music. The video, the README GIF, the project
+  page, the deck and the images in `docs/assets/` were made with Claude Code under the author's direction. The terminal in
+  the video and the GIF is a real capture of the commands in a fresh clone (`fe 26.6.0` output), replayed, not mocked.
 - The author is responsible for every line and can explain it. **The tests and the compile-time checks are the check**:
   `fe build` runs the search, exhaustive at the capacities stated in `evidence/capacities.md`, and `fe test` runs it again
   at runtime on two backends.
