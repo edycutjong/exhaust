@@ -35,10 +35,10 @@ then about 1,160 per state; `evidence/bench-2026-11-20.md`). Consts that referen
 larger model is split into independent asserts, never chained (`evidence/budget.md`).
 
 This is bounded-exhaustive checking at the stated capacities (the small-scope hypothesis), not formal verification; what it
-does not cover is listed under [Limitations](#limitations-what-this-does-not-prove). For the nine bugs we planted, the
-Python oracle already finds each one at escrow capacity 1 or 2, or vault balance 1 or 2, and the demo route `11234` is the
-same at capacity 2 as at 21 (`evidence/small-scope.txt`): an illustration of the hypothesis on this zoo, not evidence about
-bugs nobody planted. C = 21 is how far one assert can count, not what the demo bug needs.
+does not cover is listed under [Limitations](#limitations-what-this-does-not-prove). For the nine bugs we planted, an
+independent Python re-count of the model (`tools/ref_model.py`) shows each one already breaking an invariant at escrow
+capacity 1 or 2, or vault balance 1 or 2, and the demo route `11234` is the same at capacity 2 as at 21
+(`evidence/small-scope.txt`): an illustration of the hypothesis on this zoo, not evidence about bugs nobody planted. C = 21 is how far one assert can count, not what the demo bug needs.
 
 ## 📸 See it in Action
 
