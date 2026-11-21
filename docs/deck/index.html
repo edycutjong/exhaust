@@ -371,7 +371,7 @@ code{font-family:var(--font-data);font-size:.86em}
       <div class="plate"><div class="ph"><span class="msg-bad">Invariant 'paid once' broken</span><code>ROUTE 1·1·2·3·4</code></div><ol class="desc" aria-label="the route, state after each action (phase, escrow, seller, buyer)"><li class="on" data-i="0"><div class="act">Start</div><div class="st">(Open<span class="p">,</span>0<span class="p">,</span>0<span class="p">,</span>0)</div></li><li class="on" data-i="1"><div class="act"><i>1</i>Deposit</div><div class="st">(Open<span class="p">,</span>1<span class="p">,</span>0<span class="p">,</span>0)</div></li><li class="on" data-i="2"><div class="act"><i>1</i>Deposit</div><div class="st">(Open<span class="p">,</span>2<span class="p">,</span>0<span class="p">,</span>0)</div></li><li class="on" data-i="3"><div class="act"><i>2</i>Lock</div><div class="st">(Locked<span class="p">,</span>2<span class="p">,</span>0<span class="p">,</span>0)</div></li><li class="on" data-i="4"><div class="act"><i>3</i>Release</div><div class="st">(Locked<span class="p">,</span>1<span class="p">,</span>1<span class="p">,</span>0)</div></li><li class="last on" data-i="5"><div class="act"><i>4</i>Refund</div><div class="st">(Settled<span class="p">,</span>0<span class="p">,</span>1<span class="p">,</span>1)</div></li></ol></div>
     </div>
   </div>
-  <div class="foot"><span>exhaust · 44630b8</span><span>1 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc</span><span>1 / 10</span></div>
   <aside class="notes">Cold open: the red route is real. The lamps are the 736 reachable states from the committed graph; the build output on the left is the committed transcript.</aside>
 </section>
 
@@ -384,7 +384,7 @@ code{font-family:var(--font-data);font-size:.86em}
     <p class="big">The patched contract accepts all five calls; only the order breaks the escrow. The per-handler test suite misses this patch (<code>evidence/check-bugs<span class="p">.</span>txt</code>).</p>
   </div>
   <div class="src">evidence/demo-run<span class="p">.</span>txt · the patched contract with the search removed</div>
-  <div class="foot"><span>exhaust · 44630b8</span><span>2 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc</span><span>2 / 10</span></div>
   <aside class="notes">README, The Problem: unit tests check imagined paths; a model checker is a separate tool, language and step.</aside>
 </section>
 
@@ -497,7 +497,7 @@ code{font-family:var(--font-data);font-size:.86em}
       </div>
     </div>
   </div>
-  <div class="foot"><span>exhaust · 44630b8</span><span>3 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc</span><span>3 / 10</span></div>
   <aside class="notes">Step with →: depth bands 0–10, 0–21, 0–32, all 43 (EXHAUSTED), then the one-line bug: the red route and a new lamp outside the explored set. Lamps = states, columns = breadth-first depth, from evidence/state-graph-escrow.json.</aside>
 </section>
 
@@ -510,7 +510,7 @@ code{font-family:var(--font-data);font-size:.86em}
     <div><div class="errx"><span class="ln r">error[3-0036]: assertion failed in const context</span><span class="ln">= assertion message: invariant 'paid once' broken: buyer and seller both paid</span><span class="ln r">error[8-0081]: static assertion failed</span><span class="ln">= left: `11234`</span></div><div class="src">evidence/transcript-fail-refund-after-release<span class="p">.</span>txt (excerpt)</div></div>
   </div>
   <div class="is-attack s2" style="margin-top:44px"><div class="plate" style="border-top:3px solid var(--after);border-color:var(--after);border-radius:8px;margin:0"><div class="ph"><span style="color:var(--after)">left: `11234`, decoded</span><code>ROUTE 1·1·2·3·4</code></div><ol class="desc" aria-label="the route, state after each action (phase, escrow, seller, buyer)"><li class="on" data-i="0"><div class="act">Start</div><div class="st">(Open<span class="p">,</span>0<span class="p">,</span>0<span class="p">,</span>0)</div></li><li class="on" data-i="1"><div class="act"><i>1</i>Deposit</div><div class="st">(Open<span class="p">,</span>1<span class="p">,</span>0<span class="p">,</span>0)</div></li><li class="on" data-i="2"><div class="act"><i>1</i>Deposit</div><div class="st">(Open<span class="p">,</span>2<span class="p">,</span>0<span class="p">,</span>0)</div></li><li class="on" data-i="3"><div class="act"><i>2</i>Lock</div><div class="st">(Locked<span class="p">,</span>2<span class="p">,</span>0<span class="p">,</span>0)</div></li><li class="on" data-i="4"><div class="act"><i>3</i>Release</div><div class="st">(Locked<span class="p">,</span>1<span class="p">,</span>1<span class="p">,</span>0)</div></li><li class="last on" data-i="5"><div class="act"><i>4</i>Refund</div><div class="st">(Settled<span class="p">,</span>0<span class="p">,</span>1<span class="p">,</span>1)</div></li></ol></div></div>
-  <div class="foot"><span>exhaust · 44630b8</span><span>4 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc</span><span>4 / 10</span></div>
   <aside class="notes">sh demo/run.sh: green build, apply the patch, red build naming 'paid once' with left: 11234, then the attack replayed on the patched and the real contract.</aside>
 </section>
 
@@ -528,7 +528,7 @@ code{font-family:var(--font-data);font-size:.86em}
   </div>
   <div style="display:flex;gap:80px;margin-top:44px"><div><div class="kpi">1,008</div><div class="kl">deployed contracts</div></div><div><div class="kpi">25,646</div><div class="kl">handler calls replayed</div></div><div><div class="kpi">0</div><div class="kl">mismatches with <code>step()</code></div></div></div>
   <div class="src" style="margin-top:22px">evidence/differential.txt · the vault's caller and timelock checks are adapter code outside the check (README · Limitations)</div>
-  <div class="foot"><span>exhaust · 44630b8</span><span>5 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc</span><span>5 / 10</span></div>
   <aside class="notes">For the escrow, the function that was checked is the function that is deployed. Storage states the handlers cannot reach are not covered.</aside>
 </section>
 
@@ -539,7 +539,7 @@ code{font-family:var(--font-data);font-size:.86em}
   <p class="big">Asserted in <code>test_runtime_explore_agrees</code> (and 494 at C = 17). The EVM search at C = 17 burns <b>16<span class="p">,</span>394<span class="p">,</span>182</b> gas: <code>black_box</code> keeps it from being folded.</p>
   <div style="display:flex;gap:80px;margin-top:40px"><div><div class="kpi" style="font-size:110px">28</div><div class="kl">EVM tests</div></div><div><div class="kpi" style="font-size:110px">10</div><div class="kl">native tests</div></div><div><div class="kpi" style="font-size:110px">15<small>/15</small></div><div class="kl">Fe pins matched by a Python oracle</div></div></div>
   <div class="src">evidence/transcript-tests<span class="p">.</span>txt · evidence/gas<span class="p">.</span>txt · evidence/oracle<span class="p">.</span>txt</div>
-  <div class="foot"><span>exhaust · 44630b8</span><span>6 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc</span><span>6 / 10</span></div>
   <aside class="notes">Same explorer source, three executions. An independent Python oracle (tools/ref_model.py) agrees with all 15 Fe pins.</aside>
 </section>
 
@@ -694,7 +694,7 @@ code{font-family:var(--font-data);font-size:.86em}
 </svg>
   </div>
   <table class="ct"><thead><tr><th>No.</th><th>Patch</th><th>Invariant</th><th>Route</th><th>Decoded</th></tr></thead><tbody><tr><td class="rn">01</td><td><code>refund-after-release</code></td><td class="inv">'paid once'</td><td class="dg">11234</td><td>Deposit, Deposit, Lock, Release, Refund</td></tr><tr><td class="rn">02</td><td><code>settle-early</code></td><td class="inv">'settled empty'</td><td class="dg">1123</td><td>Deposit, Deposit, Lock, Release</td></tr><tr><td class="rn">03</td><td><code>mint-release</code></td><td class="inv">'conserved'</td><td class="dg">123</td><td>Deposit, Lock, Release</td></tr><tr><td class="rn">04</td><td><code>cap-off-by-one</code></td><td class="inv">'within capacity'</td><td class="dg">11111111111111111111</td><td>twenty Deposits</td></tr><tr><td class="rn">05</td><td><code>vault-approve-twice</code></td><td class="inv">'counted once'</td><td class="dg">122</td><td>Propose, ApproveA, ApproveA</td></tr><tr><td class="rn">06</td><td><code>vault-execute-early</code></td><td class="inv">'timelock respected'</td><td class="dg">1236</td><td>Propose, ApproveA, ApproveB, Execute</td></tr><tr><td class="rn">07</td><td><code>vault-pay-twice</code></td><td class="inv">'pays one unit'</td><td class="dg">1235556</td><td>Propose, ApproveA, ApproveB, Tick, Tick, Tick, Execute</td></tr><tr><td class="rn">08</td><td><code>vault-cancel-pays</code></td><td class="inv">'only execute pays'</td><td class="dg">17</td><td>Propose, Cancel</td></tr><tr><td class="rn">09</td><td><code>vault-execute-unguarded</code></td><td class="inv">'two distinct approvals'</td><td class="dg">6</td><td>Execute</td></tr></tbody></table>
-  <div class="foot"><span>exhaust · 44630b8</span><span>7 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc</span><span>7 / 10</span></div>
   <aside class="notes">sh demo/check-bugs.sh passes only when every patched build fails naming its invariant; CI is configured to run it as a must-fail job; until Actions runs on the public repo, the evidence is the local transcript. evidence/check-bugs.txt.</aside>
 </section>
 
@@ -712,7 +712,7 @@ code{font-family:var(--font-data);font-size:.86em}
     <li>The escrow model has no caller identity and moves no value.</li>
     <li>Model, Fe code and oracle share one author.</li>
   </ul>
-  <div class="foot"><span>exhaust · 44630b8 · evidence/budget.md · machine.rs L66–73 at v26.6.0</span><span>8 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc · evidence/budget.md · machine.rs L66–73 at v26.6.0</span><span>8 / 10</span></div>
   <aside class="notes">Bounded-exhaustive at the stated capacities, not formal verification. Consts that reference consts share one budget, so bigger models split into independent asserts (91 / 238 / 385 states).</aside>
 </section>
 
@@ -723,7 +723,7 @@ code{font-family:var(--font-data);font-size:.86em}
   <p class="big" style="font-size:36px;max-width:30em">Since Fe 26.1.0 a <code>const fn</code> can loop and write arrays under <code>static_assert</code>. The search is ordinary Fe; the build is the checker.</p>
   <ul class="why-ev"><li><span>const fn + while + array writes</span><code>src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>94</code></li><li><span>static_assert as the build gate</span><code>src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>254</code></li><li><span>assert! message = named invariant</span><code>src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>41</code></li><li><span>contract · recv calling step()</span><code>src/escrow_contract<span class="p">.</span>fe<span class="p">:</span>64</code></li><li><span>fe test on both backends · black_box</span><code>src/tests<span class="p">.</span>fe<span class="p">:</span>30</code></li></ul>
   <div class="src" style="font-size:20px;margin-top:18px">fe 26.6.0 (5b3f96a) · no comparison with other languages was made</div>
-  <div class="foot"><span>exhaust · 44630b8 · fe 26.6.0 (5b3f96a)</span><span>9 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc · fe 26.6.0 (5b3f96a)</span><span>9 / 10</span></div>
   <aside class="notes">We did not compare against other contract languages or model checkers; this describes what this build does, not how it ranks.</aside>
 </section>
 
@@ -740,7 +740,7 @@ fe test &amp;&amp; fe test --backend native</pre>
     <div><div class="qr" aria-label="QR code for https://exhaust.edycu.dev/"><svg viewBox="0 0 25 25" class="segno"><path class="qrline" stroke="#23221e" d="M0 0.5h7m1 0h1m1 0h2m1 0h4m1 0h7m-25 1h1m5 0h1m2 0h1m2 0h2m2 0h1m1 0h1m5 0h1m-25 1h1m1 0h3m1 0h1m2 0h2m4 0h1m2 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m1 0h2m1 0h6m1 0h1m1 0h3m1 0h1m-25 1h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h2m1 0h1m1 0h3m1 0h1m-25 1h1m5 0h1m1 0h4m1 0h2m3 0h1m5 0h1m-25 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-17 1h1m1 0h1m3 0h1m-15 1h1m3 0h1m1 0h7m2 0h1m1 0h5m2 0h1m-25 1h1m1 0h1m1 0h1m3 0h1m1 0h2m1 0h3m1 0h1m2 0h2m1 0h1m-22 1h1m1 0h1m1 0h1m2 0h1m3 0h1m1 0h5m1 0h2m-22 1h1m8 0h3m1 0h2m1 0h1m1 0h1m2 0h2m-24 1h3m1 0h9m3 0h4m1 0h4m-25 1h1m6 0h1m2 0h1m1 0h2m1 0h2m3 0h1m2 0h1m-21 1h1m2 0h1m1 0h1m1 0h3m1 0h2m1 0h6m-21 1h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h2m1 0h2m1 0h2m-24 1h3m1 0h4m1 0h1m1 0h2m1 0h1m1 0h7m-15 1h5m1 0h3m3 0h1m-21 1h7m1 0h4m1 0h2m1 0h1m1 0h1m1 0h1m-21 1h1m5 0h1m2 0h1m2 0h1m3 0h1m3 0h5m-25 1h1m1 0h3m1 0h1m1 0h1m1 0h1m5 0h7m-23 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h3m1 0h3m2 0h3m-25 1h1m1 0h3m1 0h1m4 0h2m1 0h1m1 0h3m2 0h1m1 0h1m-24 1h1m5 0h1m3 0h3m4 0h1m1 0h5m-24 1h7m1 0h1m3 0h1m2 0h1m1 0h2m3 0h3"/></svg></div>
       <div class="links"><a href="https://exhaust.edycu.dev/">exhaust.edycu.dev</a><br><a href="https://github.com/edycutjong/exhaust">github.com/edycutjong/exhaust</a><br>Apache-2.0</div></div>
   </div>
-  <div class="foot"><span>exhaust · 44630b8</span><span>10 / 10</span></div>
+  <div class="foot"><span>exhaust · source de43ffc</span><span>10 / 10</span></div>
   <aside class="notes">DEMO.md maps every number to its command. Declaration of AI assistance and reused code: DECLARATION.md.</aside>
 </section>
 
