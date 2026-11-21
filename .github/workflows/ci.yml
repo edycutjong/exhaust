@@ -20,7 +20,7 @@ jobs:
     name: Quality (fmt, check)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
       - name: Install Fe (pinned)
@@ -35,7 +35,7 @@ jobs:
     name: Build (compile-time exhaustive search)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
       - name: Install Fe (pinned)
@@ -46,7 +46,7 @@ jobs:
         run: fe build
       - name: List build artifacts
         run: find out -type f | sort
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: fe-build-out
           path: out/
@@ -60,7 +60,7 @@ jobs:
       matrix:
         backend: [sonatina, native]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
       - name: Install Fe (pinned)
@@ -81,7 +81,7 @@ jobs:
     name: Must-fail (every bug patch breaks the build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
       - name: Install Fe (pinned)
@@ -97,14 +97,14 @@ jobs:
     name: Oracle (independent Python model vs the Fe pins)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - run: python3 -I tools/ref_model.py --check
 
   bench-smoke:
     name: Bench smoke (step-limit rows gate; the rest is uploaded)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
       - name: Install Fe (pinned)
@@ -113,7 +113,7 @@ jobs:
           echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
       - name: bench/run.sh --quick
         run: sh bench/run.sh --quick --date ci
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: bench-smoke
@@ -124,7 +124,7 @@ jobs:
     name: Transition coverage (every oracle-reachable edge replayed on the EVM)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
       - name: Install Fe (pinned)
@@ -134,7 +134,7 @@ jobs:
       - name: Replayed edges vs the oracle's reachable edges (fails on any gap)
         shell: bash # bash -eo pipefail: a failing script must fail the step even though its output is piped to tee
         run: sh tools/transition_coverage.sh | tee transition-coverage.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: transition-coverage
           path: transition-coverage.txt
