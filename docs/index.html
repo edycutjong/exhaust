@@ -77,11 +77,12 @@
 .atk .rl.start{fill:var(--before)}
 .atk .ring{fill:none;stroke:var(--after-lamp)}
 .atk .nl{fill:var(--after-lamp);stroke:#FFD2CB}
-.atk .tag{font-family:var(--font-data);fill:var(--after-lamp-text);font-size:15px;letter-spacing:0}
+.atk .tag{font-family:var(--font-data);fill:var(--after-lamp-text);font-size:17px;letter-spacing:0}
 .atk .tagc rect{fill:rgba(18,22,20,.9);stroke:var(--after-lamp);stroke-width:1}
 .atk .pulse{fill:none;stroke:var(--after-lamp);stroke-width:1.5;transform-box:fill-box;transform-origin:center;animation:pulse 2.4s ease-out infinite}
 @keyframes pulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(3.2)}}
-.atk .nl{filter:drop-shadow(0 0 6px var(--after-lamp))}
+.atk .nl{filter:drop-shadow(0 0 8px var(--after-lamp))}
+.atk .halo{fill:var(--after-lamp);opacity:.16}
 @media (max-width:640px){.atk .tag,.atk .tagc{display:none}}
 .board.play .atk .rt{stroke-dasharray:100;stroke-dashoffset:100;animation:draw var(--rt,1.8s) cubic-bezier(.45,0,.2,1) forwards}
 .board.play .atk .rl,.board.play .atk .nlg{opacity:0;animation:pop .35s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--at,0s)}
@@ -117,7 +118,7 @@
 
 /* ---------- lever frame ---------- */
 .levers{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
-.lever{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;
+.lever{all:unset;box-sizing:border-box;cursor:pointer;color:var(--ink);display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;
   padding:8px 14px 8px 8px;border:2px solid var(--ink);border-radius:6px;background:var(--bg);min-width:0;
   transition:background .2s,transform .12s,box-shadow .2s}
 .lever:hover{background:var(--paper-2);box-shadow:0 3px 0 var(--ink)}
@@ -259,6 +260,7 @@ section.sec{padding:96px 0 0}
 .card.a pre{margin:6px 0 16px;font-family:var(--font-data);font-size:12px;line-height:1.6;color:#E9E4D4;white-space:pre-wrap;overflow-wrap:anywhere;
   background:rgba(0,0,0,.18);padding:12px 14px;border-radius:4px;border-left:3px solid var(--frontier)}
 .card.a .src{color:#B9B6A6}
+.card.a pre .cl{display:block;text-indent:0}
 .card.a .chip{background:transparent;color:var(--before);border-color:#7A847E}
 .card.b,.card.c{grid-column:span 3}
 .card.d,.card.e,.card.f{grid-column:span 2}
@@ -316,11 +318,20 @@ section.sec{padding:96px 0 0}
 .vlevers .lever .no{position:absolute;right:12px;top:10px;font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1;color:var(--rule)}
 .vlevers .lever[aria-pressed=true] .no{color:#5a5650}
 #vlt-board .atk.off{display:none}
-.sheet{margin:22px 0 0;border:1.5px solid var(--ink);border-radius:6px;background:#EEEADF;padding:18px 18px 12px}
+section.room{margin-top:96px;padding:84px 0 88px;background:var(--panel);color:var(--before);
+  background-image:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(242,232,204,.07),transparent 70%)}
+.room .h2{color:var(--before)} .room .h2 em.k{background:none;color:inherit;text-decoration:underline;text-decoration-thickness:5px;text-underline-offset:9px;text-decoration-color:#7A847E}
+.room .lede{color:#D8D2BF} .room .lede code{color:var(--before)} .room .lab{color:#B9B6A6} .room .lab b{color:var(--before)}
+.room .board{background:#232926;box-shadow:inset 0 0 0 1px #47514B,inset 0 0 60px rgba(0,0,0,.35)}
+.room .term{box-shadow:inset 0 0 0 1px #3a3f3c}
+.sheet{margin:22px 0 0;border:1.5px solid var(--ink);border-radius:6px;background:#EEEADF;padding:18px 22px;display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:28px;align-items:center}
 .sheet img{display:block;width:100%;height:auto}
-.sheet figcaption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--rule);margin-top:10px;padding-top:8px;
+.sheet figcaption{grid-row:1;grid-column:1;display:flex;flex-direction:column;gap:10px;
   font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:13px;color:var(--muted)}
-.sheet-scroll{overflow-x:auto}
+.sheet-scroll{overflow-x:auto;grid-column:2}
+.sheet .fc-h{font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1;color:var(--ink);letter-spacing:.02em}
+.sheet .fc-p{font-family:var(--font-body);text-transform:none;letter-spacing:0;font-weight:400;font-size:15.5px;line-height:1.5;color:#3b3934}
+@media (max-width:1080px){.sheet{grid-template-columns:minmax(0,1fr)} .sheet-scroll{grid-column:1} .sheet figcaption{grid-row:auto}}
 .lat.escp{display:none}
 .vscroll{overflow-x:auto;overscroll-behavior-x:contain}
 .lat .cyc{font-family:var(--font-data);font-size:11px;fill:#9DA49F;text-anchor:middle;letter-spacing:.04em}
@@ -405,7 +416,9 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
   .vscroll .lat{min-width:860px} .vscroll{margin:0 -4px;padding-bottom:4px}
   .card.a pre{font-size:10.5px}
   .sheet-scroll img{min-width:720px}
-  .signal .bhead{flex-direction:column;gap:2px} .signal .bhead .r-bad{font-size:12px}
+  .signal .bhead{flex-direction:column;gap:2px;padding:0 4px 0 14px} .signal .bhead .r-bad{font-size:12px}
+  .hero{padding-top:18px} .hero .lab{padding-top:8px}
+  .plate .ph code{letter-spacing:.1em} .plate .ph{flex-wrap:wrap;row-gap:2px}
   .board{padding:12px 10px 10px} .bhead,.bfoot{font-size:11px;padding:0 4px} .bhead .read b{font-size:18px} .bsrc{display:none}
   .plate{margin:0 4px;padding:10px 8px 10px} .desc .st{font-size:9.5px} .desc li{padding:6px 5px 7px} .plate .ph{font-size:13px} .plate .ph code{font-size:13px}
   .desc{grid-template-columns:repeat(3,minmax(0,1fr))} .desc li:nth-child(4){border-left:0} .desc li:nth-child(n+4){border-top:1px solid var(--rule)}
@@ -545,7 +558,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <g class="lit" data-d="42"><circle class="l" cx="912.9" cy="202.4" r="3.3"/><circle class="l" cx="912.9" cy="215" r="3.3"/><circle class="l" cx="912.9" cy="227.6" r="3.3"/></g>
 <g class="lit" data-d="43"><circle class="l" cx="934" cy="202.4" r="3.3"/><circle class="l" cx="934" cy="215" r="3.3"/><circle class="l" cx="934" cy="227.6" r="3.3"/></g>
 <path class="hull" d="M14.1 215L26 206.4L47.1 206.4L68.2 200.1L89.3 181.3L110.5 181.3L131.6 162.5L152.7 162.5L173.8 143.6L194.9 143.6L216 124.8L237.2 124.8L258.3 105.9L279.4 105.9L300.5 87.1L321.6 87.1L342.7 68.2L363.9 68.2L385 49.4L406.1 49.4L427.2 30.5L448.3 30.5L469.4 11.7L490.6 18L511.7 5.4L532.8 24.3L553.9 24.3L575 43.1L596.1 43.1L617.3 62L638.4 62L659.5 80.8L680.6 80.8L701.7 99.6L722.8 99.6L744 118.5L765.1 118.5L786.2 137.3L807.3 137.3L828.4 156.2L849.5 156.2L870.7 175L891.8 175L912.9 193.9L934 193.9L945.9 215L934 236.1L912.9 236.1L891.8 255L870.7 255L849.5 273.8L828.4 273.8L807.3 292.7L786.2 292.7L765.1 311.5L744 311.5L722.8 330.4L701.7 330.4L680.6 349.2L659.5 349.2L638.4 368L617.3 368L596.1 386.9L575 386.9L553.9 405.7L532.8 405.7L511.7 424.6L490.6 412L469.4 418.3L448.3 399.5L427.2 399.5L406.1 380.6L385 380.6L363.9 361.8L342.7 361.8L321.6 342.9L300.5 342.9L279.4 324.1L258.3 324.1L237.2 305.2L216 305.2L194.9 286.4L173.8 286.4L152.7 267.5L131.6 267.5L110.5 248.7L89.3 248.7L68.2 229.9L47.1 223.6L26 223.6Z"/>
-<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="9.9"/><path class="rt" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="2.8"/><circle class="rl start" style="--at:0.00s" cx="26" cy="215" r="4.3"/><circle class="rl" style="--at:0.35s" cx="47.1" cy="215" r="4.3"/><circle class="rl" style="--at:0.70s" cx="68.2" cy="208.7" r="4.3"/><circle class="rl" style="--at:1.05s" cx="89.3" cy="202.4" r="4.3"/><circle class="rl" style="--at:1.40s" cx="110.5" cy="227.6" r="4.3"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="131.6" cy="397.2" r="15.2" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="131.6" cy="397.2" r="10.2" stroke-opacity=".6" stroke-width="1"/><circle class="pulse" cx="131.6" cy="397.2" r="10.2"/><circle class="nl" cx="131.6" cy="397.2" r="7.9" stroke-width="1.5"/></g><g class="tagc"><rect x="148.1" y="375.2" width="192.8" height="52" rx="3"/><text class="tag" x="157.1" y="393.2">NEW (Settled,0,1,1)</text><text class="tag" x="157.1" y="411.2">both sides paid</text></g></g>
+<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="9.9"/><path class="rt" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="2.8"/><circle class="rl start" style="--at:0.00s" cx="26" cy="215" r="4.3"/><circle class="rl" style="--at:0.35s" cx="47.1" cy="215" r="4.3"/><circle class="rl" style="--at:0.70s" cx="68.2" cy="208.7" r="4.3"/><circle class="rl" style="--at:1.05s" cx="89.3" cy="202.4" r="4.3"/><circle class="rl" style="--at:1.40s" cx="110.5" cy="227.6" r="4.3"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="131.6" cy="397.2" r="15.2" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="131.6" cy="397.2" r="10.2" stroke-opacity=".6" stroke-width="1"/><circle class="halo" cx="131.6" cy="397.2" r="24.8"/><circle class="pulse" cx="131.6" cy="397.2" r="11.9"/><circle class="nl" cx="131.6" cy="397.2" r="11.2" stroke-width="2"/></g><g class="tagc"><rect x="151.4" y="373.2" width="217.6" height="58" rx="3"/><text class="tag" x="161.4" y="394.2">NEW (Settled,0,1,1)</text><text class="tag" x="161.4" y="414.2">both sides paid</text></g></g>
 </svg>
 <svg class="lat escp" aria-hidden="true" viewBox="0 0 600 470" role="img" aria-labelledby="escp-t"><title id="escp-t">736 reachable states as lamps, columns by breadth-first depth 0 to 43, 966 transitions as wires</title>
 <g class="lit" data-d="0"><path class="w" d="M16 235L29.2 235"/></g>
@@ -637,7 +650,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <g class="lit" data-d="42"><circle class="l" cx="570.8" cy="221.3" r="3.6"/><circle class="l" cx="570.8" cy="235" r="3.6"/><circle class="l" cx="570.8" cy="248.7" r="3.6"/></g>
 <g class="lit" data-d="43"><circle class="l" cx="584" cy="221.3" r="3.6"/><circle class="l" cx="584" cy="235" r="3.6"/><circle class="l" cx="584" cy="248.7" r="3.6"/></g>
 <path class="hull" d="M3 235L16 225.6L29.2 225.6L42.4 218.8L55.6 198.3L68.8 198.3L82 177.7L95.3 177.7L108.5 157.2L121.7 157.2L134.9 136.7L148.1 136.7L161.3 116.1L174.5 116.1L187.7 95.6L200.9 95.6L214.1 75.1L227.3 75.1L240.6 54.5L253.8 54.5L267 34L280.2 34L293.4 13.5L306.6 20.3L319.8 6.6L333 27.2L346.2 27.2L359.4 47.7L372.7 47.7L385.9 68.2L399.1 68.2L412.3 88.8L425.5 88.8L438.7 109.3L451.9 109.3L465.1 129.8L478.3 129.8L491.5 150.4L504.7 150.4L518 170.9L531.2 170.9L544.4 191.4L557.6 191.4L570.8 212L584 212L597 235L584 258L570.8 258L557.6 278.6L544.4 278.6L531.2 299.1L518 299.1L504.7 319.6L491.5 319.6L478.3 340.2L465.1 340.2L451.9 360.7L438.7 360.7L425.5 381.2L412.3 381.2L399.1 401.8L385.9 401.8L372.7 422.3L359.4 422.3L346.2 442.8L333 442.8L319.8 463.4L306.6 449.7L293.4 456.5L280.2 436L267 436L253.8 415.5L240.6 415.5L227.3 394.9L214.1 394.9L200.9 374.4L187.7 374.4L174.5 353.9L161.3 353.9L148.1 333.3L134.9 333.3L121.7 312.8L108.5 312.8L95.3 292.3L82 292.3L68.8 271.7L55.6 271.7L42.4 251.2L29.2 244.4L16 244.4Z"/>
-<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M16 235L29.2 235L42.4 228.2L55.6 221.3L68.8 248.7L82 385.6" stroke-width="10.8"/><path class="rt" pathLength="100" d="M16 235L29.2 235L42.4 228.2L55.6 221.3L68.8 248.7L82 385.6" stroke-width="3.1"/><circle class="rl start" style="--at:0.00s" cx="16" cy="235" r="4.7"/><circle class="rl" style="--at:0.35s" cx="29.2" cy="235" r="4.7"/><circle class="rl" style="--at:0.70s" cx="42.4" cy="228.2" r="4.7"/><circle class="rl" style="--at:1.05s" cx="55.6" cy="221.3" r="4.7"/><circle class="rl" style="--at:1.40s" cx="68.8" cy="248.7" r="4.7"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="82" cy="385.6" r="16.6" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="82" cy="385.6" r="11.2" stroke-opacity=".6" stroke-width="1"/><circle class="pulse" cx="82" cy="385.6" r="11.2"/><circle class="nl" cx="82" cy="385.6" r="8.6" stroke-width="1.5"/></g></g>
+<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M16 235L29.2 235L42.4 228.2L55.6 221.3L68.8 248.7L82 385.6" stroke-width="10.8"/><path class="rt" pathLength="100" d="M16 235L29.2 235L42.4 228.2L55.6 221.3L68.8 248.7L82 385.6" stroke-width="3.1"/><circle class="rl start" style="--at:0.00s" cx="16" cy="235" r="4.7"/><circle class="rl" style="--at:0.35s" cx="29.2" cy="235" r="4.7"/><circle class="rl" style="--at:0.70s" cx="42.4" cy="228.2" r="4.7"/><circle class="rl" style="--at:1.05s" cx="55.6" cy="221.3" r="4.7"/><circle class="rl" style="--at:1.40s" cx="68.8" cy="248.7" r="4.7"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="82" cy="385.6" r="16.6" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="82" cy="385.6" r="11.2" stroke-opacity=".6" stroke-width="1"/><circle class="halo" cx="82" cy="385.6" r="27"/><circle class="pulse" cx="82" cy="385.6" r="13"/><circle class="nl" cx="82" cy="385.6" r="12.2" stroke-width="2"/></g></g>
 </svg>
       <div class="bfoot"><span class="stamps"><span class="stamp ok">EXHAUSTED 736/736 · C=21</span><span class="stamp bad">BUILD FAILED · 'PAID ONCE'</span></span>
         <span class="bsrc">graph: evidence/state-graph-escrow<span class="p">.</span>json</span></div>
@@ -664,7 +677,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 </div></div>
 
 <section class="sec" id="proof" aria-labelledby="proof-h"><div class="wrap">
-  <div class="lab">Route setting · <b>the 20-second proof</b></div>
+  <div class="lab">Route setting · <b>the 60-second demo</b></div>
   <h2 class="disp h2" id="proof-h">Drop one condition. <em>Get one red build.</em></h2>
   <div class="proof">
     <div>
@@ -692,7 +705,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
       <div class="src">src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>94–115</div>
       <div class="chips" style="margin-top:12px"><span class="chip">const fn</span><span class="chip">while</span><span class="chip">array index writes</span><span class="chip">Fe ≥ 26<span class="p">.</span>1<span class="p">.</span>0</span></div></article>
     <article class="card b"><h3>static_assert is the gate</h3>
-      <p>Five pins, each its own <code>static_assert</code> and its own budget. If a count drifts, an edge hash changes or an invariant breaks on the way, <code>fe build</code> stops.</p>
+      <p>Five core pins, each its own <code>static_assert</code> and its own budget (three shard pins follow at lines 270–274). If a count drifts, an edge hash changes or an invariant breaks on the way, <code>fe build</code> stops.</p>
       <div class="pins"><span class="pl"><i>251</i>explore(17) == 494</span><span class="pl"><i>254</i>explore(CAP) == STATES</span><span class="pl"><i>258</i>counterexample(19) == 0</span><span class="pl"><i>261</i>or_deferred(fingerprint(CAP, false, STATES), EDGES) == EDGES</span><span class="pl"><i>262</i>or_deferred(fingerprint(CAP, true, STATES), EDGE_HASH) == EDGE_HASH</span></div>
       <div class="src">src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>251–262 · CAP = 21, STATES = 736, EDGES = 966</div>
       <div class="chips"><span class="chip">static_assert</span><span class="chip">sharded, never chained</span></div></article>
@@ -715,7 +728,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
       <div class="chips"><span class="chip">evidence/oracle<span class="p">.</span>txt</span></div></article>
   </div>
   <figure class="sheet"><div class="sheet-scroll" tabindex="0" aria-label="architecture diagram, scrolls sideways on small screens"><img src="architecture.svg" width="960" height="470" loading="lazy" alt="exhaust architecture: src/escrow.fe holds step() and five named invariants; the compile-time explorer runs it under static_assert inside fe build, the contract's recv handlers call the same step() on Sonatina EVM and native, and the tests replay every reachable edge through the deployed contract; demo patches to step() must turn fe build red; a Python oracle outside Fe checks every pinned count."></div>
-    <figcaption><span>The whole build on one sheet · escrow shown; the vault repeats the shape</span><span class="src">docs/architecture<span class="p">.</span>svg</span></figcaption></figure>
+    <figcaption><span class="fc-h">The whole build on one sheet</span><span class="fc-p">One <code>step()</code>, three executions, one oracle outside Fe. Escrow shown; the vault repeats the shape.</span><span class="src">docs/architecture<span class="p">.</span>svg</span></figcaption></figure>
 </div></section>
 
 <div class="band" id="ceiling"><section class="sec" aria-labelledby="ceil-h"><div class="wrap">
@@ -738,7 +751,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
   </div>
 </div></section></div>
 
-<section class="sec" id="vault" aria-labelledby="vault-h"><div class="wrap">
+<section class="sec room" id="vault" aria-labelledby="vault-h"><div class="wrap">
   <div class="lab">Lever frame · <b>second protocol</b></div>
   <h2 class="disp h2" id="vault-h">A 2-of-3 timelock vault. <em class="k">Pull any lever.</em></h2>
   <p class="lede">211 reachable states in one <code>static_assert</code> and 580 transitions in another, at balance 10 and lock period 3 (depth 0 to 70). The track repeats once per unit paid out. Each lever is a small patch from <code>demo/</code> (one to three changed lines); each build fails with its own invariant and route.</p>
@@ -888,7 +901,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <g class="lit" data-d="68"><circle class="l" cx="1049.7" cy="43" r="3.4"/><circle class="l" cx="1049.7" cy="73" r="3.4"/><circle class="l" cx="1049.7" cy="103" r="3.4"/><circle class="l" cx="1049.7" cy="133" r="3.4"/></g>
 <g class="lit" data-d="69"><circle class="l" cx="1064.9" cy="43" r="3.4"/><circle class="l" cx="1064.9" cy="73" r="3.4"/><circle class="l" cx="1064.9" cy="103" r="3.4"/><circle class="l" cx="1064.9" cy="133" r="3.4"/></g>
 <g class="lit" data-d="70"><circle class="l" cx="1080" cy="73" r="3.4"/><circle class="l" cx="1080" cy="103" r="3.4"/></g>
-<g class="atk" data-atk="0" style="--rt:1.05s"><path class="rt glow" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 187" stroke-width="10.2"/><path class="rt" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 187" stroke-width="2.9"/><circle class="rl start" style="--at:0.00s" cx="20" cy="88" r="4.4"/><circle class="rl" style="--at:0.35s" cx="35.1" cy="88" r="4.4"/><circle class="rl" style="--at:0.70s" cx="50.3" cy="58" r="4.4"/><g class="nlg" style="--at:1.05s"><circle class="ring" cx="65.4" cy="187" r="15.6" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="65.4" cy="187" r="10.5" stroke-opacity=".6" stroke-width="1"/><circle class="pulse" cx="65.4" cy="187" r="10.5"/><circle class="nl" cx="65.4" cy="187" r="8.2" stroke-width="1.5"/></g></g>
+<g class="atk" data-atk="0" style="--rt:1.05s"><path class="rt glow" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 187" stroke-width="10.2"/><path class="rt" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 187" stroke-width="2.9"/><circle class="rl start" style="--at:0.00s" cx="20" cy="88" r="4.4"/><circle class="rl" style="--at:0.35s" cx="35.1" cy="88" r="4.4"/><circle class="rl" style="--at:0.70s" cx="50.3" cy="58" r="4.4"/><g class="nlg" style="--at:1.05s"><circle class="ring" cx="65.4" cy="187" r="15.6" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="65.4" cy="187" r="10.5" stroke-opacity=".6" stroke-width="1"/><circle class="halo" cx="65.4" cy="187" r="25.5"/><circle class="pulse" cx="65.4" cy="187" r="12.2"/><circle class="nl" cx="65.4" cy="187" r="11.6" stroke-width="2"/></g></g>
 <g class="atk" data-atk="1" style="--rt:1.40s"><path class="rt glow" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 58L126 73" stroke-width="10.2"/><path class="rt" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 58L126 73" stroke-width="2.9"/><circle class="rl start" style="--at:0.00s" cx="20" cy="88" r="4.4"/><circle class="rl" style="--at:0.35s" cx="35.1" cy="88" r="4.4"/><circle class="rl" style="--at:0.70s" cx="50.3" cy="58" r="4.4"/><circle class="rl" style="--at:1.05s" cx="65.4" cy="58" r="4.4"/><circle class="rl" style="--at:1.40s" cx="126" cy="73" r="4.4"/></g>
 <g class="atk" data-atk="2" style="--rt:2.45s"><path class="rt glow" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 58L80.6 43L95.7 43L110.9 43L232 73" stroke-width="10.2"/><path class="rt" pathLength="100" d="M20 88L35.1 88L50.3 58L65.4 58L80.6 43L95.7 43L110.9 43L232 73" stroke-width="2.9"/><circle class="rl start" style="--at:0.00s" cx="20" cy="88" r="4.4"/><circle class="rl" style="--at:0.35s" cx="35.1" cy="88" r="4.4"/><circle class="rl" style="--at:0.70s" cx="50.3" cy="58" r="4.4"/><circle class="rl" style="--at:1.05s" cx="65.4" cy="58" r="4.4"/><circle class="rl" style="--at:1.40s" cx="80.6" cy="43" r="4.4"/><circle class="rl" style="--at:1.75s" cx="95.7" cy="43" r="4.4"/><circle class="rl" style="--at:2.10s" cx="110.9" cy="43" r="4.4"/><circle class="rl" style="--at:2.45s" cx="232" cy="73" r="4.4"/></g>
 <path class="cyc-r" d="M24 168v5H122v-5"/><text class="cyc" x="73" y="190">PAID 0</text><path class="cyc-r" d="M130 168v5H228v-5"/><text class="cyc" x="179" y="190">PAID 1</text><path class="cyc-r" d="M236 168v5H334v-5"/><text class="cyc" x="285" y="190">PAID 2</text><path class="cyc-r" d="M342 168v5H440v-5"/><text class="cyc" x="391" y="190">PAID 3</text><path class="cyc-r" d="M448 168v5H546v-5"/><text class="cyc" x="497" y="190">PAID 4</text><path class="cyc-r" d="M554 168v5H652v-5"/><text class="cyc" x="603" y="190">PAID 5</text><path class="cyc-r" d="M660 168v5H758v-5"/><text class="cyc" x="709" y="190">PAID 6</text><path class="cyc-r" d="M766 168v5H864v-5"/><text class="cyc" x="815" y="190">PAID 7</text><path class="cyc-r" d="M872 168v5H970v-5"/><text class="cyc" x="921" y="190">PAID 8</text><path class="cyc-r" d="M978 168v5H1076v-5"/><text class="cyc" x="1027" y="190">PAID 9</text></svg></div>
@@ -915,7 +928,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <section class="sec" id="fe" aria-labelledby="fe-h"><div class="wrap why">
   <div><h2 class="disp h2" id="fe-h">Take Fe out and <em class="k">the checker is gone.</em></h2></div>
   <div>
-    <p>Since Fe 26.1.0 a <code>const fn</code> may loop, keep mutable locals and write into arrays, and <code>static_assert</code> evaluates it during the build. That is the whole move: the search is ordinary Fe, the build is the checker, and the same <code>step()</code> is called by the contract's <code>recv</code> handlers and by <code>fe test</code> on Sonatina and native.</p>
+    <p>Since Fe 26.1.0 (<a href="https://github.com/argotorg/fe/blob/v26.6.0/CHANGELOG.md">changelog</a>) a <code>const fn</code> may loop, keep mutable locals and write into arrays, and <code>static_assert</code> evaluates it during the build. That is the whole move: the search is ordinary Fe, the build is the checker, and the same <code>step()</code> is called by the contract's <code>recv</code> handlers and by <code>fe test</code> on Sonatina and native.</p>
     <p>We did not compare this against other contract languages or model checkers. This page describes what this build does, not how it ranks.</p>
     <ul class="why-ev"><li><span>const fn + while + array writes</span><code>src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>94</code></li><li><span>static_assert as the build gate</span><code>src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>254</code></li><li><span>assert! message = named invariant</span><code>src/escrow_explore<span class="p">.</span>fe<span class="p">:</span>41</code></li><li><span>contract · recv calling step()</span><code>src/escrow_contract<span class="p">.</span>fe<span class="p">:</span>64</code></li><li><span>fe test on both backends · black_box</span><code>src/tests<span class="p">.</span>fe<span class="p">:</span>30</code></li></ul>
     <span class="ver">fe 26<span class="p">.</span>6<span class="p">.</span>0 (5b3f96a) · fe.toml ingot · fe fmt --check clean</span>
@@ -956,7 +969,7 @@ fe test &amp;&amp; fe test --backend native</pre>
 </main>
 
 <footer><div class="wrap">
-  <span>exhaust · Apache-2.0 · fe 26<span class="p">.</span>6<span class="p">.</span>0 (5b3f96a) · page built from 9077bad (v0.1.0)</span>
+  <span>exhaust · Apache-2.0 · fe 26<span class="p">.</span>6<span class="p">.</span>0 (5b3f96a) · page built from evidence at 9077bad</span>
   <nav aria-label="Footer"><a href="https://github.com/edycutjong/exhaust">GitHub</a><a href="deck/">Pitch deck</a><a href="pitch-deck.pdf">Deck PDF</a><a href="https://github.com/edycutjong/exhaust/blob/main/DEMO.md">DEMO.md</a><a href="https://github.com/edycutjong/exhaust/blob/main/MODEL.md">MODEL.md</a><a href="https://github.com/edycutjong/exhaust/blob/main/DECLARATION.md">Declaration</a></nav>
 </div></footer>
 <script>
