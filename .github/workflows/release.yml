@@ -4,6 +4,7 @@ name: release
 # docs/chore/test/refactor/style/ci: no release). The first release, v0.1.0, was tagged by hand at the end of the harden
 # phase; every later release is read from that tag on. It runs only after the CI workflow succeeded on main, so a red
 # commit is never tagged (a CI run cancelled by a newer push is covered by the next run: the version comes from the tag range).
+# A manual run (workflow_dispatch) is refused unless CI already succeeded on that commit.
 
 on:
   workflow_run:
@@ -29,11 +30,22 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # push the tag and create the release (this job only)
+      actions: read # a manual run checks that CI succeeded on the commit
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0 # full history and tags: the next version is computed from commits since the last tag
+
+      - name: A manual run needs a successful CI run on this commit
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          ok=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow CI --commit "$SHA" --status success --json databaseId --jq 'length')
+          if [ "$ok" -eq 0 ]; then echo "No successful CI run on $SHA: refusing to release."; exit 1; fi
 
       - name: Compute next version from Angular commits
         id: ver

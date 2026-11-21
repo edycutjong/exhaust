@@ -22,7 +22,9 @@ import ref_model as m
 
 text = open(sys.argv[1]).read()
 events = [[int(h[i:i + 64], 16) for i in range(0, len(h), 64)] for h in re.findall(r"data: 0x([0-9a-f]+) \}", text)]
-esc = next(e for e in events if len(e) == 7)           # DifferentialRun: cap states edges attempts deployments calls reads
+escs = [e for e in events if len(e) == 7]              # DifferentialRun: cap states edges attempts deployments calls reads
+assert len(escs) == 1, "expected exactly one escrow differential event, got %d" % len(escs)
+esc = escs[0]
 vlt = [e for e in events if len(e) == 6]               # VaultDifferentialRun: ready states edges attempts deployments calls
 # The replay must have run at the checked configuration, so the denominators cannot shrink with it.
 cap = int(re.search(r"pub const CAP: u32 = (\d+)", open("src/escrow.fe").read()).group(1))
