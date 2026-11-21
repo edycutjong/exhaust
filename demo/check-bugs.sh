@@ -14,6 +14,7 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 trap 'exit 130' INT TERM
 flag="$work/failed"
+ran="$work/rows-run"  # one line per table row executed (the rows run in a pipeline subshell, so a file counts them)
 
 # copy <patch> <full|nohash|stripped[+file]>: prints the path of a fresh patched copy of the ingot.
 copy() {
@@ -54,6 +55,7 @@ if [ "$mode" = "--conformance" ]; then
   {
     header "Conformance: the checker's own negative tests (conformance/expected.tsv)"
     grep -v '^#' conformance/expected.tsv | while IFS="	" read -r id patch where cmd want expect; do
+      echo x >> "$ran"
       d=$(copy "$patch" "$where")
       log="$d/out.txt"
       (cd "$d" && $cmd > "$log" 2>&1)
@@ -83,6 +85,7 @@ else
     echo
     echo "patch | fe build exit | invariant named | digits printed | per-handler suite (test_handler_* / test_vault_handler_*) | scripted contract run (test_contract_matches_step / test_vault_contract_matches_vstep)"
     grep -v '^#' demo/bugs.tsv | while IFS="	" read -r patch inv digits kind; do
+      echo x >> "$ran"
       d=$(copy "$patch" full)
       (cd "$d" && fe build > out.txt 2>&1)
       st=$?
@@ -110,6 +113,12 @@ else
   } > "$out" 2>&1
 fi
 cat "$out"
+# An empty or truncated table must not pass vacuously: every data row has to have run.
+tsv=demo/bugs.tsv; [ "$mode" = "--conformance" ] && tsv=conformance/expected.tsv
+rows=$(grep -v '^#' "$tsv" | grep -c .)
+nran=0; [ -f "$ran" ] && nran=$(wc -l < "$ran" | tr -d ' ')
+echo "rows run: $nran of $rows in $tsv"
+if [ "$rows" -eq 0 ] || [ "$nran" -ne "$rows" ]; then echo "FAIL  table rows: ran $nran of $rows (an empty table is a broken check)"; echo 1 > "$flag"; fi
 if [ -f "$flag" ]; then echo "RESULT: FAIL"; exit 1; fi
 # Saved only from a green run, so a failing run never overwrites committed evidence.
 if [ "${EVIDENCE:-0}" = 1 ]; then cp "$out" "$keep"; fi
