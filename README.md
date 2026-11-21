@@ -123,7 +123,7 @@ static_assert(explore(17) == 494)
 static_assert(explore(CAP) == STATES)       // CAP = 21, STATES = 736
 ```
 
-**How Fe is used here (what only Fe gives this build).** The model is a `const fn` with a loop and array writes, evaluated by the compiler under
+**How Fe is used here.** The model is a `const fn` with a loop and array writes, evaluated by the compiler under
 `static_assert`, and the very same function is called from `recv` handlers and tests on two backends. We did not
 compare this against other contract languages or model checkers: this describes what this build does, not how it ranks.
 
@@ -234,8 +234,8 @@ MODEL.md  FE-NOTES.md  DECLARATION.md  DEMO.md
 
 Apache-2.0 (`LICENSE`).
 
-**Team:** solo (edycutjong). **Declaration** (`DECLARATION.md`): nothing existed before the window opened on 2026-11-03; a day-0
-feasibility spike was ported into this repository module by module; the first commit is 2026-11-15; Fe's own `std`/`core` is the
+**Team:** solo (edycutjong). **Declaration** (`DECLARATION.md`): nothing existed before the window opened on 2026-11-03; a first-day
+feasibility spike (2026-11-15) was ported into this repository module by module; the first commit is 2026-11-15; Fe's own `std`/`core` is the
 only dependency; Claude Code wrote most of the code and prose under the author's direction.
 
 ## 🙏 Acknowledgments

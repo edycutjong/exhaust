@@ -26,6 +26,7 @@ Output: `evidence/demo-run.txt` (green run: `evidence/transcript-pass.txt`; the 
 | 736 states, 966 edges, 3,680 attempts, depth 43 at C = 21 | `sh bench/run.sh` (section 1), pinned by `static_assert(explore(CAP) == STATES)` in `fe build` | `evidence/bench-2026-11-20.md` §1 |
 | 940,335 of 1,000,000 steps; 86,323 setup; about 1,160 per state | `sh bench/run.sh` (section 2, `bench/budget_probe.py` loop bisection) | `evidence/budget.md`, `evidence/budget.json` |
 | Attack printer C′ = 19 (908,455 steps); C′ = 20 fits at 98.4% | `sh bench/run.sh` | `evidence/capacities.md`, `evidence/bench-2026-11-20.md` §2 |
+| Vault contract graph: 91 states / 250 edges (lock passed), 9 / 21 (never passes) | `python3 tools/ref_model.py --check` | `evidence/oracle.txt` |
 | Shards 91 + 238 + 385 + 22 Open, disjoint, union = 736 | `python3 tools/ref_model.py --check` | `evidence/oracle.txt` |
 | Python oracle agrees with all 15 Fe pins (8 escrow, 7 vault) and the 3,680-row edge table | `python3 tools/ref_model.py --check` | `evidence/oracle.txt`, `evidence/oracle.json` |
 | Vault B = 10, T = 3: 211 states, 580 edges, 586,715 steps | `sh bench/run.sh` (section 5) | `evidence/bench-2026-11-20.md` §5 |
