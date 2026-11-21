@@ -329,6 +329,8 @@ section.room{margin-top:96px;padding:84px 0 88px;background:var(--panel);color:v
 .sheet figcaption{grid-row:1;grid-column:1;display:flex;flex-direction:column;gap:10px;
   font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:13px;color:var(--muted)}
 .sheet-scroll{overflow-x:auto;grid-column:2}
+.ph-lede{display:none}
+.swipe{display:none}
 .sheet .fc-h{font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1;color:var(--ink);letter-spacing:.02em}
 .sheet .fc-p{font-family:var(--font-body);text-transform:none;letter-spacing:0;font-weight:400;font-size:15.5px;line-height:1.5;color:#3b3934}
 @media (max-width:1080px){.sheet{grid-template-columns:minmax(0,1fr)} .sheet-scroll{grid-column:1} .sheet figcaption{grid-row:auto}}
@@ -416,6 +418,8 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
   .vscroll .lat{min-width:860px} .vscroll{margin:0 -4px;padding-bottom:4px}
   .card.a pre{font-size:10.5px}
   .sheet-scroll img{min-width:720px}
+  .ph-lede{display:block;order:3;margin:-6px 0 16px;font-size:16px;line-height:1.45;color:#3b3934} .signal{order:4} .sub{order:5} .cta{order:6} .strip{order:7}
+  .swipe{display:block;font-family:var(--font-data);font-size:11px;color:var(--muted);margin-top:6px}
   .signal .bhead{flex-direction:column;gap:2px;padding:0 4px 0 14px} .signal .bhead .r-bad{font-size:12px}
   .hero{padding-top:18px} .hero .lab{padding-top:8px}
   .plate .ph code{letter-spacing:.1em} .plate .ph{flex-wrap:wrap;row-gap:2px}
@@ -464,6 +468,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
       <span>fe 26<span class="p">.</span>6<span class="p">.</span>0 (5b3f96a) · 28 EVM + 10 native tests · Apache-2.0</span></div>
   </div>
 
+  <p class="ph-lede">A model checker inside <code>fe build</code>: every reachable state of the escrow at capacity 21.</p>
   <div class="signal is-attack">
     <div class="board" id="esc-board" data-state="attack" data-cum='[1, 2, 4, 9, 14, 22, 30, 41, 52, 66, 80, 97, 114, 134, 154, 177, 200, 226, 252, 281, 310, 342, 373, 406, 436, 466, 493, 520, 544, 568, 589, 610, 628, 646, 661, 676, 688, 700, 709, 718, 724, 730, 733, 736]'>
       <div class="bhead"><span>Escrow · reachable states · C = 21</span>
@@ -558,7 +563,7 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
 <g class="lit" data-d="42"><circle class="l" cx="912.9" cy="202.4" r="3.3"/><circle class="l" cx="912.9" cy="215" r="3.3"/><circle class="l" cx="912.9" cy="227.6" r="3.3"/></g>
 <g class="lit" data-d="43"><circle class="l" cx="934" cy="202.4" r="3.3"/><circle class="l" cx="934" cy="215" r="3.3"/><circle class="l" cx="934" cy="227.6" r="3.3"/></g>
 <path class="hull" d="M14.1 215L26 206.4L47.1 206.4L68.2 200.1L89.3 181.3L110.5 181.3L131.6 162.5L152.7 162.5L173.8 143.6L194.9 143.6L216 124.8L237.2 124.8L258.3 105.9L279.4 105.9L300.5 87.1L321.6 87.1L342.7 68.2L363.9 68.2L385 49.4L406.1 49.4L427.2 30.5L448.3 30.5L469.4 11.7L490.6 18L511.7 5.4L532.8 24.3L553.9 24.3L575 43.1L596.1 43.1L617.3 62L638.4 62L659.5 80.8L680.6 80.8L701.7 99.6L722.8 99.6L744 118.5L765.1 118.5L786.2 137.3L807.3 137.3L828.4 156.2L849.5 156.2L870.7 175L891.8 175L912.9 193.9L934 193.9L945.9 215L934 236.1L912.9 236.1L891.8 255L870.7 255L849.5 273.8L828.4 273.8L807.3 292.7L786.2 292.7L765.1 311.5L744 311.5L722.8 330.4L701.7 330.4L680.6 349.2L659.5 349.2L638.4 368L617.3 368L596.1 386.9L575 386.9L553.9 405.7L532.8 405.7L511.7 424.6L490.6 412L469.4 418.3L448.3 399.5L427.2 399.5L406.1 380.6L385 380.6L363.9 361.8L342.7 361.8L321.6 342.9L300.5 342.9L279.4 324.1L258.3 324.1L237.2 305.2L216 305.2L194.9 286.4L173.8 286.4L152.7 267.5L131.6 267.5L110.5 248.7L89.3 248.7L68.2 229.9L47.1 223.6L26 223.6Z"/>
-<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="9.9"/><path class="rt" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="2.8"/><circle class="rl start" style="--at:0.00s" cx="26" cy="215" r="4.3"/><circle class="rl" style="--at:0.35s" cx="47.1" cy="215" r="4.3"/><circle class="rl" style="--at:0.70s" cx="68.2" cy="208.7" r="4.3"/><circle class="rl" style="--at:1.05s" cx="89.3" cy="202.4" r="4.3"/><circle class="rl" style="--at:1.40s" cx="110.5" cy="227.6" r="4.3"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="131.6" cy="397.2" r="15.2" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="131.6" cy="397.2" r="10.2" stroke-opacity=".6" stroke-width="1"/><circle class="halo" cx="131.6" cy="397.2" r="24.8"/><circle class="pulse" cx="131.6" cy="397.2" r="11.9"/><circle class="nl" cx="131.6" cy="397.2" r="11.2" stroke-width="2"/></g><g class="tagc"><rect x="151.4" y="373.2" width="217.6" height="58" rx="3"/><text class="tag" x="161.4" y="394.2">NEW (Settled,0,1,1)</text><text class="tag" x="161.4" y="414.2">both sides paid</text></g></g>
+<g class="atk" data-atk="0" style="--rt:1.75s"><path class="rt glow" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="9.9"/><path class="rt" pathLength="100" d="M26 215L47.1 215L68.2 208.7L89.3 202.4L110.5 227.6L131.6 397.2" stroke-width="2.8"/><circle class="rl start" style="--at:0.00s" cx="26" cy="215" r="4.3"/><circle class="rl" style="--at:0.35s" cx="47.1" cy="215" r="4.3"/><circle class="rl" style="--at:0.70s" cx="68.2" cy="208.7" r="4.3"/><circle class="rl" style="--at:1.05s" cx="89.3" cy="202.4" r="4.3"/><circle class="rl" style="--at:1.40s" cx="110.5" cy="227.6" r="4.3"/><g class="nlg" style="--at:1.75s"><circle class="ring" cx="131.6" cy="397.2" r="15.2" stroke-opacity=".3" stroke-width="1"/><circle class="ring" cx="131.6" cy="397.2" r="10.2" stroke-opacity=".6" stroke-width="1"/><circle class="halo" cx="131.6" cy="397.2" r="24.8"/><circle class="pulse" cx="131.6" cy="397.2" r="11.9"/><circle class="nl" cx="131.6" cy="397.2" r="11.2" stroke-width="2"/></g><g class="tagc"><rect x="151.4" y="373.2" width="236.8" height="58" rx="3"/><text class="tag" x="161.4" y="394.2">NEW (Settled,0,1,1)</text><text class="tag" x="161.4" y="414.2">both sides paid</text></g></g>
 </svg>
 <svg class="lat escp" aria-hidden="true" viewBox="0 0 600 470" role="img" aria-labelledby="escp-t"><title id="escp-t">736 reachable states as lamps, columns by breadth-first depth 0 to 43, 966 transitions as wires</title>
 <g class="lit" data-d="0"><path class="w" d="M16 235L29.2 235"/></g>
@@ -727,8 +732,8 @@ footer a:hover{color:var(--ink);border-color:var(--ink)}
       <p>Fe pins matched by <code>tools/ref_model<span class="p">.</span>py</code>, a stdlib Python model written separately, plus the 3,680-row edge table.</p>
       <div class="chips"><span class="chip">evidence/oracle<span class="p">.</span>txt</span></div></article>
   </div>
-  <figure class="sheet"><div class="sheet-scroll" tabindex="0" aria-label="architecture diagram, scrolls sideways on small screens"><img src="architecture.svg" width="960" height="470" loading="lazy" alt="exhaust architecture: src/escrow.fe holds step() and five named invariants; the compile-time explorer runs it under static_assert inside fe build, the contract's recv handlers call the same step() on Sonatina EVM and native, and the tests replay every reachable edge through the deployed contract; demo patches to step() must turn fe build red; a Python oracle outside Fe checks every pinned count."></div>
-    <figcaption><span class="fc-h">The whole build on one sheet</span><span class="fc-p">One <code>step()</code>, three executions, one oracle outside Fe. Escrow shown; the vault repeats the shape.</span><span class="src">docs/architecture<span class="p">.</span>svg</span></figcaption></figure>
+  <figure class="sheet"><div class="sheet-scroll" tabindex="0" aria-label="architecture diagram, scrolls sideways on small screens"><img src="architecture.svg" width="960" height="470" loading="lazy" alt="exhaust architecture: src/escrow.fe holds step() and five named invariants; the compile-time explorer runs it under static_assert inside fe build, the contract's recv handlers call the same step() on Sonatina EVM, the runtime search also runs on native, and the tests replay every reachable edge through the deployed contract; demo patches to step() must turn fe build red; a Python oracle outside Fe checks every pinned count."></div>
+    <figcaption><span class="fc-h">The whole build on one sheet</span><span class="fc-p">One <code>step()</code>, three executions, one oracle outside Fe. Escrow shown; the vault repeats the shape.</span><span class="src">docs/architecture<span class="p">.</span>svg</span><span class="swipe">swipe the figure sideways →</span></figcaption></figure>
 </div></section>
 
 <div class="band" id="ceiling"><section class="sec" aria-labelledby="ceil-h"><div class="wrap">
