@@ -142,6 +142,18 @@ solvers; [Foundry invariant tests](https://www.getfoundry.sh/guides/invariant-te
 ordinary Fe (no solver, no annotation language, no random sampling): the compiler's const evaluator enumerates every
 reachable state at a stated capacity, over the same `step()` the contract calls, and the bound is part of the claim.
 
+### What this taught us about Fe's const evaluator (26.6.0)
+
+- Each `static_assert` gets its own 1,000,000 steps, but consts that reference other consts share one budget: split a
+  search across independent asserts, never chain them (`evidence/budget.md`).
+- Every function call costs steps. Writing `step()` and the invariant check without helper calls cut the explorer to about
+  1,160 steps per state and moved the largest capacity that fits one assert from 19 to 21.
+- Array initialisation costs about one step per element, so the visited table counts against the same budget.
+- There is no step counter to read: `bench/budget_probe.py` measures a search by bisecting a burn loop in the same assert
+  (one bare loop iteration costs about 23 steps).
+- A failed `static_assert` stops `fe test` from running at all, so tests of a deliberately broken model run in a temp copy
+  with the pins removed (`demo/run.sh`, `demo/check-bugs.sh`). The full friction log is `FE-NOTES.md`.
+
 ### Use the pattern on your own model
 
 1. Write the protocol as one `step(state, action)` over an `impl Copy` state struct and an action enum, with invariants
