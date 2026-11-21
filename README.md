@@ -152,6 +152,8 @@ In short: only the stated capacities are explored; no liveness; the escrow model
 model, the Fe code and the oracle share one author. Details:
 
 
+- Everything is measured on Fe 26.6.0 (`fe 26.6.0 (5b3f96a)`), the version this entry pins. Fe 26.7.0 (2026-11-18) was not re-measured; its
+  CTFE budget in the source is the same 1,000,000 steps and recursion 64.
 - Only the stated capacities are explored (C = 21 for the state count, C′ = 19 for the printed trace); behaviour above them is
   not checked. Liveness is not checked, only safety invariants.
 - The escrow model has no caller identity: `msg.sender` authorization is not modelled. Units are abstract counters: no ETH or
