@@ -24,6 +24,10 @@ text = open(sys.argv[1]).read()
 events = [[int(h[i:i + 64], 16) for i in range(0, len(h), 64)] for h in re.findall(r"data: 0x([0-9a-f]+) \}", text)]
 esc = next(e for e in events if len(e) == 7)           # DifferentialRun: cap states edges attempts deployments calls reads
 vlt = [e for e in events if len(e) == 6]               # VaultDifferentialRun: ready states edges attempts deployments calls
+# The replay must have run at the checked configuration, so the denominators cannot shrink with it.
+cap = int(re.search(r"pub const CAP: u32 = (\d+)", open("src/escrow.fe").read()).group(1))
+assert esc[0] == cap, "escrow differential ran at C=%d, the checked capacity is CAP = %d (src/escrow.fe)" % (esc[0], cap)
+assert len(vlt) == 2 and sorted(v[0] for v in vlt) == [0, 1], "expected one vault run with the lock passed and one without"
 rows, ok = [], True
 r = m.search(esc[0])
 rows.append(("escrow (C=%d), accepted edges" % esc[0], esc[2], r["edges"]))
@@ -35,7 +39,6 @@ for v in vlt:
     rows.append(("vault contract graph B=10 T=3 (%s), accepted edges" % tag, v[2], g["edges"]))
     rows.append(("vault contract graph B=10 T=3 (%s), attempts" % tag, v[3], g["attempts"]))
     rows.append(("vault contract graph B=10 T=3 (%s), states reached" % tag, v[1], g["states"]))
-assert len(vlt) == 2, "expected two vault differential events"
 print("| transition set | replayed on the EVM | oracle reachable | covered |")
 print("|---|---:|---:|---:|")
 for name, got, want in rows:
