@@ -1,5 +1,5 @@
 # Transition coverage, 2026-11-21 04:19 UTC
-commit: f2e48cb7463592814a012bd17900bb27a6da5efc
+commit: 2b528b2e27bb8c816551fdcac1b864dc950c08da
 fe: fe 26.6.0 (5b3f96a)
 uname: Darwin Edy-MBP-M1-Max.local 27.2.0 Darwin Kernel Version 27.2.0: Thu Oct 15 00:02:46 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T6000 arm64
 
@@ -22,4 +22,4 @@ Scope: the escrow's contract graph equals its model (736 states). The vault's co
 the model-level vault search is exercised by the compile-time and runtime explorers, not by this replay. Its denominators
 are the oracle's contract-graph counts, so a vault match shows the replay reached everything the oracle says is reachable there.
 
-RESULT: every transition the oracle says is reachable was replayed (escrow: its full model graph; vault: the deployed handlers' contract graph)
+RESULT: the replayed counts equal the oracle's reachable counts, and every replayed call matched step() in the tests (escrow: its full model graph; vault: the deployed handlers' contract graph)
