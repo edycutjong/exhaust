@@ -4,7 +4,8 @@
 Writes evidence/bench-<date>.json and evidence/bench-<date>.md. Counts (states, edges, attempts) are exact and come from
 the Python oracle (tools/ref_model.py); every `fe check` row is a pass/fail against that oracle count, so a row that says
 `pass` means the Fe compile-time search agrees with the oracle at that size. Wall times are the median of 5 `fe check`
-runs on this machine (they vary between machines and runs; the counts do not). Standard library only.
+runs on this machine for a passing row; a row that hits the step limit or mismatches stops after its first run, so its
+time is that one run (times vary between machines and runs; the counts do not). Standard library only.
 
 `--quick` (the CI smoke run): one `fe check` per row, escrow C = 8 / 19 / 21 and the vault B = 10 T = 3 only, and it EXITS 1
 unless every explore row passes, the printer passes at C = 8 / 19 and hits the step limit at C = 21 (the documented ceiling).
@@ -228,7 +229,8 @@ def main():
     L = [f"# Benchmarks ({date}) — written by bench/run.py", "",
          f"{meta['date_utc']} UTC · `{fe}` · commit `{meta['commit']}` · `{meta['uname']}` · {meta['cpu']} · python {meta['python']}", "",
          "Counts are exact (Python oracle `tools/ref_model.py`); a `pass` row means the Fe compile-time search returned the same count.",
-         f"Wall times are the median of {RUNS} `fe check` runs of the whole ingot, which includes compiling everything else:",
+         f"Wall times are the median of {RUNS} `fe check` runs of the whole ingot for a passing row (a step-limit or mismatch row stops after its",
+         "first run, so its time is that one run), and include compiling everything else:",
          f"the gate-stripped ingot with no probe takes **{out['baseline_fe_check_s']} s** on its own. Times vary by machine; counts do not.",
          f"At these sizes the wall times carry little signal: every median minus that baseline lies between {out['wall_minus_baseline_s']['all'][0]} s and "
          f"{out['wall_minus_baseline_s']['all'][1]} s (computed; load average at the start {out['meta']['load_avg_start']}: other jobs ran on this machine, so read them as noise-level);",
