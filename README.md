@@ -281,7 +281,7 @@ MODEL.md  FE-NOTES.md  DECLARATION.md  DEMO.md
 **Landing + deck:** [exhaust.edycu.dev](https://exhaust.edycu.dev/) · [pitch deck](https://exhaust.edycu.dev/deck/) · [deck PDF](docs/pitch-deck.pdf) (GitHub Pages from `docs/`; live once the repo is public).
 
 `DEMO.md` has the exact command behind every number here. The demo is reproducible from a fresh clone
-(a Linux x86-64 container run of a clean clone at 7b5e404: `evidence/repro-linux-2026-11-21.txt`, 28 + 10 tests; `evidence/repro-clone-2026-11-21.txt` is an earlier fresh-clone run that predates the vault).
+(a Linux x86-64 container run of a clean clone at 3f2db27: `evidence/repro-linux-2026-11-21.txt`, 28 + 10 tests; `evidence/repro-clone-2026-11-21.txt` is an earlier fresh-clone run that predates the vault).
 
 ## 📄 License
 
