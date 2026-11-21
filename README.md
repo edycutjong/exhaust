@@ -42,8 +42,8 @@ capacity 1 or 2, or vault balance 1 or 2, and the demo route `11234` is the same
 
 ## 📸 See it in Action
 
-<p align="center"><img src="docs/assets/demo.gif" alt="From the demo video: git diff removes '&amp;&amp; s.seller == 0' from the Refund guard in step(); fe build fails with invariant 'paid once' broken and left: 11234; the digits become the route Deposit, Deposit, Lock, Release, Refund on the committed state graph, ending at (Settled, 0, 1, 1) outside the 736 states" width="760"></p>
-<p align="center"><sub>From the demo video: real <code>fe 26.6.0</code> output, replayed at its recorded speed. One condition removed, the build fails naming the invariant and printing <code>11234</code>, decoded on the committed state graph (<code>evidence/state-graph-escrow.json</code>).</sub></p>
+<p align="center"><img src="docs/assets/demo.gif" alt="From the demo video: git diff removes '&amp;&amp; s.seller == 0' from the Refund guard in step(); fe build fails with invariant 'paid once' broken and left: 11234; the digits become the route Deposit, Deposit, Lock, Release, Refund on the committed state graph, ending at (Settled, 0, 1, 1) outside the 736 states" width="720"></p>
+<p align="center"><sub>From the demo video, trimmed to 26 s: real <code>fe 26.6.0</code> output. One condition removed, the build fails naming the invariant and printing <code>11234</code>, decoded on the committed state graph (<code>evidence/state-graph-escrow.json</code>).</sub></p>
 
 Try it (macOS Apple Silicon or Linux x86-64; git, curl and patch):
 
