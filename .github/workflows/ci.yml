@@ -14,6 +14,7 @@ concurrency:
 
 env:
   FE_VERSION: v26.6.0
+  FE_EXPECT: fe 26.6.0 (5b3f96a)
 
 jobs:
   quality:
@@ -27,6 +28,7 @@ jobs:
         run: |
           curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
           echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+          "$HOME/.fe/bin/fe" --version | grep -xF "$FE_EXPECT" # fail unless the exact pinned binary was installed
       - run: fe --version
       - run: fe fmt --check
       - run: fe check
@@ -42,6 +44,7 @@ jobs:
         run: |
           curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
           echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+          "$HOME/.fe/bin/fe" --version | grep -xF "$FE_EXPECT" # fail unless the exact pinned binary was installed
       - name: fe build (static_assert(explore(CAP) == STATES) runs here)
         run: fe build
       - name: List build artifacts
@@ -67,6 +70,7 @@ jobs:
         run: |
           curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
           echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+          "$HOME/.fe/bin/fe" --version | grep -xF "$FE_EXPECT" # fail unless the exact pinned binary was installed
       - name: fe test (EVM, Sonatina backend)
         if: matrix.backend == 'sonatina'
         run: fe test
@@ -88,6 +92,7 @@ jobs:
         run: |
           curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
           echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+          "$HOME/.fe/bin/fe" --version | grep -xF "$FE_EXPECT" # fail unless the exact pinned binary was installed
       - name: Bug zoo (each patched build must FAIL naming its invariant and printing its digits)
         run: sh demo/check-bugs.sh
       - name: Conformance (the checker's own negative tests; the job passes only when each mutant is caught)
@@ -113,6 +118,7 @@ jobs:
         run: |
           curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
           echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+          "$HOME/.fe/bin/fe" --version | grep -xF "$FE_EXPECT" # fail unless the exact pinned binary was installed
       - name: bench/run.sh --quick
         run: sh bench/run.sh --quick --date ci
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -133,6 +139,7 @@ jobs:
         run: |
           curl -fsSL "https://raw.githubusercontent.com/argotorg/fe/${FE_VERSION}/feup/feup.sh" | bash -s -- --version "$FE_VERSION" --no-modify-path
           echo "$HOME/.fe/bin" >> "$GITHUB_PATH"
+          "$HOME/.fe/bin/fe" --version | grep -xF "$FE_EXPECT" # fail unless the exact pinned binary was installed
       - name: Replayed edges vs the oracle's reachable edges (fails on any gap)
         shell: bash # bash -eo pipefail: a failing script must fail the step even though its output is piped to tee
         run: sh tools/transition_coverage.sh | tee transition-coverage.txt
