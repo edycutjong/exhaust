@@ -31,7 +31,9 @@ both sides); `exhaust` finds it inside the build they already run. A `const fn` 
 model inside `fe build`, at a stated capacity: the escrow at C = 21 units, **all 736 reachable states and every accepted
 transition checked against five named invariants** (four on states, one on transitions). Break the model and the build
 fails: the C = 21 search names the invariant, and a second search at C′ = 19 (it also records each state's parent, so
-at C = 21 it would exceed the step budget) prints a shortest counterexample as action digits.
+at C = 21 it would exceed the step budget) prints a shortest counterexample as action digits. Our own per-handler unit
+tests miss the demo bug, and two of the nine planted bugs pass both of our test suites; `fe build` fails on all nine
+(`evidence/check-bugs.txt`, table below).
 
 **The ceiling, on the first screen.** Fe 26.6.0 gives each `static_assert` evaluation 1,000,000 evaluator steps and a
 recursion limit of 64, with no CLI or config override. The C = 21 search uses **940,335** of them (86,323 to set up its tables,
@@ -98,17 +100,25 @@ Note on the table: the digits come from the trace search at C′ = 19 (the state
 twenty Deposits are one more than C′. At a smaller capacity the oracle can name a different first invariant for the same
 digits: `mint-release` breaks `within capacity` at capacity 1 (`evidence/small-scope.txt`).
 
-| Bug patch (`demo/`) | Invariant named | Counterexample (`left:`) | Decoded |
-|---|---|---|---|
-| `refund-after-release` | `paid once` | `11234` | Deposit, Deposit, Lock, Release, Refund |
-| `settle-early` | `settled empty` | `1123` | Deposit, Deposit, Lock, Release |
-| `mint-release` | `conserved` | `123` | Deposit, Lock, Release |
-| `cap-off-by-one` | `within capacity` | `11111111111111111111` | twenty Deposits |
-| `vault-approve-twice` | `counted once` | `122` | Propose, ApproveA, ApproveA |
-| `vault-execute-early` | `timelock respected` | `1236` | Propose, ApproveA, ApproveB, Execute |
-| `vault-pay-twice` | `pays one unit` | `1235556` | Propose, ApproveA, ApproveB, Tick, Tick, Tick, Execute |
-| `vault-cancel-pays` | `only execute pays` | `17` | Propose, Cancel |
-| `vault-execute-unguarded` | `two distinct approvals` | `6` | Execute |
+| Bug patch (`demo/`) | Invariant named | Counterexample (`left:`) | Decoded | Handler tests | Scripted run |
+|---|---|---|---|---|---|
+| `refund-after-release` | `paid once` | `11234` | Deposit, Deposit, Lock, Release, Refund | **missed** | caught |
+| `settle-early` | `settled empty` | `1123` | Deposit, Deposit, Lock, Release | caught | caught |
+| `mint-release` | `conserved` | `123` | Deposit, Lock, Release | caught | caught |
+| `cap-off-by-one` | `within capacity` | `11111111111111111111` | twenty Deposits | **missed** | **missed** |
+| `vault-approve-twice` | `counted once` | `122` | Propose, ApproveA, ApproveA | caught | **missed** |
+| `vault-execute-early` | `timelock respected` (model; see note) | `1236` | Propose, ApproveA, ApproveB, Execute | **missed** | **missed** |
+| `vault-pay-twice` | `pays one unit` | `1235556` | Propose, ApproveA, ApproveB, Tick, Tick, Tick, Execute | caught | caught |
+| `vault-cancel-pays` | `only execute pays` | `17` | Propose, Cancel | caught | caught |
+| `vault-execute-unguarded` | `two distinct approvals` | `6` | Execute | caught | caught |
+
+The last two columns run each patch against our own runtime tests (the per-handler suite and the scripted contract run;
+`evidence/check-bugs.txt`): the compile-time search catches what they miss. `timelock respected` is checked on the vault
+model; the contract line that records `queued_at` is adapter code and is not tested (Limitations). When a patch also changes
+the edge count or hash, more `left:` lines follow: the route is the first. A bug that appears only above C′ = 19 fails by
+name with no route printed. A change that breaks none of the named invariants (for example, a new accepted transition)
+fails only as a state- or edge-count/hash pin mismatch with no invariant named: read that as "the model changed, check it",
+not as a number to update.
 
 All nine are checked by `sh demo/check-bugs.sh` (transcript: `evidence/check-bugs.txt`); a native trace by action name is
 `sh tools/trace.sh demo/refund-after-release.patch`, and `python3 tools/decode-trace 1236 --protocol vault --bug vault-execute-early`
@@ -294,7 +304,7 @@ sh demo/check-bugs.sh --conformance   # the checker's own negative tests
 sh tools/test_gates.sh                # the gates fail when they should (empty bug table, oracle crash)
 python3 tools/ref_model.py --check    # the Python oracle against every pin
 sh bench/run.sh --quick               # bench smoke: gated on the step-limit rows
-sh tools/leak_scan.sh                 # gitleaks over the whole history + no kitchen file tracked
+sh tools/leak_scan.sh                 # gitleaks over the whole history + no private-notes file tracked
 sh tools/ci_local.sh                  # the CI workflow's steps, run locally
 ```
 
@@ -316,8 +326,9 @@ replayed against reachable, from the tests' own event logs and the Python oracle
 is a subset of its 211-state model; see `MODEL.md`). Output: `evidence/transition-coverage.txt`.
 
 Transcripts of the runs are in `evidence/` (`transcript-tests.txt`: 28 passed on Sonatina, 10 passed on native;
-`ci-local-2026-11-21.txt`, at the commit of the run: every step above run locally). On the private repository GitHub created the Actions runs but refused every job (account billing), so no
-workflow step has run on GitHub yet; the CI evidence is that local transcript until Actions can run.
+`ci-local-2026-11-21.txt`, at the commit of the run: every step above run locally). CI runs on GitHub on every push and every
+job is green at the submitted commit ([Actions](https://github.com/edycutjong/exhaust/actions/workflows/ci.yml)); the local
+transcript is a second record of the same steps.
 
 ## 📁 Project Structure
 
@@ -334,7 +345,7 @@ MODEL.md  FE-NOTES.md  DECLARATION.md  DEMO.md
 
 ## 📽️ Demo Materials
 
-**Landing + deck:** [exhaust.edycu.dev](https://exhaust.edycu.dev/) · [pitch deck](https://exhaust.edycu.dev/deck/) · [deck PDF](docs/pitch-deck.pdf) (GitHub Pages from `docs/`; live once the repo is public and Pages is enabled).
+**Landing + deck:** [exhaust.edycu.dev](https://exhaust.edycu.dev/) · [pitch deck](https://exhaust.edycu.dev/deck/) · [deck PDF](docs/pitch-deck.pdf) (GitHub Pages from `docs/`).
 
 `DEMO.md` has the exact command behind every number here. The demo is reproducible from a fresh clone
 (a Linux x86-64 container run of a clean clone at 3f2db27: `evidence/repro-linux-2026-11-21.txt`, 28 + 10 tests; `evidence/repro-clone-2026-11-21.txt` is an earlier fresh-clone run that predates the vault).

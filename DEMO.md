@@ -48,7 +48,7 @@ Output: `evidence/demo-run.txt` (green run: `evidence/transcript-pass.txt`; the 
 | Digits to action names | `python3 tools/decode-trace 11234 --bug refund-after-release` (vault: `--protocol vault --bug vault-execute-early`) | stdout |
 | Transition coverage: 966 of 966 escrow edges (3,680 of 3,680 attempts); vault handlers 250 of 250 and 21 of 21 edges (contract graph, a subset of the 211-state model) | `sh tools/transition_coverage.sh` | `evidence/transition-coverage.txt` |
 | Bench smoke (escrow C = 8 / 19 / 21 and vault B = 10 T = 3, gated on step-limit rows) | `sh bench/run.sh --quick` | stdout (CI uploads the `bench-smoke` artifact, files `evidence/bench-ci.*`) |
-| No secret in history, no kitchen file tracked | `sh tools/leak_scan.sh` | stdout |
+| No secret in history, no private-notes file tracked | `sh tools/leak_scan.sh` | stdout |
 | CI steps, locally | `sh tools/ci_local.sh` | `evidence/ci-local-2026-11-21.txt` |
 | Fresh clone reproduces | `sh tools/repro_linux.sh` | `evidence/repro-linux-2026-11-21.txt` (clean clone at 3f2db27, 28 + 10 tests; `evidence/repro-clone-2026-11-21.txt` is an earlier run that predates the vault) |
 
