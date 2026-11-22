@@ -6,11 +6,12 @@
 
   <br/>
 
-  [![Fe Builders Challenge 2026](https://img.shields.io/badge/Fe_Builders-Challenge_2026-8b5cf6?style=for-the-badge)](https://fe-lang.org/contest/)
-  [![Reproduce every number](https://img.shields.io/badge/📋_Reproduce-DEMO.md-06b6d4?style=for-the-badge)](DEMO.md)
-  [![Raw evidence](https://img.shields.io/badge/🧾_Raw-Evidence-f59e0b?style=for-the-badge)](evidence/)
   [![Landing page](https://img.shields.io/badge/🔦_Landing-exhaust.edycu.dev-A8261C?style=for-the-badge)](https://exhaust.edycu.dev/)
   [![Pitch deck](https://img.shields.io/badge/🎞️_Pitch-Deck-23221E?style=for-the-badge)](https://exhaust.edycu.dev/deck/)
+  [![Demo video](https://img.shields.io/badge/▶️_Demo-Video_86s-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/xmKGKjVZAwA)
+  [![Reproduce every number](https://img.shields.io/badge/📋_Reproduce-DEMO.md-06b6d4?style=for-the-badge)](DEMO.md)
+  [![Raw evidence](https://img.shields.io/badge/🧾_Raw-Evidence-f59e0b?style=for-the-badge)](evidence/)
+  [![Fe Builders Challenge 2026](https://img.shields.io/badge/Fe_Builders-Challenge_2026-8b5cf6?style=for-the-badge)](https://fe-lang.org/contest/)
 
   <br/>
 
