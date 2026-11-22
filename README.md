@@ -116,7 +116,7 @@ decodes digits.
 
 ## 🏗️ Architecture & Tech Stack
 
-<p align="center"><img src="docs/architecture.svg" alt="src/escrow.fe holds step() and the invariants. The compile-time explorer runs it under static_assert in fe build; the contract's recv handlers call the same step() on the EVM backend, and the runtime search runs on both backends; tests replay every reachable edge through the deployed contract. A Python oracle outside Fe checks the pinned counts." width="100%"></p>
+<p align="center"><a href="docs/architecture.png"><img src="docs/architecture.png" alt="exhaust architecture: one step() function in src/escrow.fe is explored by a const fn breadth-first search inside fe build (736 states, 966 edges at capacity 21, 940,335 of 1,000,000 steps) and called by the contract's recv handlers under fe test on EVM and native; a one-line bug fails the build naming 'paid once' and printing 11234, and an independent Python oracle that never calls step() agrees with all 15 pins." width="100%"></a></p>
 
 | Layer | What |
 |---|---|
