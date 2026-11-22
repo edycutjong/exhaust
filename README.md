@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/assets/icon.svg" alt="exhaust icon" width="144">
+  <img src="docs/assets/icon-animated.svg" alt="exhaust icon" width="144">
   <h1>exhaust 🔦</h1>
   <p><em>The Fe compiler is the model checker: every reachable state of a protocol model, up to a stated capacity, explored inside <code>fe build</code>. The escrow: 736 states at capacity 21, in 940,335 of the 1,000,000 steps one assert may spend.</em></p>
   <img src="docs/assets/readme-hero-animated.svg" alt="exhaust: the Fe compiler explores every reachable state of an escrow inside fe build: 736 lamps lit at capacity 21, all held. One line changes. A new red lamp: Deposit, Deposit, Lock, Release, Refund." width="100%">
@@ -18,6 +18,8 @@
   ![Backends](https://img.shields.io/badge/backends-Sonatina_EVM_+_native-A8261C?style=flat)
   ![Tests](https://img.shields.io/badge/fe_test-28_EVM_/_10_native_pass-6FB27E?style=flat)
   [![License](https://img.shields.io/badge/License-Apache_2.0-yellow)](LICENSE)
+  [![CI](https://github.com/edycutjong/exhaust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/edycutjong/exhaust/actions/workflows/ci.yml)
+  [![Release](https://img.shields.io/github/v/release/edycutjong/exhaust?sort=semver)](https://github.com/edycutjong/exhaust/releases/latest)
 
 </div>
 
